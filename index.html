@@ -2656,6 +2656,8 @@ async function loadUserData(){
       // Restore paper trade
       const sbPt = data.portfolio?.paper_trade;
       if (sbPt) { try { localStorage.setItem('ss_pt_'+e, JSON.stringify(sbPt)); } catch {} }
+      // Restore pending orders
+      if (data.pending_orders?.length) { try { localStorage.setItem('ss_pt_pending_'+e, JSON.stringify(data.pending_orders)); } catch {} }
       // Restore alerts
       if (data.alerts?.length) { try { localStorage.setItem('ss_alerts_'+e, JSON.stringify(data.alerts)); } catch {} }
       // Restore notes
@@ -3056,11 +3058,18 @@ let stockNotes = {};
 function loadNotes() {
   try { stockNotes = JSON.parse(localStorage.getItem('ss_notes_'+(user?.email||''))||'{}'); } catch { stockNotes={}; }
 }
+function _syncNotes() {
+  if (user?.email) {
+    sb.from('users').update({ notes: stockNotes }).eq('email', user.email)
+      .then(({error}) => { if(error) console.warn('saveNote sync failed'); });
+  }
+}
 function saveNote(ticker) {
   const el = document.getElementById('noteArea_'+ticker);
   if(!el) return;
   stockNotes[ticker] = el.value;
   try { localStorage.setItem('ss_notes_'+(user?.email||''), JSON.stringify(stockNotes)); } catch {}
+  _syncNotes();
   toast('Note saved for '+ticker, 'success', 2000);
 }
 
@@ -3071,13 +3080,20 @@ let priceAlerts = {};
 function loadAlerts() {
   try { priceAlerts = JSON.parse(localStorage.getItem('ss_alerts_'+(user?.email||''))||'{}'); } catch { priceAlerts={}; }
 }
+function _syncAlerts() {
+  try { localStorage.setItem('ss_alerts_'+(user?.email||''), JSON.stringify(priceAlerts)); } catch {}
+  if (user?.email) {
+    sb.from('users').update({ alerts: priceAlerts }).eq('email', user.email)
+      .then(({error}) => { if(error) console.warn('syncAlerts failed'); });
+  }
+}
 function saveAlert(ticker) {
   const el = document.getElementById('alertInp_'+ticker);
   if(!el||!el.value) return;
   const price = parseFloat(el.value);
   if(isNaN(price)||price<=0) { toast('Enter a valid price', 'error'); return; }
   priceAlerts[ticker] = price;
-  try { localStorage.setItem('ss_alerts_'+(user?.email||''), JSON.stringify(priceAlerts)); } catch {}
+  _syncAlerts();
   toast(`Alert set for ${ticker} at $${price.toLocaleString()}`, 'star', 3000);
   renderAlertBadge(ticker);
 }
@@ -7418,7 +7434,7 @@ function showP(name) {
               <span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent2)">${t}</span>
               <span style="font-size:.72rem;color:var(--text2)">Alert at <strong>$${Number(price).toLocaleString()}</strong></span>
             </div>
-            <button onclick="delete priceAlerts['${t}'];try{localStorage.setItem('ss_alerts_${user?.email||''}',JSON.stringify(priceAlerts))}catch{};showP('notif')"
+            <button onclick="delete priceAlerts['${t}'];_syncAlerts();showP('notif')"
               style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;transition:color .15s"
               onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">✕</button>
           </div>`).join('');
@@ -8507,6 +8523,11 @@ function getPtPortfolio() {
 }
 function savePtPortfolio(pt) {
   try { localStorage.setItem('ss_pt_'+(user?.email||''), JSON.stringify(pt)); } catch {}
+  if (user?.email) {
+    const prefs = safeParse('ss3_p_'+user.email, {});
+    sb.from('users').update({ portfolio: { holdings: holdings||[], paper_trade: pt, prefs } }).eq('email', user.email)
+      .then(({error}) => { if(error) console.warn('savePT sync failed'); });
+  }
 }
 
 function getPtPendingOrders() {
@@ -8515,6 +8536,10 @@ function getPtPendingOrders() {
 }
 function savePtPendingOrders(orders) {
   try { localStorage.setItem('ss_pt_pending_'+(user?.email||''), JSON.stringify(orders)); } catch {}
+  if (user?.email) {
+    sb.from('users').update({ pending_orders: orders }).eq('email', user.email)
+      .then(({error}) => { if(error) console.warn('savePending sync failed'); });
+  }
 }
 
 // Auto-execute all pending orders when market opens.
@@ -9612,7 +9637,7 @@ function showKeyboardShortcuts() {
 function getAlerts() {
   try { return JSON.parse(localStorage.getItem('ss_alerts_'+(user?.email||''))||'[]'); } catch { return []; }
 }
-function saveAlerts(a) { try { localStorage.setItem('ss_alerts_'+(user?.email||''), JSON.stringify(a)); } catch {} }
+function saveAlerts(a) { priceAlerts = a; _syncAlerts(); }
 function addPriceAlert(ticker, targetPrice, direction) {
   if (!requireAuth('Price Alerts')) return;
   if (!targetPrice || isNaN(targetPrice)) { toast('Enter a valid price first', 'info', 2000); return; }
@@ -10054,6 +10079,10 @@ function updateStreak() {
     }
     data.lastVisit = today;
     localStorage.setItem(key, JSON.stringify(data));
+    if (user?.email) {
+      sb.from('users').update({ streak_count: data.streak, streak_last_date: today }).eq('email', user.email)
+        .then(({error}) => { if(error) console.warn('streak sync failed'); });
+    }
     if (data.streak >= 7) checkMilestones();
   } catch {}
 }
