@@ -4586,7 +4586,7 @@ function applyModeLabels() {
       // Preserve the icon span if present
       const icon = el.querySelector('.tab-icon');
       const iconHtml = icon ? icon.outerHTML + ' ' : '';
-      const labelText = L[key].replace(/^[^\s]+\s/, ''); // strip emoji prefix from label
+      const labelText = L[key].replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]+\s/u, ''); // strip emoji prefix only
       el.innerHTML = iconHtml + labelText;
     }
   });
