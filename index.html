@@ -2664,6 +2664,10 @@ async function loadUserData(){
       if (data.notes && Object.keys(data.notes).length) { try { localStorage.setItem('ss_notes_'+e, JSON.stringify(data.notes)); } catch {} }
       // Restore streak
       if (data.streak_count) { try { localStorage.setItem('ss_streak_'+e, JSON.stringify({ count: data.streak_count, lastDate: data.streak_last_date })); } catch {} }
+      // Restore broker, tutorial, onboarding
+      if (data.broker)         { try { localStorage.setItem('ss_broker_'+e, data.broker); } catch {} }
+      if (data.tutorial_done)  { try { localStorage.setItem('ss_tutorial_done_'+e, '1'); } catch {} }
+      if (data.onboarding_done){ try { localStorage.setItem('ss_onboarding_'+e, '1'); } catch {} }
       // Restore settings/prefs
       const p = data.settings || data.portfolio?.prefs || {};
       if(p.theme) theme=p.theme;
@@ -2707,7 +2711,8 @@ const saveWL=()=>{
 const saveH=()=>{
   if(!user?.email) return;
   ss('ss3_h_'+user.email, holdings);
-  sb.from('users').update({ portfolio: { holdings, paper_trade: safeParse('ss_pt_'+user.email,{}), prefs: {} } }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveH sync failed'); });
+  const _prefs = safeParse('ss3_p_'+user.email, {});
+  sb.from('users').update({ portfolio: { holdings, paper_trade: safeParse('ss_pt_'+user.email,{}), prefs: _prefs } }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveH sync failed'); });
 };
 const saveP=()=>{
   if(!user?.email) return;
@@ -7797,6 +7802,10 @@ function selectBroker(id) {
 function saveBroker() {
   if (!selectedBroker) { toast('Please select a broker first','warning'); return; }
   try { localStorage.setItem('ss_broker_'+(user?.email||''), selectedBroker); } catch {}
+  if (user?.email) {
+    sb.from('users').update({ broker: selectedBroker }).eq('email', user.email)
+      .then(({error}) => { if(error) console.warn('broker sync failed'); });
+  }
   ['robinhood','tastytrade','schwab','fidelity','etrade','webull','ibkr'].forEach(b => {
     const el = document.getElementById('bset-'+b);
     if (el) el.className = 'tog' + (b===selectedBroker?' on-a':'');
@@ -8077,6 +8086,10 @@ function skipTutorial() {
   cleanTutListeners();
   document.getElementById('tutorialOverlay').style.display = 'none';
   try { localStorage.setItem('ss_tutorial_done_'+(user?.email||''), '1'); } catch {}
+  if (user?.email) {
+    sb.from('users').update({ tutorial_done: true }).eq('email', user.email)
+      .then(({error}) => { if(error) console.warn('tutorial sync failed'); });
+  }
   // Step 3: broker (only if not already set and not dismissed)
   if (!localStorage.getItem('ss_broker_'+(user?.email||'')) && !localStorage.getItem('ss_broker_dismiss_'+(user?.email||''))) {
     setTimeout(openBrokerModal, 400);
@@ -8172,10 +8185,12 @@ function obNext(step) {
 
 function finishOnboarding() {
   try {
-    localStorage.setItem('ss_onboarding_'+(user?.email||''), JSON.stringify({
-      ...obAnswers,
-      completedAt: new Date().toISOString()
-    }));
+    const onboardingData = { ...obAnswers, completedAt: new Date().toISOString() };
+    localStorage.setItem('ss_onboarding_'+(user?.email||''), JSON.stringify(onboardingData));
+    if (user?.email) {
+      sb.from('users').update({ onboarding_done: true }).eq('email', user.email)
+        .then(({error}) => { if(error) console.warn('onboarding sync failed'); });
+    }
     if (obAnswers.experience === 'beginner' || obAnswers.experience === 'some') {
       mode = 'simple'; if (user) user.mode = 'simple';
     } else if (obAnswers.experience === 'advanced') {
