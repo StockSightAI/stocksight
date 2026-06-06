@@ -2818,8 +2818,8 @@ function bootApp() {
     // Returning user who hasn't finished tutorial: 2) tutorial → 3) broker
     setTimeout(startTutorial, 500);
   } else if (!brokerSet) {
-    // Has done everything except set broker
-    setTimeout(openBrokerModal, 600);
+    // Has done everything except set broker — respect "don't ask me again"
+    if (!localStorage.getItem('ss_broker_dismiss_'+(user?.email||''))) setTimeout(openBrokerModal, 600);
   }
 }
 
@@ -8061,8 +8061,8 @@ function skipTutorial() {
   cleanTutListeners();
   document.getElementById('tutorialOverlay').style.display = 'none';
   try { localStorage.setItem('ss_tutorial_done_'+(user?.email||''), '1'); } catch {}
-  // Step 3: broker (only if not already set)
-  if (!localStorage.getItem('ss_broker_'+(user?.email||''))) {
+  // Step 3: broker (only if not already set and not dismissed)
+  if (!localStorage.getItem('ss_broker_'+(user?.email||'')) && !localStorage.getItem('ss_broker_dismiss_'+(user?.email||''))) {
     setTimeout(openBrokerModal, 400);
   }
 }
