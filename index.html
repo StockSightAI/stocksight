@@ -47,7 +47,6 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <style>
 :root {
   --bg:#05050e;--card:#0c0c18;--card2:#12121f;--card3:#181828;
@@ -4258,11 +4257,7 @@ function setMarketFilter(f) {
 /* ════════════════════════════════
    FORGOT PASSWORD
 ════════════════════════════════ */
-const EMAILJS_PUBLIC_KEY  = 'yYGmFKxOtVuL833CT';
-const EMAILJS_SERVICE_ID  = 'service_b0mku5k';
-const EMAILJS_TEMPLATE_ID = 'template_9254en7';
-// Init EmailJS once at load (v3 API)
-try { emailjs.init(EMAILJS_PUBLIC_KEY); } catch(e) { console.warn('EmailJS init:', e); }
+const WEB3FORMS_KEY = '9ed72817-1a92-4078-b203-944c71271d79';
 
 function showForgotPassword() {
   const panel = document.getElementById('forgotPanel');
@@ -4304,15 +4299,21 @@ async function sendResetCode() {
     const expiry = Date.now() + 15 * 60 * 1000;
     await sb.from('users').update({ reset_token: code, reset_token_expiry: expiry }).eq('email', email);
 
-    // Send email via EmailJS
-    const ejsResult = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: email,
-      email: email,
-      to_name: data.name || 'there',
-      reset_code: code,
-      passcode: code,
-    }, EMAILJS_PUBLIC_KEY);
-    console.log('EmailJS result:', ejsResult);
+    // Send email via Web3Forms
+    const w3res = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_KEY,
+        subject: 'Your StockSight password reset code',
+        from_name: 'StockSight',
+        to_email: email,
+        message: `Hi ${data.name || 'there'},\n\nYour StockSight password reset code is:\n\n${code}\n\nThis code expires in 15 minutes. If you didn't request this, ignore this email.\n\n— The StockSight Team`,
+      })
+    });
+    const w3json = await w3res.json();
+    console.log('Web3Forms result:', w3json);
+    if (!w3json.success) throw new Error(w3json.message || 'Web3Forms failed');
 
     _fpEmail = email;
     document.getElementById('fpStep1').style.display = 'none';
