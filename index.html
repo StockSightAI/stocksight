@@ -4311,7 +4311,7 @@ async function sendResetCode() {
       to_name: data.name || 'there',
       reset_code: code,
       passcode: code,
-    });
+    }, EMAILJS_PUBLIC_KEY);
     console.log('EmailJS result:', ejsResult);
 
     _fpEmail = email;
