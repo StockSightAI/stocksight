@@ -4261,6 +4261,8 @@ function setMarketFilter(f) {
 const EMAILJS_PUBLIC_KEY  = 'yYGmFKxOtVuL833CT';
 const EMAILJS_SERVICE_ID  = 'service_b0mku5k';
 const EMAILJS_TEMPLATE_ID = 'template_9254en7';
+// Init EmailJS once at load
+try { emailjs.init(EMAILJS_PUBLIC_KEY); } catch(e) { console.warn('EmailJS init:', e); }
 
 function showForgotPassword() {
   const panel = document.getElementById('forgotPanel');
@@ -4303,21 +4305,22 @@ async function sendResetCode() {
     await sb.from('users').update({ reset_token: code, reset_token_expiry: expiry }).eq('email', email);
 
     // Send email via EmailJS
-    await emailjs.init(EMAILJS_PUBLIC_KEY);
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    const ejsResult = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
       to_email: email,
       to_name: data.name || 'there',
       reset_code: code,
     });
+    console.log('EmailJS result:', ejsResult);
 
     _fpEmail = email;
     document.getElementById('fpStep1').style.display = 'none';
     document.getElementById('fpStep2').style.display = 'block';
     showToast('Code sent! Check your email.', 'success');
   } catch(err) {
-    document.getElementById('fp-err1').textContent = 'Something went wrong. Try again.';
+    const msg = err?.text || err?.message || JSON.stringify(err);
+    console.error('sendResetCode error:', msg, err);
+    document.getElementById('fp-err1').textContent = 'Error: ' + msg;
     document.getElementById('fp-err1').style.display = 'block';
-    console.warn('sendResetCode error:', err);
   }
   btn.disabled = false; btn.textContent = 'Send Code';
 }
