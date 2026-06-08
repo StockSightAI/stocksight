@@ -125,7 +125,11 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .gate-features{display:flex;flex-direction:column;gap:9px;margin-bottom:2rem;text-align:left}
 .gf{display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--text2)}
 .gf-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 8px var(--green)}
-.gate-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.gate-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%}
+@media(max-width:480px){
+  .gate-btns{flex-direction:column}
+  .btn-gate-main,.btn-gate-ghost{width:100%;text-align:center;padding:13px 20px}
+}
 .btn-gate-main{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:12px;padding:13px 32px;font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;box-shadow:0 6px 24px var(--glow);transition:all .2s}
 .btn-gate-main:hover{opacity:.92;transform:translateY(-2px);box-shadow:0 10px 32px var(--glow)}
 .btn-gate-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:12px;padding:13px 26px;font-family:inherit;font-size:.92rem;cursor:pointer;transition:all .15s;font-weight:500}
@@ -328,6 +332,31 @@ tr:hover td{background:var(--card2)}
 
 @media(max-width:860px){.prof-layout{grid-template-columns:1fr}.prof-sidebar{position:static}}
 @media(max-width:700px){.tab{font-size:.68rem;padding:7px 3px}.tab-icon{display:none}.two-col,.cmp-row,.add-row{grid-template-columns:1fr}.screen{padding:1.25rem 1rem}}
+@media(max-width:480px){
+  /* Header: tighten logo, shrink action buttons */
+  .logo-name{font-size:.95rem}
+  .hdr-actions{gap:5px}
+  .hdr-actions button{padding:5px 7px!important;font-size:.72rem!important}
+  /* Welcome bar: hide date/time on tiny screens, save vertical space */
+  .wb-date,.wb-time{display:none}
+  #streakBadge span:last-child{display:none} /* hide "day streak" text, keep emoji+number */
+  .welcome-bar{padding:10px 12px;margin-bottom:.75rem}
+  /* Search bar full width feel */
+  .search-row{gap:6px}
+  /* Cards: reduce padding on mobile */
+  .card{padding:0}
+  .card-hdr{padding:10px 12px}
+  /* Market status bar: smaller pills */
+  #marketStatusBar{gap:6px}
+  /* Bottom nav label size */
+  .mbn-tab{font-size:.5rem}
+  /* Home grid always single col */
+  .home-grid,.home-grid-3{grid-template-columns:1fr!important}
+  /* Poll buttons stacked nicely */
+  .poll-btn{padding:.75rem 1rem}
+  .poll-label{font-size:.85rem}
+  .poll-pct{font-size:.9rem}
+}
 
 /* ── ACCENT COLOR THEMES ── */
 body.accent-blue{--accent:#2563eb;--accent2:#60a5fa;--accent3:#3b82f6;--glow:rgba(37,99,235,0.22);--glow2:rgba(37,99,235,0.08)}
