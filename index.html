@@ -4261,8 +4261,8 @@ function setMarketFilter(f) {
 const EMAILJS_PUBLIC_KEY  = 'yYGmFKxOtVuL833CT';
 const EMAILJS_SERVICE_ID  = 'service_b0mku5k';
 const EMAILJS_TEMPLATE_ID = 'template_9254en7';
-// Init EmailJS once at load
-try { emailjs.init(EMAILJS_PUBLIC_KEY); } catch(e) { console.warn('EmailJS init:', e); }
+// Init EmailJS once at load (v4 API requires object)
+try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e) { console.warn('EmailJS init:', e); }
 
 function showForgotPassword() {
   const panel = document.getElementById('forgotPanel');
