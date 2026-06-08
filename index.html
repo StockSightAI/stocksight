@@ -2075,6 +2075,7 @@ async function syncUserToSupabase(u) {
     const streakData    = safeParse('ss_streak_'+e, {});
     const phash         = (() => { try { const users = JSON.parse(localStorage.getItem('ss3_u')||'{}'); return users[e]?.phash||''; } catch { return ''; } })();
 
+    const avatar = localStorage.getItem('ss_avatar_'+e) || '';
     const payload = {
       email: e,
       name: u.name || '',
@@ -2085,7 +2086,8 @@ async function syncUserToSupabase(u) {
       notes: notes,
       streak_count: streakData.count || 0,
       streak_last_date: streakData.lastDate || '',
-      settings: prefs
+      settings: prefs,
+      avatar: avatar
     };
 
     // Upsert — insert if new, update if exists
@@ -2726,10 +2728,11 @@ async function loadUserData(){
       if (data.notes && Object.keys(data.notes).length) { try { localStorage.setItem('ss_notes_'+e, JSON.stringify(data.notes)); } catch {} }
       // Restore streak
       if (data.streak_count) { try { localStorage.setItem('ss_streak_'+e, JSON.stringify({ count: data.streak_count, lastDate: data.streak_last_date })); } catch {} }
-      // Restore broker, tutorial, onboarding
+      // Restore broker, tutorial, onboarding, avatar
       if (data.broker)         { try { localStorage.setItem('ss_broker_'+e, data.broker); } catch {} }
       if (data.tutorial_done)  { try { localStorage.setItem('ss_tutorial_done_'+e, '1'); } catch {} }
       if (data.onboarding_done){ try { localStorage.setItem('ss_onboarding_'+e, '1'); } catch {} }
+      if (data.avatar)         { try { localStorage.setItem('ss_avatar_'+e, data.avatar); } catch {} }
       // Restore settings/prefs
       const p = data.settings || data.portfolio?.prefs || {};
       if(p.theme) theme=p.theme;
@@ -4297,7 +4300,8 @@ async function sendResetCode() {
     // Generate 6-digit code, store in Supabase with 15-min expiry
     const code = String(Math.floor(100000 + Math.random() * 900000));
     const expiry = Date.now() + 15 * 60 * 1000;
-    await sb.from('users').update({ reset_token: code, reset_token_expiry: expiry }).eq('email', email);
+    const { error: updateErr } = await sb.from('users').update({ reset_token: code, reset_token_expiry: expiry }).eq('email', email);
+    if (updateErr) throw updateErr;
 
     _fpEmail = email;
     document.getElementById('fpStep1').style.display = 'none';
@@ -4305,10 +4309,11 @@ async function sendResetCode() {
     document.getElementById('fpCodeDisplay').textContent = code;
     showToast('Account verified! Use the code below.', 'success');
   } catch(err) {
-    const msg = err?.text || err?.message || JSON.stringify(err);
-    console.error('sendResetCode error:', msg, err);
-    document.getElementById('fp-err1').textContent = 'Error: ' + msg;
+    console.error('sendResetCode error:', err);
+    document.getElementById('fp-err1').textContent = 'Something went wrong. Please try again.';
     document.getElementById('fp-err1').style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Send Code';
+    return;
   }
   btn.disabled = false; btn.textContent = 'Send Code';
 }
@@ -4336,7 +4341,8 @@ async function verifyResetCode() {
 
     // Hash new password and save
     const newHash = await hashPassword(newPw);
-    await sb.from('users').update({ phash: newHash, reset_token: null, reset_token_expiry: null }).eq('email', _fpEmail);
+    const { error: pwErr } = await sb.from('users').update({ phash: newHash, reset_token: null, reset_token_expiry: null }).eq('email', _fpEmail);
+    if (pwErr) throw pwErr;
 
     // Also update localStorage
     const users = await getU();
@@ -7779,6 +7785,15 @@ function closeModal(){
   clearFE();
   // Reset form fields so stale input/errors don't show on reopen
   ['su-fn','su-e','su-p','li-e','li-p'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  // Reset forgot password panel state fully
+  hideForgotPassword();
+  const fp1 = document.getElementById('fpStep1'); if (fp1) fp1.style.display = 'block';
+  const fp2 = document.getElementById('fpStep2'); if (fp2) fp2.style.display = 'none';
+  const fpE = document.getElementById('fp-email'); if (fpE) fpE.value = '';
+  const fpC = document.getElementById('fp-code');  if (fpC) fpC.value = '';
+  const fpPw = document.getElementById('fp-newpw'); if (fpPw) fpPw.value = '';
+  const fpOk = document.getElementById('fp-ok'); if (fpOk) fpOk.style.display = 'none';
+  _fpEmail = '';
 }
 function switchModal(which){
   document.getElementById('f-signup').style.display = which==='signup'?'block':'none';
@@ -7960,10 +7975,17 @@ function selectBroker(id) {
 
 function saveBroker() {
   if (!selectedBroker) { toast('Please select a broker first','warning'); return; }
+  const saveBtn = document.querySelector('#brokerModal button[onclick="saveBroker()"]');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
   try { localStorage.setItem('ss_broker_'+(user?.email||''), selectedBroker); } catch {}
   if (user?.email) {
     sb.from('users').update({ broker: selectedBroker }).eq('email', user.email)
-      .then(({error}) => { if(error) console.warn('broker sync failed'); });
+      .then(({error}) => {
+        if(error) console.warn('broker sync failed');
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Preference'; }
+      });
+  } else {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Preference'; }
   }
   ['robinhood','tastytrade','schwab','fidelity','etrade','webull','ibkr'].forEach(b => {
     const el = document.getElementById('bset-'+b);
@@ -8415,10 +8437,26 @@ async function deleteAccount() {
     err.style.display = 'block'; return;
   }
 
-  // Verify password against stored hash
+  // Verify password against stored hash (supports both SHA-256 and legacy djb2)
   const users = await getU();
   const stored = users[user.email];
-  if (!stored || hp(pass) !== stored.ph) {
+  const inputHash = await hashPassword(pass);
+  const legacyHash = hp(pass);
+  const hashMatch = stored && (
+    (stored.phash && stored.phash === inputHash) ||
+    (!stored.phash && stored.ph && stored.ph === legacyHash)
+  );
+
+  // Also allow verification against Supabase if localStorage is missing
+  let sbVerified = false;
+  if (!hashMatch) {
+    try {
+      const { data: sbUser } = await sb.from('users').select('phash').eq('email', user.email).maybeSingle();
+      if (sbUser?.phash && sbUser.phash === inputHash) sbVerified = true;
+    } catch {}
+  }
+
+  if (!hashMatch && !sbVerified) {
     err.textContent = 'Incorrect password. Please try again.';
     err.style.display = 'block';
     document.getElementById('deletePasswordInput').style.borderColor = 'var(--red)';
@@ -8428,6 +8466,8 @@ async function deleteAccount() {
   btn.textContent = 'Deleting...'; btn.disabled = true; btn.style.opacity = '.7';
 
   try {
+    // Remove from Supabase first
+    await sb.from('users').delete().eq('email', user.email);
     // Remove from users DB
     delete users[user.email];
     await setU(users);
@@ -10224,6 +10264,11 @@ function renderAvatarPicker(containerId) {
 function setAvatar(av) {
   if(!user) return;
   localStorage.setItem('ss_avatar_'+(user?.email||''), av);
+  // Sync avatar to Supabase so it persists across devices
+  if (user.email) {
+    sb.from('users').update({ avatar: av }).eq('email', user.email)
+      .then(({error}) => { if(error) console.warn('avatar sync failed'); });
+  }
   // Update all avatar displays
   document.querySelectorAll('.avatar, #hdrAvatar, #profAv').forEach(a => a.textContent = av);
   // Update selected state in popup if open
