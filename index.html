@@ -47,7 +47,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <style>
 :root {
   --bg:#05050e;--card:#0c0c18;--card2:#12121f;--card3:#181828;
@@ -4261,8 +4261,8 @@ function setMarketFilter(f) {
 const EMAILJS_PUBLIC_KEY  = 'yYGmFKxOtVuL833CT';
 const EMAILJS_SERVICE_ID  = 'service_b0mku5k';
 const EMAILJS_TEMPLATE_ID = 'template_9254en7';
-// Init EmailJS once at load (v4 API requires object)
-try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e) { console.warn('EmailJS init:', e); }
+// Init EmailJS once at load (v3 API)
+try { emailjs.init(EMAILJS_PUBLIC_KEY); } catch(e) { console.warn('EmailJS init:', e); }
 
 function showForgotPassword() {
   const panel = document.getElementById('forgotPanel');
