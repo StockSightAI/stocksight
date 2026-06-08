@@ -4282,17 +4282,18 @@ async function sendResetCode() {
   const emailEl = document.getElementById('fp-email');
   const email = emailEl?.value?.trim().toLowerCase();
   const btn = document.getElementById('fpSendBtn');
-  if (!validEmail(email)) { document.getElementById('fp-err1').textContent = 'Enter a valid email.'; document.getElementById('fp-err1').style.display = 'block'; return; }
+  const errEl = document.getElementById('fp-err1');
+  if (!validEmail(email)) { errEl.textContent = 'Enter a valid email.'; errEl.style.display = 'block'; return; }
 
   btn.disabled = true; btn.textContent = 'Sending...';
-  document.getElementById('fp-err1').style.display = 'none';
+  errEl.style.display = 'none';
 
-  // Check if account exists in Supabase
   try {
+    // Check if account exists in Supabase
     const { data } = await sb.from('users').select('email,name').eq('email', email).maybeSingle();
     if (!data) {
-      document.getElementById('fp-err1').textContent = 'No account found with that email.';
-      document.getElementById('fp-err1').style.display = 'block';
+      errEl.textContent = 'No account found with that email.';
+      errEl.style.display = 'block';
       btn.disabled = false; btn.textContent = 'Send Code';
       return;
     }
@@ -4303,17 +4304,29 @@ async function sendResetCode() {
     const { error: updateErr } = await sb.from('users').update({ reset_token: code, reset_token_expiry: expiry }).eq('email', email);
     if (updateErr) throw updateErr;
 
+    // Send code via email (Vercel serverless → Resend)
+    const resp = await fetch('/api/send-reset-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code, name: data.name || '' })
+    });
+    if (!resp.ok) {
+      const r = await resp.json().catch(() => ({}));
+      throw new Error(r.error || 'Email delivery failed');
+    }
+
     _fpEmail = email;
     document.getElementById('fpStep1').style.display = 'none';
     document.getElementById('fpStep2').style.display = 'block';
-    document.getElementById('fpCodeDisplay').textContent = code;
-    showToast('Account verified! Use the code below.', 'success');
+    // Hide the on-screen code display — user gets it via email now
+    const codeDisplay = document.getElementById('fpCodeDisplay');
+    if (codeDisplay) codeDisplay.style.display = 'none';
+    document.querySelector('#fpStep2 > div:nth-child(2)').textContent = 'Check your email for the 6-digit code and enter it below.';
+    showToast('Code sent! Check your email 📧', 'success');
   } catch(err) {
     console.error('sendResetCode error:', err);
-    document.getElementById('fp-err1').textContent = 'Something went wrong. Please try again.';
-    document.getElementById('fp-err1').style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Send Code';
-    return;
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.style.display = 'block';
   }
   btn.disabled = false; btn.textContent = 'Send Code';
 }
