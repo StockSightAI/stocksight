@@ -10518,8 +10518,8 @@ function renderNotFound(ticker, name, type, reason, privateInfo, suggestions) {
  mc.innerHTML = `
  <button onclick="currentAsset=null;var _s=document.getElementById('searchSection');if(_s)_s.style.display='block';renderHome(tab);" style="background:none;border:none;color:var(--text2);font-family:inherit;font-size:.82rem;cursor:pointer;padding:0;margin-bottom:1.5rem;display:inline-flex;align-items:center;gap:5px;transition:color .15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text2)'">← Back</button>
  <div style="text-align:center;padding:3rem 1rem">
- <div style="font-size:3.5rem;margin-bottom:1rem">${isPrivate ? '' : ''}</div>
- <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:${color};margin-bottom:.5rem">${isPrivate ? ' Private Company' : ' Stock Not Found'}</div>
+ <div style="font-size:3.5rem;margin-bottom:1rem">${isPrivate ? '🔒' : '🔍'}</div>
+ <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:${color};margin-bottom:.5rem">${isPrivate ? 'Private Company' : 'Stock Not Found'}</div>
  <div style="font-size:.88rem;color:var(--text2);margin-bottom:1rem">
  ${isPrivate ? `<strong>${name}</strong> is privately held.<br><span style="font-size:.78rem;color:var(--text3)">${privateInfo||''}</span>` : `We couldn't find a stock with the symbol <strong style="color:var(--accent2)">${ticker}</strong>.`}
  </div>
