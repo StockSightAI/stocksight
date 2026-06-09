@@ -4352,11 +4352,18 @@ async function verifyResetCode() {
  if (!lookupEmail) { errEl.textContent = 'Session expired. Please start over.'; errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Reset Password'; return; }
 
  try {
- const { data } = await sb.from('users').select('reset_token,reset_token_expiry,name,email,mode,created_at').eq('email', lookupEmail).maybeSingle();
+ const { data, error: fetchErr } = await sb.from('users').select('reset_token,reset_token_expiry,name,email,mode,created_at').eq('email', lookupEmail).maybeSingle();
+ console.log('[reset] lookupEmail:', lookupEmail);
+ console.log('[reset] code entered:', JSON.stringify(code));
+ console.log('[reset] fetchErr:', fetchErr);
+ console.log('[reset] data:', data);
+ console.log('[reset] stored token:', JSON.stringify(data?.reset_token), 'type:', typeof data?.reset_token);
+ console.log('[reset] expiry:', data?.reset_token_expiry, 'now:', Date.now(), 'expired?', Date.now() > Number(data?.reset_token_expiry));
  const tokenMatch = data && String(data.reset_token).trim() === String(code).trim();
  const notExpired = data && Date.now() <= Number(data.reset_token_expiry);
+ console.log('[reset] tokenMatch:', tokenMatch, 'notExpired:', notExpired);
  if (!data || !tokenMatch || !notExpired) {
- errEl.textContent = 'Invalid or expired code. Request a new one.';
+ errEl.textContent = !data ? 'No account found. Start over.' : !tokenMatch ? 'Code does not match. Check your email.' : 'Code expired. Request a new one.';
  errEl.style.display = 'block';
  btn.disabled = false; btn.textContent = 'Reset Password';
  return;
