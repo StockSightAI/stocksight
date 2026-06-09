@@ -20,7 +20,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'StockSight <onboarding@resend.dev>',
+        from: 'StockSight <noreply@stocksightai.com>',
         to: email,
         subject: 'Your StockSight password reset code',
         html: `
