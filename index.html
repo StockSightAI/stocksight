@@ -1064,7 +1064,19 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
  <div id="mainContent"></div>
 
  <!-- Site Footer -->
- <footer id="siteFooter" style="margin-top:3rem;padding:1.5rem 1rem;border-top:1px solid var(--border);text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px">
+ <footer id="siteFooter" style="margin-top:3rem;padding:1.5rem 1rem 2rem;border-top:1px solid var(--border);text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px">
+
+ <!-- About the Creator -->
+ <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+ <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0">S</div>
+ <div style="text-align:left">
+ <div style="font-size:.78rem;font-weight:700;color:var(--text)">Built by Shravan Appou</div>
+ <div style="font-size:.68rem;color:var(--text3)">Student · Investor · Northern Virginia</div>
+ </div>
+ <a href="https://www.linkedin.com/in/shravan-appou/" target="_blank" rel="noopener noreferrer" style="margin-left:6px;font-size:.7rem;color:var(--text3);text-decoration:none;border:1px solid var(--border);border-radius:6px;padding:3px 8px;transition:all .15s" onmouseover="this.style.color='var(--accent2)';this.style.borderColor='var(--accent2)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border)'">💼 LinkedIn →</a>
+ </div>
+
+ <!-- Links row -->
  <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:center">
  <a onclick="openPrivacyPolicy()" style="font-size:.72rem;color:var(--text3);cursor:pointer;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text3)'">Privacy Policy</a>
  <span style="font-size:.72rem;color:var(--border2)">·</span>
@@ -1072,6 +1084,7 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
  <span style="font-size:.72rem;color:var(--border2)">·</span>
  <span style="font-size:.72rem;color:var(--text3)">© 2026 StockSight. All rights reserved.</span>
  </div>
+
  <p style="font-size:.66rem;color:var(--text3);margin:0;max-width:480px;line-height:1.6">StockSight is for informational purposes only and does not constitute financial advice. Always do your own research before making investment decisions.</p>
  </footer>
 </div>
@@ -10807,29 +10820,6 @@ function restartTutorial() {
  <div class="help-section-title">FREQUENTLY ASKED QUESTIONS</div>
  <div id="helpFaqList"></div>
 
- <!-- About the Creator -->
- <div class="help-section-title">ABOUT THE CREATOR</div>
- <div class="help-about-card">
- <div class="help-about-row">
- <div class="help-about-av">S</div>
- <div>
- <div class="help-about-name">Shravan Appou</div>
- <div class="help-about-sub">Student · Investor · Northern Virginia</div>
- </div>
- </div>
- <div class="help-about-bio">
- Hey! I'm Shravan — a student and investor based in Northern Virginia.
- I built StockSight to make stock market tracking cleaner and more accessible, without the clutter of traditional finance platforms.
- I'm passionate about understanding markets, growing my portfolio, and building tools that make investing easier for everyone.
- </div>
- <div class="help-about-links">
- <a class="help-social" href="https://www.linkedin.com/in/shravan-appou/" target="_blank" rel="noopener noreferrer">
- <div class="help-social-icon" style="background:rgba(10,102,194,.15);border:1px solid rgba(10,102,194,.3)"></div>
- <span class="help-social-label">LinkedIn</span>
- <span class="help-social-arrow">→</span>
- </a>
- </div>
- </div>
  </div>
 </div>
 
