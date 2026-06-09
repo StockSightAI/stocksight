@@ -1403,12 +1403,12 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
  <div class="prof-uemail" id="profUE"></div>
  </div>
  <div class="prof-nav">
- <div class="pni on" id="pni-ov" onclick="showP('ov')"> Overview</div>
- <div class="pni" id="pni-notif" onclick="showP('notif')"> Notifications</div>
- <div class="pni" id="pni-hold" onclick="showP('hold')"> My Holdings</div>
- <div class="pni" id="pni-rewards" onclick="showP('rewards')"> Achievements</div>
- <div class="pni" id="pni-referral" onclick="showP('referral')"> Referral</div>
- <div class="pni" id="pni-set" onclick="showP('set')"> Settings</div>
+ <div class="pni on" id="pni-ov" onclick="showP('ov')">👤 Overview</div>
+ <div class="pni" id="pni-notif" onclick="showP('notif')">🔔 Notifications</div>
+ <div class="pni" id="pni-hold" onclick="showP('hold')">🏦 My Holdings</div>
+ <div class="pni" id="pni-rewards" onclick="showP('rewards')">🏅 Achievements</div>
+ <div class="pni" id="pni-referral" onclick="showP('referral')">🎁 Referral</div>
+ <div class="pni" id="pni-set" onclick="showP('set')">⚙️ Settings</div>
  </div>
  <div class="prof-footer"><button class="btn-so" onclick="logout()">Sign out</button></div>
  </div>
@@ -1504,7 +1504,7 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
  <div class="psec-title"> Achievements</div>
 
  <div class="sg">
- <div class="sg-lbl"> BADGES</div>
+ <div class="sg-lbl">🏅 BADGES</div>
  <div id="badgesContainer"></div>
  </div>
 
@@ -2855,7 +2855,7 @@ function bootApp() {
  <button class="btn-help" onclick="openHelp()" title="Help & FAQ">?</button>
  <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle dark/light mode" style="font-size:.85rem;padding:6px 10px"></button>
  <button onclick="toggleMode()" id="modeBtn" title="Switch beginner/advanced" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 11px;font-family:inherit;font-size:.7rem;font-weight:700;cursor:pointer;color:var(--text2);transition:all .15s"></button>
- <button id="notifBtn" onclick="openNotificationCenter()" title="Notifications" style="position:relative;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:.85rem;cursor:pointer;transition:all .15s"></button>
+ <button id="notifBtn" onclick="openNotificationCenter()" title="Notifications" style="position:relative;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:.85rem;cursor:pointer;transition:all .15s">🔔</button>
  <div class="user-pill" onclick="show('profile')">
  <div class="avatar" id="hdrAvatar">${getAvatar()}</div>
  <div class="user-name">${displayName}</div>
@@ -3015,7 +3015,7 @@ async function logout() {
 function toast(msg, type='info', duration=3500) {
  if (user && ['star','money','success'].includes(type)) addNotification(msg, type);
  updateNotifBadge();
- const icons = {success:'', error:'', warning:'', info:'', money:'', star:''};
+ const icons = {success:'✅', error:'❌', warning:'⚠️', info:'💬', money:'💰', star:'⭐'};
  const icon = icons[type] || icons.info;
  const container = document.getElementById('toast-container');
  if (!container) return;
@@ -4378,7 +4378,7 @@ function updateThemeBtn(){
  const b=document.getElementById('themeBtn');
  if(b) b.textContent=theme==='dark'?'🌙':'☀️';
  const mb=document.getElementById('modeBtn');
- if(mb) mb.textContent=mode==='simple'?'Beginner':'Advanced';
+ if(mb) mb.textContent=mode==='simple'?'🎓 Beginner':'⚡ Advanced';
 }
 function toggleMode(){
  mode = mode==='simple'?'advanced':'simple';
@@ -4386,7 +4386,7 @@ function toggleMode(){
  updateThemeBtn();
  applyModeLabels();
  renderHome(tab);
- toast(`Switched to ${mode==='simple'?' Beginner':' Advanced'} mode`, 'info', 2500);
+ toast(`Switched to ${mode==='simple'?'🎓 Beginner':'⚡ Advanced'} mode`, 'info', 2500);
 }
 function applyMode(save=true){
  const s=document.getElementById('mS'), a=document.getElementById('mA');
@@ -9521,59 +9521,59 @@ function renderAnalystTargets(ticker, curPrice) {
 ════════════════════════════════ */
 const BADGES = [
  // ── GETTING STARTED ──
- { id:'first_login', icon:'', name:'First Launch', desc:'Logged in for the first time', check: () => true },
- { id:'first_search', icon:'', name:'Explorer', desc:'Searched for your first stock', check: () => searchHistory.length > 0 },
- { id:'first_watch', icon:'', name:'Watchlister', desc:'Added your first stock to your watchlist', check: () => watchlist.length > 0 },
- { id:'first_holding', icon:'', name:'Investor', desc:'Added your first portfolio holding', check: () => holdings.length > 0 },
- { id:'first_paper', icon:'', name:'Paper Trader', desc:'Placed your first paper trade', check: () => Object.keys(getPtPortfolio().holdings).length > 0 },
- { id:'first_vote', icon:'', name:'Voter', desc:'Voted on your first community stock poll', check: () => { try{return Object.keys(safeParse('ss_votes_'+(user?.email||''),{})).length > 0;}catch{return false;} } },
- { id:'onboarded', icon:'', name:'Graduate', desc:'Completed the onboarding questionnaire', check: () => !!localStorage.getItem('ss_onboarding_'+(user?.email||'')) },
- { id:'tutorial_done', icon:'', name:'Trained', desc:'Completed the interactive tutorial', check: () => !!localStorage.getItem('ss_tutorial_done_'+(user?.email||'')) },
- { id:'broker_set', icon:'', name:'Connected', desc:'Linked a preferred broker to your account', check: () => !!localStorage.getItem('ss_broker_'+(user?.email||'')) },
+ { id:'first_login', icon:'🚀', name:'First Launch', desc:'Logged in for the first time', check: () => true },
+ { id:'first_search', icon:'🔍', name:'Explorer', desc:'Searched for your first stock', check: () => searchHistory.length > 0 },
+ { id:'first_watch', icon:'⭐', name:'Watchlister', desc:'Added your first stock to your watchlist', check: () => watchlist.length > 0 },
+ { id:'first_holding', icon:'💼', name:'Investor', desc:'Added your first portfolio holding', check: () => holdings.length > 0 },
+ { id:'first_paper', icon:'🎮', name:'Paper Trader', desc:'Placed your first paper trade', check: () => Object.keys(getPtPortfolio().holdings).length > 0 },
+ { id:'first_vote', icon:'🗳️', name:'Voter', desc:'Voted on your first community stock poll', check: () => { try{return Object.keys(safeParse('ss_votes_'+(user?.email||''),{})).length > 0;}catch{return false;} } },
+ { id:'onboarded', icon:'🎓', name:'Graduate', desc:'Completed the onboarding questionnaire', check: () => !!localStorage.getItem('ss_onboarding_'+(user?.email||'')) },
+ { id:'tutorial_done', icon:'📚', name:'Trained', desc:'Completed the interactive tutorial', check: () => !!localStorage.getItem('ss_tutorial_done_'+(user?.email||'')) },
+ { id:'broker_set', icon:'🔗', name:'Connected', desc:'Linked a preferred broker to your account', check: () => !!localStorage.getItem('ss_broker_'+(user?.email||'')) },
  // ── STREAKS ──
- { id:'streak_3', icon:'', name:'On Fire', desc:'3-day visit streak', check: () => { try{return (safeParse('ss_streak_'+(user?.email||''),{})).streak>=3;}catch{return false;} } },
- { id:'streak_7', icon:'', name:'Week Warrior', desc:'7-day visit streak', check: () => { try{return (safeParse('ss_streak_'+(user?.email||''),{})).streak>=7;}catch{return false;} } },
- { id:'streak_14', icon:'', name:'Fortnight', desc:'14-day visit streak', check: () => { try{return (safeParse('ss_streak_'+(user?.email||''),{})).streak>=14;}catch{return false;} } },
- { id:'streak_30', icon:'', name:'Legend', desc:'30-day visit streak', check: () => { try{return (safeParse('ss_streak_'+(user?.email||''),{})).streak>=30;}catch{return false;} } },
- { id:'streak_100', icon:'', name:'Unstoppable', desc:'100-day visit streak', check: () => { try{return (safeParse('ss_streak_'+(user?.email||''),{})).streak>=100;}catch{return false;} } },
+ { id:'streak_3', icon:'🔥', name:'On Fire', desc:'3-day visit streak', check: () => { try{return (safeParse('ss_streak_'+(user?.email||''),{})).streak>=3;}catch{return false;} } },
+ { id:'streak_7', icon:'💥', name:'Week Warrior', desc:'7-day visit streak', check: () => { try{return (safeParse('ss_streak_'+(user?.email||''),{})).streak>=7;}catch{return false;} } },
+ { id:'streak_14', icon:'⚡', name:'Fortnight', desc:'14-day visit streak', check: () => { try{return (safeParse('ss_streak_'+(user?.email||''),{})).streak>=14;}catch{return false;} } },
+ { id:'streak_30', icon:'🏆', name:'Legend', desc:'30-day visit streak', check: () => { try{return (safeParse('ss_streak_'+(user?.email||''),{})).streak>=30;}catch{return false;} } },
+ { id:'streak_100', icon:'👑', name:'Unstoppable', desc:'100-day visit streak', check: () => { try{return (safeParse('ss_streak_'+(user?.email||''),{})).streak>=100;}catch{return false;} } },
  // ── SEARCHING ──
- { id:'five_searches', icon:'', name:'Market Nerd', desc:'Searched 5+ different stocks', check: () => { try{return Object.keys(safeParse('ss_trending',{})).length >= 5;}catch{return false;} } },
- { id:'twenty_searches', icon:'', name:'Research Machine', desc:'Searched 20+ different stocks', check: () => { try{return Object.keys(safeParse('ss_trending',{})).length >= 20;}catch{return false;} } },
- { id:'fifty_searches', icon:'', name:'Wall Street Nerd', desc:'Searched 50+ different stocks', check: () => { try{return Object.keys(safeParse('ss_trending',{})).length >= 50;}catch{return false;} } },
+ { id:'five_searches', icon:'📊', name:'Market Nerd', desc:'Searched 5+ different stocks', check: () => { try{return Object.keys(safeParse('ss_trending',{})).length >= 5;}catch{return false;} } },
+ { id:'twenty_searches', icon:'🧠', name:'Research Machine', desc:'Searched 20+ different stocks', check: () => { try{return Object.keys(safeParse('ss_trending',{})).length >= 20;}catch{return false;} } },
+ { id:'fifty_searches', icon:'🔭', name:'Wall Street Nerd', desc:'Searched 50+ different stocks', check: () => { try{return Object.keys(safeParse('ss_trending',{})).length >= 50;}catch{return false;} } },
  // ── WATCHLIST ──
- { id:'five_watchlist', icon:'', name:'Collector', desc:'Added 5+ stocks to your watchlist', check: () => watchlist.length >= 5 },
- { id:'ten_watchlist', icon:'', name:'Curator', desc:'Added 10+ stocks to your watchlist', check: () => watchlist.length >= 10 },
+ { id:'five_watchlist', icon:'📋', name:'Collector', desc:'Added 5+ stocks to your watchlist', check: () => watchlist.length >= 5 },
+ { id:'ten_watchlist', icon:'🗂️', name:'Curator', desc:'Added 10+ stocks to your watchlist', check: () => watchlist.length >= 10 },
  // ── PORTFOLIO ──
- { id:'five_holdings', icon:'', name:'Diversified', desc:'Tracking 5+ portfolio holdings', check: () => holdings.length >= 5 },
- { id:'ten_holdings', icon:'', name:'Fund Manager', desc:'Tracking 10+ portfolio holdings', check: () => holdings.length >= 10 },
+ { id:'five_holdings', icon:'💎', name:'Diversified', desc:'Tracking 5+ portfolio holdings', check: () => holdings.length >= 5 },
+ { id:'ten_holdings', icon:'🏦', name:'Fund Manager', desc:'Tracking 10+ portfolio holdings', check: () => holdings.length >= 10 },
  // ── PAPER TRADING ──
- { id:'paper_profit', icon:'', name:'In the Green', desc:'Paper portfolio value above $10,000', check: () => { try{const pt=getPtPortfolio();const refs={BTC:67000,ETH:3500,AAPL:222,NVDA:875,TSLA:175,MSFT:415,AMZN:195,META:550};const v=Object.entries(pt.holdings).reduce((s,[t,sh])=>s+sh*(refs[t]||100),pt.cash);return v>10050;}catch{return false;} } },
- { id:'paper_big', icon:'', name:'Paper Millionaire', desc:'Paper portfolio value above $15,000', check: () => { try{const pt=getPtPortfolio();const refs={BTC:67000,ETH:3500,AAPL:222,NVDA:875,TSLA:175,MSFT:415,AMZN:195,META:550};const v=Object.entries(pt.holdings).reduce((s,[t,sh])=>s+sh*(refs[t]||100),pt.cash);return v>15000;}catch{return false;} } },
- { id:'paper_five_pos', icon:'', name:'Active Trader', desc:'Held 5+ different paper positions at once', check: () => Object.keys(getPtPortfolio().holdings).length >= 5 },
+ { id:'paper_profit', icon:'📈', name:'In the Green', desc:'Paper portfolio value above $10,000', check: () => { try{const pt=getPtPortfolio();const refs={BTC:67000,ETH:3500,AAPL:222,NVDA:875,TSLA:175,MSFT:415,AMZN:195,META:550};const v=Object.entries(pt.holdings).reduce((s,[t,sh])=>s+sh*(refs[t]||100),pt.cash);return v>10050;}catch{return false;} } },
+ { id:'paper_big', icon:'💰', name:'Paper Millionaire', desc:'Paper portfolio value above $15,000', check: () => { try{const pt=getPtPortfolio();const refs={BTC:67000,ETH:3500,AAPL:222,NVDA:875,TSLA:175,MSFT:415,AMZN:195,META:550};const v=Object.entries(pt.holdings).reduce((s,[t,sh])=>s+sh*(refs[t]||100),pt.cash);return v>15000;}catch{return false;} } },
+ { id:'paper_five_pos', icon:'🎯', name:'Active Trader', desc:'Held 5+ different paper positions at once', check: () => Object.keys(getPtPortfolio().holdings).length >= 5 },
  // ── VOTING ──
- { id:'five_votes', icon:'', name:'Pundit', desc:'Voted on 5+ stock polls', check: () => { try{return Object.keys(safeParse('ss_votes_'+(user?.email||''),{})).length >= 5;}catch{return false;} } },
- { id:'ten_votes', icon:'', name:'Community Voice', desc:'Voted on 10+ stock polls', check: () => { try{return Object.keys(safeParse('ss_votes_'+(user?.email||''),{})).length >= 10;}catch{return false;} } },
+ { id:'five_votes', icon:'🗣️', name:'Pundit', desc:'Voted on 5+ stock polls', check: () => { try{return Object.keys(safeParse('ss_votes_'+(user?.email||''),{})).length >= 5;}catch{return false;} } },
+ { id:'ten_votes', icon:'📣', name:'Community Voice', desc:'Voted on 10+ stock polls', check: () => { try{return Object.keys(safeParse('ss_votes_'+(user?.email||''),{})).length >= 10;}catch{return false;} } },
  // ── DISCOVERY ──
- { id:'screener_used', icon:'', name:'Screener Pro', desc:'Used the stock screener', check: () => !!localStorage.getItem('ss_screener_used_'+(user?.email||'')) },
- { id:'compare_used', icon:'', name:'Analyst', desc:'Compared two stocks side by side', check: () => !!localStorage.getItem('ss_compare_used_'+(user?.email||'')) },
- { id:'prediction_used', icon:'', name:'Oracle', desc:'Checked the AI price prediction tab', check: () => !!localStorage.getItem('ss_prediction_used_'+(user?.email||'')) },
- { id:'custom_home', icon:'', name:'Homemaker', desc:'Pinned stocks to your custom homepage', check: () => getPinnedStocks().length > 0 },
- { id:'digest_sub', icon:'', name:'Subscriber', desc:'Subscribed to the weekly digest email', check: () => !!localStorage.getItem('ss_digest_'+(user?.email||'')) },
+ { id:'screener_used', icon:'🔎', name:'Screener Pro', desc:'Used the stock screener', check: () => !!localStorage.getItem('ss_screener_used_'+(user?.email||'')) },
+ { id:'compare_used', icon:'⚖️', name:'Analyst', desc:'Compared two stocks side by side', check: () => !!localStorage.getItem('ss_compare_used_'+(user?.email||'')) },
+ { id:'prediction_used', icon:'🔮', name:'Oracle', desc:'Checked the AI price prediction tab', check: () => !!localStorage.getItem('ss_prediction_used_'+(user?.email||'')) },
+ { id:'custom_home', icon:'📌', name:'Homemaker', desc:'Pinned stocks to your custom homepage', check: () => getPinnedStocks().length > 0 },
+ { id:'digest_sub', icon:'📬', name:'Subscriber', desc:'Subscribed to the weekly digest email', check: () => !!localStorage.getItem('ss_digest_'+(user?.email||'')) },
  // ── MARKETS ──
  { id:'crypto_search', icon:'₿', name:'Crypto Curious', desc:'Searched for your first cryptocurrency', check: () => searchHistory.some(h=>h.k==='c') },
- { id:'index_search', icon:'', name:'Index Watcher', desc:'Looked up your first market index', check: () => searchHistory.some(h=>h.k==='i') },
- { id:'dark_mode', icon:'', name:'Night Owl', desc:'Switched to dark mode', check: () => theme === 'dark' },
- { id:'after_hours', icon:'', name:'After Hours', desc:'Used StockSight outside market hours (before 9am or after 4pm)', check: () => { const h=new Date().getHours(); return h<9||h>=16; } },
- { id:'early_bird', icon:'', name:'Early Bird', desc:'Used StockSight before 8am', check: () => new Date().getHours() < 8 },
- { id:'night_trader', icon:'', name:'Night Trader', desc:'Used StockSight after midnight', check: () => new Date().getHours() < 4 },
- { id:'weekend_warrior', icon:'', name:'Weekend Warrior', desc:'Checked stocks on the weekend', check: () => [0,6].includes(new Date().getDay()) },
- { id:'referral_sent', icon:'', name:'Connector', desc:'Invited a friend using your referral code', check: () => { try{return JSON.parse(localStorage.getItem('ss_referred_by_'+(user?.email||''))||'[]').length>0;}catch{return false;} } },
- { id:'referral_redeemed',icon:'', name:'Welcomed', desc:'Redeemed a friend\'s referral code', check: () => !!localStorage.getItem('ss_referral_used_'+(user?.email||'')) },
- { id:'checklist_done', icon:'', name:'Ready to Go', desc:'Completed the getting started checklist', check: () => isChecklistComplete() },
+ { id:'index_search', icon:'📉', name:'Index Watcher', desc:'Looked up your first market index', check: () => searchHistory.some(h=>h.k==='i') },
+ { id:'dark_mode', icon:'🌙', name:'Night Owl', desc:'Switched to dark mode', check: () => theme === 'dark' },
+ { id:'after_hours', icon:'🌃', name:'After Hours', desc:'Used StockSight outside market hours (before 9am or after 4pm)', check: () => { const h=new Date().getHours(); return h<9||h>=16; } },
+ { id:'early_bird', icon:'🌅', name:'Early Bird', desc:'Used StockSight before 8am', check: () => new Date().getHours() < 8 },
+ { id:'night_trader', icon:'🦉', name:'Night Trader', desc:'Used StockSight after midnight', check: () => new Date().getHours() < 4 },
+ { id:'weekend_warrior', icon:'📅', name:'Weekend Warrior', desc:'Checked stocks on the weekend', check: () => [0,6].includes(new Date().getDay()) },
+ { id:'referral_sent', icon:'🤝', name:'Connector', desc:'Invited a friend using your referral code', check: () => { try{return JSON.parse(localStorage.getItem('ss_referred_by_'+(user?.email||''))||'[]').length>0;}catch{return false;} } },
+ { id:'referral_redeemed', icon:'🎁', name:'Welcomed', desc:'Redeemed a friend\'s referral code', check: () => !!localStorage.getItem('ss_referral_used_'+(user?.email||'')) },
+ { id:'checklist_done', icon:'✅', name:'Ready to Go', desc:'Completed the getting started checklist', check: () => isChecklistComplete() },
  // ── SECRET ──
- { id:'secret_1', icon:'', name:'Lucky Dip', desc:'You found it! Searched for a stock that doesn\'t exist — curiosity rewarded.',
+ { id:'secret_1', icon:'🎰', name:'Lucky Dip', desc:'You found it! Searched for a stock that doesn\'t exist — curiosity rewarded.',
  check: () => !!localStorage.getItem('ss_secret1_'+(user?.email||'')), secret: true },
- { id:'secret_2', icon:'', name:'Time Traveler', desc:'You found it! Visited StockSight at exactly midnight.',
+ { id:'secret_2', icon:'🕰️', name:'Time Traveler', desc:'You found it! Visited StockSight at exactly midnight.',
  check: () => { const n=new Date(); return n.getHours()===0 && n.getMinutes()===0; }, secret: true },
 ];
 
@@ -9594,7 +9594,7 @@ function checkAndAwardBadges(silent=false) {
  localStorage.setItem('ss_badges_'+(user?.email||''), JSON.stringify([...earned]));
  if (!silent) {
  newlyEarned.forEach((b, i) => {
- setTimeout(() => toast(` Badge unlocked: ${b.icon} ${b.name} — ${b.desc}`, 'star', 4000), i * 1300);
+ setTimeout(() => toast(`🏅 Badge unlocked: ${b.icon} ${b.name} — ${b.desc}`, 'star', 4000), i * 1300);
  });
  }
  }
@@ -10231,7 +10231,7 @@ function openNotificationCenter() {
  </div>
  ${notifs.length === 0 ? `<div style="padding:2rem;text-align:center;font-size:.78rem;color:var(--text3)">No notifications yet.<br>Price alerts, badges, and milestones will appear here.</div>` :
  notifs.map(n => {
- const icons = {info:'ℹ',success:'',star:'',money:'',error:''};
+ const icons = {info:'ℹ️',success:'✅',star:'🏅',money:'💰',error:'❌'};
  const age = Date.now()-n.ts; const ageStr = age<60000?'just now':age<3600000?Math.floor(age/60000)+'m ago':age<86400000?Math.floor(age/3600000)+'h ago':Math.floor(age/86400000)+'d ago';
  return `<div style="padding:.75rem 1rem;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start">
  <div style="font-size:1rem;flex-shrink:0">${icons[n.type]||''}</div>
