@@ -1062,6 +1062,18 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
  </div>
 
  <div id="mainContent"></div>
+
+ <!-- Site Footer -->
+ <footer id="siteFooter" style="margin-top:3rem;padding:1.5rem 1rem;border-top:1px solid var(--border);text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px">
+ <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:center">
+ <a onclick="openPrivacyPolicy()" style="font-size:.72rem;color:var(--text3);cursor:pointer;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text3)'">Privacy Policy</a>
+ <span style="font-size:.72rem;color:var(--border2)">·</span>
+ <a href="mailto:support@stocksightai.com" style="font-size:.72rem;color:var(--text3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text3)'">Contact</a>
+ <span style="font-size:.72rem;color:var(--border2)">·</span>
+ <span style="font-size:.72rem;color:var(--text3)">© 2025 StockSight. All rights reserved.</span>
+ </div>
+ <p style="font-size:.66rem;color:var(--text3);margin:0;max-width:480px;line-height:1.6">StockSight is for informational purposes only and does not constitute financial advice. Always do your own research before making investment decisions.</p>
+ </footer>
 </div>
 
 <!-- ═══════════════════════════════
@@ -7811,6 +7823,8 @@ function openModal(which){
  document.body.style.overflow = 'hidden';
  switchModal(which);
 }
+function openPrivacyPolicy(){ const m=document.getElementById('privacyModal'); if(m){m.classList.remove('off');document.body.style.overflow='hidden';} }
+function closePrivacyPolicy(){ const m=document.getElementById('privacyModal'); if(m){m.classList.add('off');document.body.style.overflow='';} }
 function closeModal(){
  const m = document.getElementById('modal');
  if (m) m.classList.add('off');
@@ -10814,6 +10828,53 @@ function restartTutorial() {
  <span class="help-social-label">LinkedIn</span>
  <span class="help-social-arrow">→</span>
  </a>
+ </div>
+ </div>
+ </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div id="privacyModal" class="modal-overlay off" onclick="if(event.target===this)closePrivacyPolicy()">
+ <div class="modal-box" style="max-width:560px">
+ <button class="modal-close" onclick="closePrivacyPolicy()">&#x2715;</button>
+ <div class="modal-heading">Privacy Policy</div>
+ <div class="modal-sub">Last updated: June 2025</div>
+ <div style="font-size:.78rem;color:var(--text2);line-height:1.8;display:flex;flex-direction:column;gap:1rem">
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">1. Information We Collect</div>
+ <p style="margin:0">When you create an account, we collect your <strong style="color:var(--text)">name and email address</strong>. We also store your app preferences (dark/light mode, portfolio data, watchlists) locally in your browser and synced to our secure database.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">2. How We Use Your Information</div>
+ <p style="margin:0">Your information is used solely to operate StockSight — to authenticate your account, sync your data across sessions, and send password reset emails when requested. We do not use your data for advertising.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">3. We Do Not Sell Your Data</div>
+ <p style="margin:0">We will never sell, rent, or share your personal information with third parties for marketing or commercial purposes.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">4. Data Storage & Security</div>
+ <p style="margin:0">Your data is stored securely using <strong style="color:var(--text)">Supabase</strong> (hosted on AWS). Passwords are hashed using SHA-256 and never stored in plain text. We use industry-standard security practices to protect your information.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">5. Local Storage & Cookies</div>
+ <p style="margin:0">StockSight uses your browser's local storage to save your session and preferences. We do not use tracking cookies or third-party analytics.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">6. Third-Party Services</div>
+ <p style="margin:0">We use <strong style="color:var(--text)">TradingView</strong> for chart data and <strong style="color:var(--text)">Resend</strong> for transactional emails (password resets only). These services have their own privacy policies.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">7. Account Deletion</div>
+ <p style="margin:0">You can permanently delete your account at any time from your profile settings. This removes all your data from our servers.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">8. Financial Disclaimer</div>
+ <p style="margin:0">StockSight provides stock data and research tools for <strong style="color:var(--text)">informational purposes only</strong>. Nothing on this platform constitutes financial, investment, or legal advice. Always consult a qualified professional before making investment decisions.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">9. Contact Us</div>
+ <p style="margin:0">Questions about this policy? Email us at <a href="mailto:support@stocksightai.com" style="color:var(--accent2);text-decoration:none">support@stocksightai.com</a>.</p>
  </div>
  </div>
  </div>
