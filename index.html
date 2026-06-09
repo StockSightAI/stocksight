@@ -2004,10 +2004,11 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
  <!-- Step 2: show code + new password -->
  <div id="fpStep2" style="display:none">
  <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px"> Account verified</div>
- <div style="font-size:.72rem;color:var(--text3);margin-bottom:10px">Your reset code is below. Enter it and choose a new password.</div>
+ <div id="fpStep2Subtitle" style="font-size:.72rem;color:var(--text3);margin-bottom:10px">Your reset code is below. Enter it and choose a new password.</div>
  <div id="fpCodeDisplay" style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:900;letter-spacing:.3em;color:var(--accent2);text-align:center;background:rgba(108,92,231,.1);border:1.5px dashed rgba(108,92,231,.4);border-radius:10px;padding:14px;margin-bottom:12px"></div>
  <div class="field" style="margin-bottom:8px"><label>CODE</label><input id="fp-code" type="text" placeholder="123456" maxlength="6" style="letter-spacing:.2em;font-size:1.1rem!important;text-align:center"/></div>
  <div class="field" style="margin-bottom:8px"><label>NEW PASSWORD</label><input id="fp-newpw" type="password" placeholder="At least 6 characters"/></div>
+ <div class="field" style="margin-bottom:8px"><label>CONFIRM PASSWORD</label><input id="fp-confirmpw" type="password" placeholder="Re-enter your new password"/></div>
  <div id="fp-err2" style="font-size:.7rem;color:var(--red);margin-bottom:8px;display:none">Invalid or expired code.</div>
  <div id="fp-ok" style="font-size:.7rem;color:var(--green);margin-bottom:8px;display:none"> Password updated! Logging you in...</div>
  <button id="fpVerifyBtn" onclick="verifyResetCode()" style="width:100%;background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:10px;padding:10px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer">Reset Password</button>
@@ -4321,7 +4322,8 @@ async function sendResetCode() {
  // Hide the on-screen code display — user gets it via email now
  const codeDisplay = document.getElementById('fpCodeDisplay');
  if (codeDisplay) codeDisplay.style.display = 'none';
- document.querySelector('#fpStep2 > div:nth-child(2)').textContent = 'Check your email for the 6-digit code and enter it below.';
+ const subtitleEl = document.getElementById('fpStep2Subtitle');
+ if (subtitleEl) subtitleEl.textContent = 'Check your email for the 6-digit code and enter it below.';
  showToast('Code sent! Check your email ', 'success');
  } catch(err) {
  console.error('sendResetCode error:', err);
@@ -4334,18 +4336,26 @@ async function sendResetCode() {
 async function verifyResetCode() {
  const code = document.getElementById('fp-code')?.value?.trim();
  const newPw = document.getElementById('fp-newpw')?.value;
+ const confirmPw = document.getElementById('fp-confirmpw')?.value;
  const btn = document.getElementById('fpVerifyBtn');
  const errEl = document.getElementById('fp-err2');
  errEl.style.display = 'none';
 
  if (!code || code.length !== 6) { errEl.textContent = 'Enter the 6-digit code.'; errEl.style.display = 'block'; return; }
  if (!newPw || newPw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
+ if (newPw !== confirmPw) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
 
  btn.disabled = true; btn.textContent = 'Verifying...';
 
+ // Fallback: if _fpEmail was lost (e.g. variable reset), read from the input
+ const lookupEmail = _fpEmail || document.getElementById('fp-email')?.value?.trim().toLowerCase();
+ if (!lookupEmail) { errEl.textContent = 'Session expired. Please start over.'; errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Reset Password'; return; }
+
  try {
- const { data } = await sb.from('users').select('reset_token,reset_token_expiry,name,email,mode,created_at').eq('email', _fpEmail).maybeSingle();
- if (!data || data.reset_token !== code || Date.now() > data.reset_token_expiry) {
+ const { data } = await sb.from('users').select('reset_token,reset_token_expiry,name,email,mode,created_at').eq('email', lookupEmail).maybeSingle();
+ const tokenMatch = data && String(data.reset_token).trim() === String(code).trim();
+ const notExpired = data && Date.now() <= Number(data.reset_token_expiry);
+ if (!data || !tokenMatch || !notExpired) {
  errEl.textContent = 'Invalid or expired code. Request a new one.';
  errEl.style.display = 'block';
  btn.disabled = false; btn.textContent = 'Reset Password';
@@ -4354,12 +4364,12 @@ async function verifyResetCode() {
 
  // Hash new password and save
  const newHash = await hashPassword(newPw);
- const { error: pwErr } = await sb.from('users').update({ phash: newHash, reset_token: null, reset_token_expiry: null }).eq('email', _fpEmail);
+ const { error: pwErr } = await sb.from('users').update({ phash: newHash, reset_token: null, reset_token_expiry: null }).eq('email', lookupEmail);
  if (pwErr) throw pwErr;
 
  // Also update localStorage
  const users = await getU();
- if (users[_fpEmail]) { users[_fpEmail].phash = newHash; await setU(users); }
+ if (users[lookupEmail]) { users[lookupEmail].phash = newHash; await setU(users); }
 
  document.getElementById('fp-ok').style.display = 'block';
  btn.textContent = ' Done!';
@@ -7808,6 +7818,7 @@ function closeModal(){
  const fpE = document.getElementById('fp-email'); if (fpE) fpE.value = '';
  const fpC = document.getElementById('fp-code'); if (fpC) fpC.value = '';
  const fpPw = document.getElementById('fp-newpw'); if (fpPw) fpPw.value = '';
+ const fpCPw = document.getElementById('fp-confirmpw'); if (fpCPw) fpCPw.value = '';
  const fpOk = document.getElementById('fp-ok'); if (fpOk) fpOk.style.display = 'none';
  _fpEmail = '';
 }
