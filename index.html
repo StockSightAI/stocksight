@@ -1293,7 +1293,8 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
  BROKER MODAL
 ═══════════════════════════════ -->
 <div id="brokerModal">
- <div class="broker-card">
+ <div class="broker-card" style="position:relative">
+ <button onclick="dismissBrokerPrompt()" style="position:absolute;top:12px;right:12px;background:var(--card2);border:1px solid var(--border);border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:.85rem;color:var(--text3);display:flex;align-items:center;justify-content:center">&#x2715;</button>
  <div class="broker-title"> Connect Your Broker</div>
  <div class="broker-sub">Choose your preferred investing platform. When you click "Invest Now" on any stock, we'll take you straight there.</div>
  <div class="broker-list">
@@ -1920,7 +1921,7 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
 ═══════════════════════════════ -->
 <div class="modal-overlay off" id="modal" onclick="if(event.target===this)closeModal()">
  <div class="modal-box">
- <button class="modal-close" onclick="closeModal()"></button>
+ <button class="modal-close" onclick="closeModal()">&#x2715;</button>
  <div style="display:flex;align-items:center;gap:8px;margin-bottom:1.25rem">
  <div class="logo-icon" style="width:26px;height:26px"><svg width="13" height="13" viewBox="0 0 18 18" fill="none"><polyline points="1,13 5,8 8,10 12,4 17,6" stroke="#7c6ff7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
  <div class="logo-name" style="font-size:.93rem">Stock<span>Sight</span></div>
@@ -10227,7 +10228,7 @@ function openNotificationCenter() {
  panel.innerHTML = `
  <div style="padding:.875rem 1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--card)">
  <div style="font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800"> Notifications</div>
- <button onclick="document.getElementById('notifPanel')?.remove()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:.85rem"></button>
+ <button onclick="document.getElementById('notifPanel')?.remove()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:.85rem">&#x2715;</button>
  </div>
  ${notifs.length === 0 ? `<div style="padding:2rem;text-align:center;font-size:.78rem;color:var(--text3)">No notifications yet.<br>Price alerts, badges, and milestones will appear here.</div>` :
  notifs.map(n => {
