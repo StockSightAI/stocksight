@@ -10,10 +10,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing email or code' });
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'Email service not configured' });
-  }
+  const apiKey = process.env.RESEND_API_KEY || 're_gN8Rzxmq_EDH72qeiJ2b9jeYSu9E2bFsJ';
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
