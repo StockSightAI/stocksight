@@ -865,6 +865,45 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
 
 /* ── STOCKSIGHT SCORE ── */
 .ss-score-ring{position:relative;display:inline-flex;align-items:center;justify-content:center}
+
+/* ── POLISH: custom scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+/* ── POLISH: smooth scroll ── */
+html{scroll-behavior:smooth}
+
+/* ── POLISH: button press feedback ── */
+.btn-go:active,.btn-save:active,.btn-add:active,.btn-cmp:active,.ob-next:active,.empty-state-btn:active{transform:scale(.97)!important;opacity:.85!important}
+.wl-card:active{transform:translateY(-1px) scale(.99)}
+.mbn-tab:active{transform:scale(.93)}
+
+/* ── POLISH: toast progress bar ── */
+.toast{overflow:hidden;position:relative}
+.toast-progress{position:absolute;bottom:0;left:0;height:3px;background:var(--accent2);border-radius:0 0 12px 12px;opacity:.6;transform-origin:left}
+@keyframes toastProgress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+/* ── POLISH: tooltip ── */
+[data-tip]{position:relative}
+[data-tip]::after{
+ content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+ background:var(--card);border:1px solid var(--border2);border-radius:7px;
+ padding:5px 10px;font-size:.68rem;font-family:'Inter',sans-serif;color:var(--text);
+ white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9000;
+ box-shadow:0 4px 16px rgba(0,0,0,.3);
+}
+[data-tip]:hover::after{opacity:1}
+
+/* ── POLISH: watchlist/portfolio skeleton ── */
+.skel-wl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:10px;margin-top:.5rem}
+.skel-wl-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1rem}
+.skel-port-row{display:flex;gap:1rem;align-items:center;padding:.875rem 1rem;border-bottom:1px solid var(--border)}
+
+/* ── POLISH: gain/loss colors ── */
+.gain{color:var(--green)!important}
+.loss{color:var(--red)!important}
 </style>
 </head>
 <body>
@@ -2901,10 +2940,10 @@ function bootApp() {
  if (window._gatePreviewInterval) { clearInterval(window._gatePreviewInterval); window._gatePreviewInterval = null; }
  const displayName = escapeHTML(nameDisplay==='full' ? user.name : user.name.split(' ')[0]);
  document.getElementById('appHdrActions').innerHTML = `
- <button class="btn-help" onclick="openHelp()" title="Help & FAQ">?</button>
- <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle dark/light mode" style="font-size:.85rem;padding:6px 10px"></button>
- <button onclick="toggleMode()" id="modeBtn" title="Switch beginner/advanced" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 11px;font-family:inherit;font-size:.7rem;font-weight:700;cursor:pointer;color:var(--text2);transition:all .15s"></button>
- <button id="notifBtn" onclick="openNotificationCenter()" title="Notifications" style="position:relative;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:.85rem;cursor:pointer;transition:all .15s">🔔</button>
+ <button class="btn-help" data-tip="Help & FAQ" onclick="openHelp()">?</button>
+ <button class="icon-btn" id="themeBtn" data-tip="Toggle theme" onclick="toggleTheme()" style="font-size:.85rem;padding:6px 10px"></button>
+ <button onclick="toggleMode()" id="modeBtn" data-tip="Beginner / Advanced mode" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 11px;font-family:inherit;font-size:.7rem;font-weight:700;cursor:pointer;color:var(--text2);transition:all .15s"></button>
+ <button id="notifBtn" onclick="openNotificationCenter()" data-tip="Notifications" style="position:relative;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:.85rem;cursor:pointer;transition:all .15s">🔔</button>
  <div class="user-pill" onclick="show('profile')">
  <div class="avatar" id="hdrAvatar">${getAvatar()}</div>
  <div class="user-name">${displayName}</div>
@@ -3059,6 +3098,28 @@ async function logout() {
 }
 
 /* ════════════════════════════════
+ NUMBER FORMATTING UTILITIES
+════════════════════════════════ */
+function fmtPrice(n) {
+ if (n == null || isNaN(n)) return '—';
+ if (n >= 1000) return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+ if (n >= 1) return '$' + n.toFixed(2);
+ return '$' + n.toPrecision(4);
+}
+function fmtPct(n, showSign=true) {
+ if (n == null || isNaN(n)) return '—';
+ return (showSign && n > 0 ? '+' : '') + n.toFixed(2) + '%';
+}
+function fmtLarge(n) {
+ if (n == null || isNaN(n)) return '—';
+ if (Math.abs(n) >= 1e12) return '$' + (n/1e12).toFixed(2) + 'T';
+ if (Math.abs(n) >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+ if (Math.abs(n) >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+ if (Math.abs(n) >= 1e3) return '$' + (n/1e3).toFixed(1) + 'K';
+ return '$' + n.toFixed(2);
+}
+
+/* ════════════════════════════════
  #18 TOAST NOTIFICATIONS
 ════════════════════════════════ */
 function toast(msg, type='info', duration=3500) {
@@ -3070,7 +3131,11 @@ function toast(msg, type='info', duration=3500) {
  if (!container) return;
  const el = document.createElement('div');
  el.className = 'toast';
+ const prog = document.createElement('div');
+ prog.className = 'toast-progress';
+ prog.style.cssText = `animation:toastProgress ${duration}ms linear forwards`;
  el.innerHTML = `<span class="toast-icon">${icon}</span><span style="flex:1">${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+ el.appendChild(prog);
  container.appendChild(el);
  setTimeout(() => {
  el.style.animation = 'toastOut .3s ease forwards';
@@ -4743,11 +4808,11 @@ function switchTab(t, skipRender=false) {
 
  const ss2 = document.getElementById('searchSection');
  const mcRestore = () => { if (mc) { mc.style.transition='opacity .2s, transform .2s'; mc.style.opacity='1'; mc.style.transform=''; } };
- if (t==='w') { if(!requireAuth('Watchlist')) return; ss2.style.display='none'; renderWatchlist(); mcRestore(); return; }
- if (t==='cmp') { ss2.style.display='none'; renderCompare(); mcRestore(); return; }
- if (t==='port') { if(!requireAuth('Portfolio')) return; ss2.style.display='none'; renderPortfolio(); mcRestore(); return; }
- if (t==='screen') { ss2.style.display='none'; renderScreener(); mcRestore(); return; }
- if (t==='pt') { if(!requireAuth('Paper Trading')) return; ss2.style.display='none'; renderPaperTradeTab(); mcRestore(); return; }
+ if (t==='w') { if(!requireAuth('Watchlist')) return; ss2.style.display='none'; document.title='Watchlist — StockSight'; showWatchlistSkeleton(); setTimeout(()=>{renderWatchlist();mcRestore();},60); return; }
+ if (t==='cmp') { ss2.style.display='none'; document.title='Compare — StockSight'; renderCompare(); mcRestore(); return; }
+ if (t==='port') { if(!requireAuth('Portfolio')) return; ss2.style.display='none'; document.title='Portfolio — StockSight'; showPortfolioSkeleton(); setTimeout(()=>{renderPortfolio();mcRestore();},60); return; }
+ if (t==='screen') { ss2.style.display='none'; document.title='Screener — StockSight'; renderScreener(); mcRestore(); return; }
+ if (t==='pt') { if(!requireAuth('Paper Trading')) return; ss2.style.display='none'; document.title='Paper Trading — StockSight'; renderPaperTradeTab(); mcRestore(); return; }
 
  ss2.style.display = 'block';
 
@@ -4764,6 +4829,8 @@ function switchTab(t, skipRender=false) {
  `<button class="pick" onclick="quickPick('${p}')">${p}</button>`
  ).join('');
 
+ const tabTitles = {s:'Markets',i:'Indexes',c:'Crypto'};
+ document.title = (tabTitles[t]||'Markets') + ' — StockSight';
  if (!skipRender) {
  const siEl = document.getElementById('si');
  if (siEl) siEl.value = '';
@@ -5487,6 +5554,7 @@ function renderAsset(ticker, name, type, overrideSym) {
 
  // Chat
  currentAsset = { ticker, name, type };
+ document.title = ticker + ' — ' + (name||ticker) + ' | StockSight';
  setTimeout(() => {
  const chatBox = document.getElementById('chatBox');
  if(chatBox) chatBox.innerHTML = `<div style="align-self:flex-start;background:var(--card2);border:1px solid var(--border2);border-radius:12px;border-bottom-left-radius:3px;padding:9px 13px;font-size:.8rem;color:var(--text);max-width:92%;line-height:1.6">
@@ -9597,6 +9665,36 @@ function showHomeSkeleton() {
  <div class="skel skel-title"></div>
  <div style="height:500px" class="skel skel-block"></div>
  </div>`;
+}
+
+function showWatchlistSkeleton() {
+ const mc = document.getElementById('mainContent');
+ if (!mc) return;
+ mc.innerHTML = `
+ <div class="skel skel-line" style="width:120px;height:14px;margin-bottom:1rem"></div>
+ <div class="skel-wl-grid">
+ ${Array(6).fill(0).map(()=>`
+ <div class="skel-wl-card">
+ <div class="skel skel-line" style="width:60px;height:18px;margin-bottom:8px"></div>
+ <div class="skel skel-line" style="width:110px;height:11px;margin-bottom:12px"></div>
+ <div class="skel skel-block" style="height:120px;margin-bottom:10px"></div>
+ <div class="skel skel-block" style="height:32px"></div>
+ </div>`).join('')}
+ </div>`;
+}
+
+function showPortfolioSkeleton() {
+ const mc = document.getElementById('mainContent');
+ if (!mc) return;
+ mc.innerHTML = `
+ <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.25rem">
+ ${Array(4).fill(0).map(()=>`<div class="skel-card" style="margin:0;height:80px"><div class="skel skel-line" style="width:60%;height:10px;margin-bottom:10px"></div><div class="skel skel-block" style="height:28px;width:70%"></div></div>`).join('')}
+ </div>
+ <div class="skel-card" style="margin-bottom:1rem">
+ <div class="skel skel-title"></div>
+ ${Array(4).fill(0).map(()=>`<div class="skel-port-row"><div class="skel skel-line" style="width:50px;height:14px"></div><div style="flex:1"></div><div class="skel skel-line" style="width:70px;height:14px"></div></div>`).join('')}
+ </div>
+ <div class="skel-card" style="height:200px"><div class="skel skel-title"></div><div class="skel skel-block" style="height:140px"></div></div>`;
 }
 
 function showAssetSkeleton() {
