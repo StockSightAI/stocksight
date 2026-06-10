@@ -10271,7 +10271,7 @@ function updateNotifBadge() {
  const btn = document.getElementById('notifBtn'); if(!btn) return;
  const notifs = getNotifications();
  const unread = notifs.filter(n => !n.read).length;
- btn.innerHTML = `${unread > 0 ? `<span style="position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;font-size:.5rem;font-weight:800;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;line-height:1">${unread > 9 ? '9+' : unread}</span>` : ''}`;
+ btn.innerHTML = `🔔${unread > 0 ? `<span style="position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;font-size:.5rem;font-weight:800;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;line-height:1">${unread > 9 ? '9+' : unread}</span>` : ''}`;
 }
 function openNotificationCenter() {
  const existing = document.getElementById('notifPanel'); if(existing){existing.remove();return;}
