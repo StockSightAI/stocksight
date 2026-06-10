@@ -1972,8 +1972,9 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
  <div class="modal-heading">Create your account</div>
  <div class="modal-sub">Free forever · No API key · Stays logged in</div>
  <div class="success-msg" id="su-ok">Account created! Logging you in...</div>
- <button type="button" style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:var(--r2);padding:11px 14px;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1rem;transition:all .2s" onmouseover="this.style.borderColor='rgba(108,92,231,.5)'" onmouseout="this.style.borderColor='var(--border2)'" onclick="showToast('Google sign-in coming soon!','info','')">
- <span style="font-size:1.1rem">G</span> Continue with Google
+ <button type="button" id="googleSignupBtn" style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:var(--r2);padding:11px 14px;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1rem;transition:all .2s" onmouseover="this.style.borderColor='rgba(108,92,231,.5)'" onmouseout="this.style.borderColor='var(--border2)'" onclick="clickGoogleSignIn()">
+ <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+ Continue with Google
  </button>
  <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:.7rem;color:var(--text3)">or</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
  <div class="field"><label>FIRST NAME</label><input id="su-fn" type="text" placeholder="First name"/><div class="field-err" id="su-fne">Enter your first name.</div></div>
@@ -2022,6 +2023,11 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
  <div class="modal-heading">Welcome back</div>
  <div class="modal-sub">Log in once — you'll stay logged in automatically.</div>
  <div class="success-msg" id="li-ok">Logging you in...</div>
+ <button type="button" style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:var(--r2);padding:11px 14px;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1rem;transition:all .2s" onmouseover="this.style.borderColor='rgba(108,92,231,.5)'" onmouseout="this.style.borderColor='var(--border2)'" onclick="clickGoogleSignIn()">
+ <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+ Continue with Google
+ </button>
+ <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:.7rem;color:var(--text3)">or</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
  <div class="field"><label>EMAIL</label><input id="li-e" type="email" placeholder="you@example.com"/></div>
  <div class="field"><label>PASSWORD</label><input id="li-p" type="password" placeholder="Your password"/></div>
  <div class="field-err" id="li-err" style="margin-bottom:8px">Incorrect email or password.</div>
@@ -7982,6 +7988,75 @@ async function doSignup(){
  },800);
 }
 
+// ── GOOGLE SIGN-IN ──────────────────────────────────────────
+const GOOGLE_CLIENT_ID = '215107020140-9n8h7eaor1fl1rlvtnjf1vg5l6upu4ei.apps.googleusercontent.com';
+
+function initGSI() {
+ if (typeof google === 'undefined' || !google.accounts) return;
+ google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredential, ux_mode: 'popup' });
+ google.accounts.id.renderButton(document.getElementById('gsiContainer'), { type: 'standard', theme: 'filled_black', size: 'large' });
+}
+
+function clickGoogleSignIn() {
+ if (typeof google === 'undefined' || !google.accounts) { showToast('Google sign-in unavailable. Try again shortly.', 'error', ''); return; }
+ // Click the hidden rendered Google button for reliable popup behaviour
+ const btn = document.querySelector('#gsiContainer iframe') || document.querySelector('#gsiContainer div[role="button"]');
+ if (btn) { btn.click(); return; }
+ google.accounts.id.prompt();
+}
+
+async function handleGoogleCredential(response) {
+ try {
+ // Decode JWT payload (no verification needed — issued by Google)
+ const base64 = response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+ const payload = JSON.parse(atob(base64));
+ const { email: rawEmail, name, given_name, sub: googleId } = payload;
+ const email = rawEmail.toLowerCase();
+ const displayName = given_name || name.split(' ')[0];
+
+ // Check Supabase for existing account
+ let { data: existing } = await sb.from('users').select('*').eq('email', email).maybeSingle();
+
+ if (!existing) {
+ // Also check localStorage
+ const localUsers = await getU();
+ if (localUsers?.[email]) {
+ // Sync localStorage user to Supabase
+ await sb.from('users').upsert({ email, name: localUsers[email].name || displayName, google_id: googleId, phash: localUsers[email].phash || '', mode: localUsers[email].mode || 'simple' }, { onConflict: 'email' });
+ } else {
+ // Brand new user — create account
+ await sb.from('users').insert({ email, name: displayName, google_id: googleId, phash: '', mode: 'simple' });
+ }
+ const { data: fresh } = await sb.from('users').select('*').eq('email', email).maybeSingle();
+ existing = fresh;
+ } else if (!existing.google_id) {
+ // Link Google ID to existing account
+ await sb.from('users').update({ google_id: googleId }).eq('email', email);
+ }
+
+ // Sync to localStorage
+ const localUsers = await getU();
+ if (!localUsers[email]) {
+ localUsers[email] = { name: existing?.name || displayName, email, mode: existing?.mode || 'simple', phash: existing?.phash || '', createdAt: existing?.created_at || new Date().toISOString() };
+ await setU(localUsers);
+ }
+
+ const u = { name: existing?.name || displayName, email, mode: existing?.mode || 'simple', createdAt: existing?.created_at || new Date().toISOString() };
+ await setSess(u); user = u;
+ closeModal();
+ showToast('Signed in with Google!', 'success', '');
+ bootApp(); loadUserData();
+ } catch(err) {
+ console.error('Google sign-in error:', err);
+ showToast('Google sign-in failed. Please try again.', 'error', '');
+ }
+}
+
+// Init GSI once the script is loaded
+if (typeof google !== 'undefined') { initGSI(); }
+else { window.addEventListener('load', () => { setTimeout(initGSI, 500); }); }
+// ────────────────────────────────────────────────────────────
+
 async function doLogin(){
  clearFE();
  const email = document.getElementById('li-e').value.trim().toLowerCase();
@@ -10900,6 +10975,9 @@ function restartTutorial() {
 
  </div>
 </div>
+
+<!-- Hidden Google GSI button container -->
+<div id="gsiContainer" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden"></div>
 
 <!-- Terms & Conditions Modal -->
 <div id="termsModal" class="modal-overlay off" onclick="if(event.target===this)closeTerms()">
