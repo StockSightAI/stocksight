@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async></script>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQYMPBNNJY"></script>
 <script>
@@ -1090,6 +1092,10 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
  <a onclick="openAboutCreator()" style="font-size:.72rem;color:var(--text3);cursor:pointer;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text3)'">About the Creator</a>
  <span style="font-size:.72rem;color:var(--border2)">·</span>
  <a onclick="openPrivacyPolicy()" style="font-size:.72rem;color:var(--text3);cursor:pointer;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text3)'">Privacy Policy</a>
+ <span style="font-size:.72rem;color:var(--border2)">·</span>
+ <a onclick="openTerms()" style="font-size:.72rem;color:var(--text3);cursor:pointer;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text3)'">Terms & Conditions</a>
+ <span style="font-size:.72rem;color:var(--border2)">·</span>
+ <a onclick="openFeedback()" style="font-size:.72rem;color:var(--text3);cursor:pointer;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text3)'">Share Feedback</a>
  <span style="font-size:.72rem;color:var(--border2)">·</span>
  <a href="https://mail.google.com/mail/?view=cm&to=stocksightai@gmail.com&su=StockSight%20Inquiry" target="_blank" rel="noopener noreferrer" style="font-size:.72rem;color:var(--text3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text3)'">Contact</a>
  <span style="font-size:.72rem;color:var(--border2)">·</span>
@@ -7872,6 +7878,44 @@ function openPrivacyPolicy(){ const m=document.getElementById('privacyModal'); i
 function closePrivacyPolicy(){ const m=document.getElementById('privacyModal'); if(m){m.classList.add('off');document.body.style.overflow='';} }
 function openAboutCreator(){ const m=document.getElementById('aboutCreatorModal'); if(m){m.classList.remove('off');document.body.style.overflow='hidden';} }
 function closeAboutCreator(){ const m=document.getElementById('aboutCreatorModal'); if(m){m.classList.add('off');document.body.style.overflow='';} }
+function openTerms(){ const m=document.getElementById('termsModal'); if(m){m.classList.remove('off');document.body.style.overflow='hidden';} }
+function closeTerms(){ const m=document.getElementById('termsModal'); if(m){m.classList.add('off');document.body.style.overflow='';} }
+let _fbType='general';
+function openFeedback(){
+ const m=document.getElementById('feedbackModal'); if(!m) return;
+ m.classList.remove('off'); document.body.style.overflow='hidden';
+ document.getElementById('feedbackSuccess').style.display='none';
+ document.getElementById('feedbackForm').style.display='block';
+ document.getElementById('feedbackText').value='';
+ document.getElementById('feedbackEmail').value='';
+ document.getElementById('feedbackErr').style.display='none';
+ _fbType='general'; setFeedbackType('general');
+}
+function closeFeedback(){ const m=document.getElementById('feedbackModal'); if(m){m.classList.add('off');document.body.style.overflow='';} }
+function setFeedbackType(t){
+ _fbType=t;
+ ['bug','feature','general'].forEach(type=>{
+ const btn=document.getElementById('fbType'+type.charAt(0).toUpperCase()+type.slice(1));
+ if(!btn) return;
+ const active=type===t;
+ btn.style.background=active?'rgba(108,92,231,.15)':'var(--card2)';
+ btn.style.borderColor=active?'var(--accent)':'var(--border2)';
+ btn.style.color=active?'var(--accent2)':'var(--text2)';
+ });
+}
+async function submitFeedback(){
+ const text=document.getElementById('feedbackText').value.trim();
+ const email=document.getElementById('feedbackEmail').value.trim();
+ const errEl=document.getElementById('feedbackErr');
+ if(!text){ errEl.style.display='block'; return; }
+ errEl.style.display='none';
+ const subject=encodeURIComponent(`StockSight Feedback [${_fbType}]`);
+ const body=encodeURIComponent(`Type: ${_fbType}\n\n${text}${email?'\n\nReply to: '+email:''}`);
+ window.open(`https://mail.google.com/mail/?view=cm&to=stocksightai@gmail.com&su=${subject}&body=${body}`,'_blank');
+ document.getElementById('feedbackForm').style.display='none';
+ document.getElementById('feedbackSuccess').style.display='block';
+ setTimeout(()=>closeFeedback(), 2500);
+}
 function closeModal(){
  const m = document.getElementById('modal');
  if (m) m.classList.add('off');
@@ -10854,6 +10898,82 @@ function restartTutorial() {
  <div class="help-section-title">FREQUENTLY ASKED QUESTIONS</div>
  <div id="helpFaqList"></div>
 
+ </div>
+</div>
+
+<!-- Terms & Conditions Modal -->
+<div id="termsModal" class="modal-overlay off" onclick="if(event.target===this)closeTerms()">
+ <div class="modal-box" style="max-width:560px">
+ <button class="modal-close" onclick="closeTerms()">&#x2715;</button>
+ <div class="modal-heading">Terms & Conditions</div>
+ <div class="modal-sub">Last updated: June 2026</div>
+ <div style="font-size:.78rem;color:var(--text2);line-height:1.8;display:flex;flex-direction:column;gap:1rem">
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">1. Acceptance of Terms</div>
+ <p style="margin:0">By accessing or using StockSight, you agree to be bound by these Terms & Conditions. If you do not agree, please do not use the platform.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">2. Use of the Platform</div>
+ <p style="margin:0">StockSight is provided for personal, non-commercial use only. You may not reproduce, distribute, or commercially exploit any part of the platform without written permission. You agree not to misuse the platform, attempt to gain unauthorized access, or interfere with its operation.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">3. Not Financial Advice</div>
+ <p style="margin:0">All content on StockSight — including stock data, AI analysis, price predictions, and community sentiment — is for <strong style="color:var(--text)">informational purposes only</strong> and does not constitute financial, investment, or legal advice. StockSight is not a registered investment advisor. Always consult a qualified financial professional before making investment decisions.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">4. Accuracy of Data</div>
+ <p style="margin:0">We strive to provide accurate and up-to-date market data, but we make no guarantees about the accuracy, completeness, or timeliness of any information on the platform. You use the data at your own risk.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">5. User Accounts</div>
+ <p style="margin:0">You are responsible for maintaining the confidentiality of your account credentials. You agree to notify us immediately of any unauthorized use of your account. We reserve the right to terminate accounts that violate these terms.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">6. Paper Trading</div>
+ <p style="margin:0">The paper trading feature uses simulated funds and does not involve real money. Past performance in paper trading does not guarantee results in real markets.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">7. Limitation of Liability</div>
+ <p style="margin:0">StockSight and its creator shall not be liable for any financial losses, damages, or decisions made based on information provided by the platform.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">8. Changes to Terms</div>
+ <p style="margin:0">We may update these terms at any time. Continued use of the platform after changes constitutes acceptance of the updated terms.</p>
+ </div>
+ <div>
+ <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">9. Contact</div>
+ <p style="margin:0">Questions? Reach us at <a href="https://mail.google.com/mail/?view=cm&to=stocksightai@gmail.com&su=StockSight%20Terms" target="_blank" rel="noopener noreferrer" style="color:var(--accent2);text-decoration:none">stocksightai@gmail.com</a>.</p>
+ </div>
+ </div>
+ </div>
+</div>
+
+<!-- Feedback Modal -->
+<div id="feedbackModal" class="modal-overlay off" onclick="if(event.target===this)closeFeedback()">
+ <div class="modal-box" style="max-width:460px">
+ <button class="modal-close" onclick="closeFeedback()">&#x2715;</button>
+ <div class="modal-heading">Share Feedback</div>
+ <div class="modal-sub">We read every message. Help us make StockSight better.</div>
+ <div id="feedbackSuccess" style="display:none;background:rgba(0,201,122,.08);border:1px solid rgba(0,201,122,.25);border-radius:10px;padding:.875rem;font-size:.8rem;color:var(--green);margin-bottom:1rem;text-align:center">
+  Thanks for your feedback! We really appreciate it.
+ </div>
+ <div id="feedbackForm">
+ <div style="display:flex;gap:8px;margin-bottom:1rem">
+ <button id="fbTypeBug" onclick="setFeedbackType('bug')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--text2);font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s">🐛 Bug Report</button>
+ <button id="fbTypeFeature" onclick="setFeedbackType('feature')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--text2);font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s"> Feature Request</button>
+ <button id="fbTypeGeneral" onclick="setFeedbackType('general')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--text2);font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s"> General</button>
+ </div>
+ <div class="field">
+ <label>YOUR FEEDBACK</label>
+ <textarea id="feedbackText" placeholder="Tell us what's on your mind..." style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:var(--r2);padding:11px 14px;color:var(--text);font-family:inherit;font-size:.85rem;outline:none;transition:all .2s;resize:vertical;min-height:110px;line-height:1.6" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"></textarea>
+ </div>
+ <div class="field">
+ <label>YOUR EMAIL <span style="color:var(--text3);font-weight:400;letter-spacing:0">(optional)</span></label>
+ <input id="feedbackEmail" type="email" placeholder="so we can follow up" style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:var(--r2);padding:11px 14px;color:var(--text);font-family:inherit;font-size:.85rem;outline:none;transition:all .2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
+ </div>
+ <div id="feedbackErr" style="font-size:.72rem;color:var(--red);margin-bottom:8px;display:none">Please write something before submitting.</div>
+ <button onclick="submitFeedback()" style="width:100%;background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s">Send Feedback</button>
+ </div>
  </div>
 </div>
 
