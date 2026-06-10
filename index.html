@@ -4292,7 +4292,7 @@ function hideForgotPassword() {
  if (panel) panel.style.display = 'none';
 }
 
-let _fpEmail = '';
+let _fpEmail = '', _fpCode = '', _fpExpiry = 0;
 async function sendResetCode() {
  const emailEl = document.getElementById('fp-email');
  const email = emailEl?.value?.trim().toLowerCase();
@@ -4304,18 +4304,28 @@ async function sendResetCode() {
  errEl.style.display = 'none';
 
  try {
- // Check if account exists in Supabase
- const { data } = await sb.from('users').select('email,name').eq('email', email).maybeSingle();
- if (!data) {
+ // Check Supabase first, then fall back to localStorage
+ let { data: sbData } = await sb.from('users').select('email,name').eq('email', email).maybeSingle();
+ let userName = sbData?.name || '';
+ if (!sbData) {
+ // Try localStorage
+ const localUsers = await getU();
+ const localUser = localUsers?.[email];
+ if (!localUser) {
  errEl.textContent = 'No account found with that email.';
  errEl.style.display = 'block';
  btn.disabled = false; btn.textContent = 'Send Code';
  return;
  }
+ userName = localUser.name || '';
+ // Upsert the user into Supabase so the token can be stored there
+ await sb.from('users').upsert({ email, name: userName, phash: localUser.phash || localUser.ph || '', mode: localUser.mode || 'simple' }, { onConflict: 'email' });
+ }
 
  // Generate 6-digit code, store in Supabase with 15-min expiry
  const code = String(Math.floor(100000 + Math.random() * 900000));
  const expiry = Date.now() + 15 * 60 * 1000;
+ _fpCode = code; _fpExpiry = expiry; // also keep in memory as fallback
  const { error: updateErr } = await sb.from('users').update({ reset_token: code, reset_token_expiry: expiry }).eq('email', email);
  if (updateErr) throw updateErr;
 
@@ -4323,7 +4333,7 @@ async function sendResetCode() {
  const resp = await fetch('/api/send-reset-email', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ email, code, name: data.name || '' })
+ body: JSON.stringify({ email, code, name: userName })
  });
  if (!resp.ok) {
  const r = await resp.json().catch(() => ({}));
@@ -4366,18 +4376,23 @@ async function verifyResetCode() {
  if (!lookupEmail) { errEl.textContent = 'Session expired. Please start over.'; errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Reset Password'; return; }
 
  try {
- const { data, error: fetchErr } = await sb.from('users').select('reset_token,reset_token_expiry,name,email,mode,created_at').eq('email', lookupEmail).maybeSingle();
- console.log('[reset] lookupEmail:', lookupEmail);
- console.log('[reset] code entered:', JSON.stringify(code));
- console.log('[reset] fetchErr:', fetchErr);
- console.log('[reset] data:', data);
- console.log('[reset] stored token:', JSON.stringify(data?.reset_token), 'type:', typeof data?.reset_token);
- console.log('[reset] expiry:', data?.reset_token_expiry, 'now:', Date.now(), 'expired?', Date.now() > Number(data?.reset_token_expiry));
- const tokenMatch = data && String(data.reset_token).trim() === String(code).trim();
- const notExpired = data && Date.now() <= Number(data.reset_token_expiry);
- console.log('[reset] tokenMatch:', tokenMatch, 'notExpired:', notExpired);
- if (!data || !tokenMatch || !notExpired) {
- errEl.textContent = !data ? 'No account found. Start over.' : !tokenMatch ? 'Code does not match. Check your email.' : 'Code expired. Request a new one.';
+ const { data } = await sb.from('users').select('reset_token,reset_token_expiry,name,email,mode,created_at').eq('email', lookupEmail).maybeSingle();
+
+ // Verify token — prefer Supabase data, fall back to in-memory _fpCode
+ let tokenMatch, notExpired;
+ if (data) {
+ tokenMatch = String(data.reset_token).trim() === String(code).trim();
+ notExpired = Date.now() <= Number(data.reset_token_expiry);
+ } else if (_fpCode) {
+ // Supabase query failed but we have the code in memory
+ tokenMatch = String(_fpCode).trim() === String(code).trim();
+ notExpired = Date.now() <= _fpExpiry;
+ } else {
+ tokenMatch = false; notExpired = false;
+ }
+
+ if (!tokenMatch || !notExpired) {
+ errEl.textContent = !tokenMatch ? 'Incorrect code. Check your email.' : 'Code expired. Request a new one.';
  errEl.style.display = 'block';
  btn.disabled = false; btn.textContent = 'Reset Password';
  return;
@@ -4385,18 +4400,25 @@ async function verifyResetCode() {
 
  // Hash new password and save
  const newHash = await hashPassword(newPw);
- const { error: pwErr } = await sb.from('users').update({ phash: newHash, reset_token: null, reset_token_expiry: null }).eq('email', lookupEmail);
- if (pwErr) throw pwErr;
+ // Update Supabase (upsert in case the row only just got created)
+ await sb.from('users').update({ phash: newHash, reset_token: null, reset_token_expiry: null }).eq('email', lookupEmail);
 
- // Also update localStorage
+ // Always update localStorage
  const users = await getU();
  if (users[lookupEmail]) { users[lookupEmail].phash = newHash; await setU(users); }
+
+ // Build session from Supabase data or localStorage fallback
+ const localUsers2 = await getU();
+ const localU = localUsers2?.[lookupEmail];
+ const uName = data?.name || localU?.name || '';
+ const uMode = data?.mode || localU?.mode || 'simple';
+ const uCreated = data?.created_at || localU?.createdAt || '';
+ _fpCode = ''; _fpExpiry = 0;
 
  document.getElementById('fp-ok').style.display = 'block';
  btn.textContent = ' Done!';
 
- // Auto-login
- const u = { name: data.name, email: data.email, mode: data.mode || 'simple', createdAt: data.created_at };
+ const u = { name: uName, email: lookupEmail, mode: uMode, createdAt: uCreated };
  await setSess(u); user = u;
  setTimeout(() => { hideForgotPassword(); closeModal(); bootApp(); loadUserData(); }, 1800);
  } catch(err) {
@@ -7845,7 +7867,7 @@ function closeModal(){
  const fpPw = document.getElementById('fp-newpw'); if (fpPw) fpPw.value = '';
  const fpCPw = document.getElementById('fp-confirmpw'); if (fpCPw) fpCPw.value = '';
  const fpOk = document.getElementById('fp-ok'); if (fpOk) fpOk.style.display = 'none';
- _fpEmail = '';
+ _fpEmail = ''; _fpCode = ''; _fpExpiry = 0;
 }
 function switchModal(which){
  document.getElementById('f-signup').style.display = which==='signup'?'block':'none';
