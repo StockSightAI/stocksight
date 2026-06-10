@@ -334,54 +334,35 @@ tr:hover td{background:var(--card2)}
 @media(max-width:700px){.tab{font-size:.68rem;padding:7px 3px}.tab-icon{display:none}.two-col,.cmp-row,.add-row{grid-template-columns:1fr}.screen{padding:1.25rem 1rem}}
 @media(max-width:480px){
  /* ── Header ── */
- .logo-name{font-size:.92rem}
- .logo-icon{width:28px;height:28px}
  .hdr-actions{gap:4px}
- .hdr-actions button{padding:5px 8px!important;font-size:.78rem!important}
+ .hdr-actions button{padding:5px 8px!important;font-size:.8rem!important}
  /* Hide mode toggle on mobile — accessible via profile */
  #modeBtn{display:none!important}
- /* Shrink user pill on mobile */
+ /* Hide username text in pill, keep avatar */
  .user-name{display:none}
- .user-pill{padding:4px 8px;gap:5px}
+ .user-pill{padding:4px 8px;gap:4px}
 
  /* ── Welcome bar ── */
  .wb-date,.wb-time{display:none}
  #streakBadge span:last-child{display:none}
- .welcome-bar{padding:10px 12px;margin-bottom:.6rem;border-radius:12px}
- .wb-left{font-size:.82rem}
+ .welcome-bar{padding:10px 14px;margin-bottom:.75rem}
 
  /* ── Search ── */
  .search-row{gap:6px}
- #searchIn{font-size:16px!important;padding:10px 12px}
- .btn-go{padding:10px 14px;font-size:.8rem}
 
  /* ── Quick picks ── */
  .picks{gap:5px;margin-bottom:1rem}
- .pick-btn{font-size:.68rem;padding:5px 10px}
-
- /* ── Cards ── */
- .card{border-radius:12px}
- .card-hdr{padding:10px 12px}
- .card-hdr-title{font-size:.78rem}
-
- /* ── Market status bar ── */
- #marketStatusBar{gap:5px;font-size:.65rem}
- .ms-pill{padding:3px 8px;font-size:.65rem}
 
  /* ── Grids ── */
  .home-grid,.home-grid-3{grid-template-columns:1fr!important}
  .two-col,.cmp-row,.add-row{grid-template-columns:1fr}
 
  /* ── Screen padding ── */
- .screen{padding:1rem .875rem}
  #S-app.screen{padding-bottom:5.5rem}
 
- /* ── Stat / number values ── */
- .stat-val,.kpi-val{font-size:1.1rem}
-
- /* ── Modal on mobile ── */
+ /* ── Modal on mobile: slide up from bottom ── */
  .modal-overlay{padding:.5rem;align-items:flex-end}
- .modal-box{border-radius:20px 20px 16px 16px;max-height:88vh;padding:1.5rem 1.25rem}
+ .modal-box{border-radius:20px 20px 14px 14px;max-height:90vh;padding:1.5rem 1.25rem}
 
  /* ── Poll ── */
  .poll-btn{padding:.75rem 1rem}
@@ -587,12 +568,11 @@ header{margin-bottom:2rem}
  .card-hdr{padding:12px 16px}
 }
 @media(max-width:700px){
- .screen{padding:1.1rem .9rem}
- .card-hdr{padding:10px 13px}
- .welcome-bar{padding:11px 13px}
- .asset-top{padding:1.1rem}
+ .screen{padding:1.25rem 1rem}
+ .card-hdr{padding:11px 14px}
+ .welcome-bar{padding:12px 14px}
+ .asset-top{padding:1.25rem}
  .home-grid,.home-grid-3{grid-template-columns:1fr!important}
- .picks{gap:5px}
 }
 
 /* ── TICKER TAPE ── */
