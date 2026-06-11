@@ -3820,21 +3820,25 @@ function renderHomeSections(t) {
 }
 
 /* Feature 6: Weekly digest subscription */
-function subscribeDigest() {
+async function subscribeDigest() {
  const inp = document.getElementById('digestEmail');
  const ok = document.getElementById('digestOk');
  if(!inp) return;
  const email = inp.value.trim();
  if(!validEmail(email)) { toast('Enter a valid email address first.','error'); return; }
+ // Save to Supabase — upsert so existing users just get digest=true added
  try {
- const subs = safeParse('ss_digest_subs', []);
- if(!subs.includes(email)) { subs.push(email); localStorage.setItem('ss_digest_subs', JSON.stringify(subs)); }
- } catch {}
+ await sb.from('users').upsert(
+  { email, digest: true },
+  { onConflict: 'email', ignoreDuplicates: false }
+ );
+ } catch(e) { console.warn('Digest upsert:', e); }
+ try { localStorage.setItem('ss_digest_'+email, '1'); } catch {}
  if(ok) ok.style.display='block';
- toast(' Subscribed to weekly digest!', 'success', 4000);
+ toast('Subscribed to weekly digest!', 'success', 4000);
 }
 
-function subscribeNotif() {
+async function subscribeNotif() {
  const inp = document.getElementById('notif-email');
  const ok = document.getElementById('notif-ok');
  const err = document.getElementById('notif-err');
@@ -3843,12 +3847,16 @@ function subscribeNotif() {
  if(err) err.style.display='none';
  const email = inp.value.trim() || user?.email || '';
  if(!validEmail(email)) { if(err) err.style.display='block'; return; }
+ // Save to Supabase
  try {
- const subs = safeParse('ss_digest_subs', []);
- if(!subs.includes(email)) { subs.push(email); localStorage.setItem('ss_digest_subs', JSON.stringify(subs)); }
- } catch {}
+ await sb.from('users').upsert(
+  { email, name: user?.name || '', digest: true },
+  { onConflict: 'email', ignoreDuplicates: false }
+ );
+ } catch(e) { console.warn('Digest upsert:', e); }
+ try { localStorage.setItem('ss_digest_'+email, '1'); } catch {}
  if(ok) ok.style.display='block';
- toast(' Subscribed to weekly AI market briefing!', 'success', 4000);
+ toast('Subscribed to weekly AI market briefing!', 'success', 4000);
 }
 
 /* ════════════════════════════════
