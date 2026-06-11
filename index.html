@@ -47,7 +47,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236c5ce7'/><polyline points='12,72 32,45 50,55 70,25 88,35' stroke='white' stroke-width='9' stroke-linecap='round' stroke-linejoin='round' fill='none'/><circle cx='82' cy='62' r='7' fill='%2300c97a'/><line x1='82' y1='55' x2='82' y2='69' stroke='%2300c97a' stroke-width='3' stroke-linecap='round'/><line x1='75' y1='62' x2='89' y2='62' stroke='%2300c97a' stroke-width='3' stroke-linecap='round'/></svg>">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236c5ce7'/><polyline points='12,72 32,45 50,55 70,25 88,35' stroke='white' stroke-width='9' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
@@ -100,7 +100,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;gap:12px;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none}
 .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,rgba(108,92,231,.3),rgba(108,92,231,.1));border:1px solid rgba(108,92,231,.5);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px var(--glow),inset 0 1px 0 rgba(255,255,255,0.1)}
-.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.12rem;letter-spacing:-.03em}
+.logo-name{font-family:'Manrope',sans-serif;font-weight:800;font-size:1.12rem;letter-spacing:-.03em}
 .logo-name span{color:var(--accent2)}
 .hdr-actions{display:flex;align-items:center;gap:8px}
 .btn{border:none;border-radius:var(--r2);cursor:pointer;font-family:inherit;font-size:.8rem;transition:all .15s}
@@ -121,7 +121,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 @keyframes meshFloat{0%{transform:scale(1) translate(0px,0px)}33%{transform:scale(1.04) translate(-12px,8px)}66%{transform:scale(.97) translate(10px,-6px)}100%{transform:scale(1.02) translate(-6px,12px)}}
 @keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.8}}
 .gate-tag{display:inline-flex;align-items:center;gap:6px;font-size:.64rem;color:var(--accent2);letter-spacing:.16em;margin-bottom:.9rem;font-weight:600;background:var(--glow2);border:1px solid rgba(108,92,231,.25);padding:4px 14px;border-radius:20px}
-.gate-title{font-family:'Syne',sans-serif;font-size:2.6rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.8rem;line-height:1.08}
+.gate-title{font-family:'Manrope',sans-serif;font-size:2.6rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.8rem;line-height:1.08}
 .gate-title span{color:var(--accent2)}
 .gate-sub{font-size:.9rem;color:var(--text2);line-height:1.75;max-width:440px;margin-bottom:2rem}
 .gate-features{display:flex;flex-direction:column;gap:9px;margin-bottom:2rem;text-align:left}
@@ -144,7 +144,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 .modal-close{position:absolute;top:16px;right:16px;background:var(--card2);border:1px solid var(--border);color:var(--text3);font-size:.9rem;cursor:pointer;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .modal-close:hover{color:var(--text);border-color:var(--border2)}
-.modal-heading{font-family:'Syne',sans-serif;font-size:1.22rem;font-weight:800;margin-bottom:4px;letter-spacing:-.02em}
+.modal-heading{font-family:'Manrope',sans-serif;font-size:1.22rem;font-weight:800;margin-bottom:4px;letter-spacing:-.02em}
 .modal-sub{font-size:.77rem;color:var(--text2);margin-bottom:1.4rem;line-height:1.6}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:.62rem;color:var(--text3);letter-spacing:.1em;margin-bottom:6px;font-weight:600}
@@ -172,7 +172,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .wb-left strong{color:var(--accent2);font-weight:600}
 .wb-right{text-align:right}
 .wb-date{font-size:.69rem;color:var(--text3)}
-.wb-time{font-family:'Syne',sans-serif;font-size:.98rem;font-weight:700;color:var(--accent2);letter-spacing:.04em}
+.wb-time{font-family:'Manrope',sans-serif;font-size:.98rem;font-weight:700;color:var(--accent2);letter-spacing:.04em}
 
 /* TABS */
 .tabs{display:flex;gap:3px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:4px;margin-bottom:1.1rem;box-shadow:0 2px 12px var(--shadow2)}
@@ -205,7 +205,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 #sdrop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);border:1px solid var(--border2);border-radius:var(--r);z-index:50;overflow:hidden;box-shadow:0 16px 48px var(--shadow),0 0 0 1px rgba(255,255,255,0.04);display:none}
 .sd-opt{display:flex;align-items:center;gap:11px;padding:11px 15px;cursor:pointer;transition:background .1s;font-size:.82rem}
 .sd-opt:hover{background:var(--card2)}
-.sd-tick{font-weight:700;font-size:.84rem;min-width:52px;font-family:'Syne',sans-serif}
+.sd-tick{font-weight:700;font-size:.84rem;min-width:52px;font-family:'Manrope',sans-serif}
 .sd-name{color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sd-tag{font-size:.58rem;color:var(--text3);border:1px solid var(--border2);border-radius:5px;padding:2px 7px;font-weight:500}
 .btn-go{border:none;border-radius:var(--r);padding:12px 24px;font-family:inherit;font-weight:700;font-size:.85rem;color:#fff;cursor:pointer;white-space:nowrap;transition:all .2s;letter-spacing:-.01em}
@@ -216,7 +216,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 
 /* PICKS */
 .picks{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.4rem}
-.pick{font-size:.7rem;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;transition:all .15s;letter-spacing:-.01em}
+.pick{font-size:.7rem;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:'Manrope',sans-serif;font-weight:700;transition:all .15s;letter-spacing:-.01em}
 .pick:hover{border-color:var(--border2);color:var(--text2);background:var(--card)}
 .pick.ps{border-color:rgba(108,92,231,.45);color:var(--accent2);background:rgba(108,92,231,.08)}
 .pick.pi{border-color:rgba(0,180,216,.45);color:var(--teal);background:rgba(0,180,216,.08)}
@@ -225,7 +225,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 /* CARDS */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1rem;transition:border-color .2s}
 .card-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;background:linear-gradient(135deg,var(--card),var(--card2))}
-.card-hdr-title{font-family:'Syne',sans-serif;font-size:.84rem;font-weight:700;letter-spacing:-.01em}
+.card-hdr-title{font-family:'Manrope',sans-serif;font-size:.84rem;font-weight:700;letter-spacing:-.01em}
 .card-hdr-sub{font-size:.62rem;color:var(--text3)}
 
 /* ASSET HEADER */
@@ -234,7 +234,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .asset-top.s{border-left:3px solid var(--accent)}
 .asset-top.i{border-left:3px solid var(--teal)}
 .asset-top.c{border-left:3px solid var(--gold)}
-.a-ticker{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.a-ticker{font-family:'Manrope',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.03em;line-height:1}
 .a-name{font-size:.75rem;color:var(--text2);margin-top:4px}
 .a-badges{display:flex;gap:6px;margin-top:10px;align-items:center;flex-wrap:wrap}
 .badge{font-size:.59rem;padding:3px 9px;border-radius:20px;font-weight:600;letter-spacing:.04em}
@@ -257,7 +257,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .wl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:10px}
 .wl-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1rem;cursor:pointer;transition:all .22s;position:relative}
 .wl-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 8px 24px var(--shadow2)}
-.wl-tick{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:-.02em}
+.wl-tick{font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:-.02em}
 .wl-n{font-size:.67rem;color:var(--text2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wl-rm{position:absolute;top:9px;right:9px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:.85rem;line-height:1;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .wl-rm:hover{color:var(--red);background:var(--red2)}
@@ -273,7 +273,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .btn-cmp:hover{opacity:.9;transform:translateY(-1px)}
 
 .port-table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1rem}
-.port-table-hdr{padding:11px 15px;border-bottom:1px solid var(--border);font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--card),var(--card2))}
+.port-table-hdr{padding:11px 15px;border-bottom:1px solid var(--border);font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--card),var(--card2))}
 table{width:100%;border-collapse:collapse}
 th{font-size:.61rem;color:var(--text3);letter-spacing:.1em;padding:0 12px 10px;border-bottom:1px solid var(--border);text-align:left;font-weight:600}
 th:not(:first-child){text-align:right}
@@ -281,7 +281,7 @@ td{padding:10px 12px;font-size:.79rem;border-bottom:1px solid var(--border)}
 td:not(:first-child){text-align:right}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--card2)}
-.td-tick{font-family:'Syne',sans-serif;font-weight:700;color:var(--teal);cursor:pointer}
+.td-tick{font-family:'Manrope',sans-serif;font-weight:700;color:var(--teal);cursor:pointer}
 .td-tick:hover{text-decoration:underline}
 .btn-rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.82rem;width:22px;height:22px;border-radius:5px;transition:all .15s}
 .btn-rm:hover{color:var(--red);background:var(--red2)}
@@ -290,7 +290,7 @@ tr:hover td{background:var(--card2)}
 .prof-sidebar{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;position:sticky;top:1rem}
 .prof-user{padding:1.4rem;border-bottom:1px solid var(--border);text-align:center;position:relative}
 .prof-av{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,rgba(108,92,231,.3),rgba(108,92,231,.1));border:2px solid rgba(108,92,231,.5);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:var(--accent2);margin:0 auto 10px}
-.prof-uname{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:700}
+.prof-uname{font-family:'Manrope',sans-serif;font-size:.92rem;font-weight:700}
 .prof-uemail{font-size:.69rem;color:var(--text2);margin-top:3px}
 .prof-nav{padding:.5rem}
 .pni{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:.79rem;color:var(--text2);border:1px solid transparent;transition:all .15s;font-weight:500}
@@ -301,7 +301,7 @@ tr:hover td{background:var(--card2)}
 .btn-so:hover{color:var(--red);border-color:var(--red);background:var(--red2)}
 .psec{display:none}
 .psec.on{display:block}
-.psec-title{font-family:'Syne',sans-serif;font-size:1.08rem;font-weight:700;margin-bottom:1.1rem;padding-bottom:.875rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;letter-spacing:-.02em}
+.psec-title{font-family:'Manrope',sans-serif;font-size:1.08rem;font-weight:700;margin-bottom:1.1rem;padding-bottom:.875rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;letter-spacing:-.02em}
 .sg{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
 .sg-lbl{font-size:.61rem;color:var(--text3);letter-spacing:.12em;padding:9px 14px 6px;background:var(--card2);border-bottom:1px solid var(--border);font-weight:600}
 .sg-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);gap:12px}
@@ -324,7 +324,7 @@ tr:hover td{background:var(--card2)}
 .h-err{font-size:.71rem;color:var(--red);margin-top:3px;min-height:14px}
 .h-list{display:flex;flex-direction:column;gap:5px;margin-top:7px;max-height:250px;overflow-y:auto}
 .h-row{display:flex;align-items:center;gap:9px;background:var(--card2);border:1px solid var(--border);border-radius:var(--r2);padding:9px 12px}
-.h-tick{font-family:'Syne',sans-serif;font-size:.84rem;font-weight:800;color:var(--teal);min-width:52px}
+.h-tick{font-family:'Manrope',sans-serif;font-size:.84rem;font-weight:800;color:var(--teal);min-width:52px}
 .h-det{flex:1;font-size:.71rem;color:var(--text2)}
 .h-rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.88rem;line-height:1;transition:color .15s}
 .h-rm:hover{color:var(--red)}
@@ -439,7 +439,7 @@ body.compact .asset-top{padding:1rem;margin-bottom:.7rem}
 
 /* ── SEARCH HISTORY (#19) ── */
 .search-hist{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.5rem;min-height:0}
-.sh-chip{font-size:.66rem;padding:3px 10px;border-radius:12px;border:1px solid var(--border);background:var(--card2);color:var(--text2);cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;transition:all .15s}
+.sh-chip{font-size:.66rem;padding:3px 10px;border-radius:12px;border:1px solid var(--border);background:var(--card2);color:var(--text2);cursor:pointer;font-family:'Manrope',sans-serif;font-weight:600;transition:all .15s}
 .sh-chip:hover{border-color:var(--accent);color:var(--accent2);background:rgba(108,92,231,.08)}
 
 /* ── NOTES (#2) ── */
@@ -460,14 +460,14 @@ body.compact .asset-top{padding:1rem;margin-bottom:.7rem}
 
 /* ── FEAR & GREED GAUGE (#9) ── */
 .gauge-wrap{display:flex;flex-direction:column;align-items:center;padding:.5rem 0}
-.gauge-label{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;margin-top:.5rem}
+.gauge-label{font-family:'Manrope',sans-serif;font-size:1.6rem;font-weight:800;margin-top:.5rem}
 .gauge-sublabel{font-size:.7rem;color:var(--text3);margin-top:2px}
 
 /* ── SECTOR HEATMAP (#10) ── */
 .heatmap-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:.75rem .75rem 1rem}
 .hm-cell{border-radius:8px;padding:.5rem .4rem;text-align:center;cursor:default;transition:transform .15s}
 .hm-name{font-size:.62rem;color:var(--text2);margin-bottom:3px;font-weight:500;line-height:1.2}
-.hm-pct{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:800}
+.hm-pct{font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:800}
 .hm-cell:hover{transform:scale(1.04)}
 .hm-name{font-size:.65rem;font-weight:700;margin-bottom:2px}
 .hm-pct{font-size:.82rem;font-weight:800}
@@ -590,8 +590,8 @@ header{margin-bottom:2rem}
 
 /* ── PROFILE CREATOR TAB (shared classes) ── */
 .about-hero{background:linear-gradient(135deg,var(--card),var(--card2));border:1px solid var(--border2);border-radius:var(--r);padding:2rem;margin-bottom:1rem;position:relative;overflow:hidden;display:flex;align-items:center;gap:1.75rem;flex-wrap:wrap}
-.about-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,rgba(108,92,231,.4),rgba(108,92,231,.15));border:2px solid rgba(108,92,231,.5);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--accent2);flex-shrink:0;box-shadow:0 0 28px var(--glow)}
-.about-name{font-family:'Syne',sans-serif;font-size:1.65rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.about-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,rgba(108,92,231,.4),rgba(108,92,231,.15));border:2px solid rgba(108,92,231,.5);display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;font-size:2rem;font-weight:800;color:var(--accent2);flex-shrink:0;box-shadow:0 0 28px var(--glow)}
+.about-name{font-family:'Manrope',sans-serif;font-size:1.65rem;font-weight:800;letter-spacing:-.03em;line-height:1}
 .about-tagline{font-size:.82rem;color:var(--text2);margin-top:6px;line-height:1.6;max-width:480px}
 .about-location{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--text3);margin-top:8px}
 .about-info-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start}
@@ -614,11 +614,11 @@ header{margin-bottom:2rem}
 #helpPanel{position:fixed;top:0;right:-420px;width:400px;max-width:100vw;height:100%;background:var(--bg);border-left:1px solid var(--border2);z-index:1101;display:flex;flex-direction:column;transition:right .28s cubic-bezier(.4,0,.2,1);overflow:hidden;backdrop-filter:none;-webkit-backdrop-filter:none}
 #helpPanel.open{right:0}
 .help-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
-.help-hdr-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.help-hdr-title{font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
 .help-close-btn{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:.8rem;color:var(--text2);cursor:pointer;transition:all .15s}
 .help-close-btn:hover{color:var(--text);border-color:var(--border2)}
 .help-body{flex:1;overflow-y:auto;padding:14px 18px 24px}
-.help-section-title{font-family:'Syne',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.1em;color:var(--text3);margin:16px 0 8px}
+.help-section-title{font-family:'Manrope',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.1em;color:var(--text3);margin:16px 0 8px}
 .help-quick-btns{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
 .help-quick-btn{background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:.72rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s}
 .help-quick-btn:hover{background:var(--card3);color:var(--accent2);border-color:rgba(108,92,231,.4)}
@@ -631,8 +631,8 @@ header{margin-bottom:2rem}
 .faq-item.open .faq-a{display:block}
 .help-about-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-top:6px}
 .help-about-row{display:flex;align-items:center;gap:13px;margin-bottom:12px}
-.help-about-av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(108,92,231,.4),rgba(108,92,231,.15));border:2px solid rgba(108,92,231,.4);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--accent2);flex-shrink:0}
-.help-about-name{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;letter-spacing:-.02em}
+.help-about-av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(108,92,231,.4),rgba(108,92,231,.15));border:2px solid rgba(108,92,231,.4);display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;font-size:1.4rem;font-weight:800;color:var(--accent2);flex-shrink:0}
+.help-about-name{font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;letter-spacing:-.02em}
 .help-about-sub{font-size:.72rem;color:var(--text2);margin-top:2px}
 .help-about-bio{font-size:.78rem;color:var(--text2);line-height:1.7;margin-bottom:12px}
 .help-about-links{display:flex;flex-direction:column;gap:7px}
@@ -654,7 +654,7 @@ header{margin-bottom:2rem}
 .pie-legend-row{display:flex;align-items:center;gap:8px;font-size:.75rem}
 .pie-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 .pie-legend-label{color:var(--text2);flex:1}
-.pie-legend-pct{color:var(--text);font-weight:700;font-family:'Syne',sans-serif}
+.pie-legend-pct{color:var(--text);font-weight:700;font-family:'Manrope',sans-serif}
 
 /* ── NEWS FEED CARD ── */
 .news-card-inner{height:380px}
@@ -669,7 +669,7 @@ header{margin-bottom:2rem}
 .ob-step.active{display:block}
 @keyframes obFadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .ob-q-label{font-size:.62rem;color:var(--accent2);letter-spacing:.1em;font-weight:700;margin-bottom:8px}
-.ob-q-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.5rem}
+.ob-q-title{font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.5rem}
 .ob-q-sub{font-size:.82rem;color:var(--text2);margin-bottom:1.75rem;line-height:1.6}
 .ob-options{display:flex;flex-direction:column;gap:10px;margin-bottom:2rem}
 .ob-opt{display:flex;align-items:center;gap:14px;padding:1rem 1.25rem;border-radius:14px;border:2px solid var(--border);background:var(--card);cursor:pointer;transition:all .18s;text-align:left}
@@ -700,7 +700,7 @@ header{margin-bottom:2rem}
 @keyframes tutBounce{0%,100%{transform:translateY(0) rotate(-45deg)}50%{transform:translateY(-8px) rotate(-45deg)}}
 .tut-card{position:fixed;z-index:9004;background:var(--card);border:1px solid rgba(108,92,231,.4);border-radius:16px;padding:1.25rem 1.5rem;max-width:300px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 1px rgba(108,92,231,.2);pointer-events:all;transition:all .35s cubic-bezier(.16,1,.3,1)}
 .tut-step-label{font-size:.58rem;color:var(--accent2);letter-spacing:.1em;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.tut-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;margin-bottom:6px}
+.tut-title{font-family:'Manrope',sans-serif;font-size:.95rem;font-weight:800;margin-bottom:6px}
 .tut-desc{font-size:.78rem;color:var(--text2);line-height:1.65;margin-bottom:.875rem}
 .tut-action-prompt{display:none;align-items:center;gap:8px;padding:8px 12px;background:rgba(108,92,231,.1);border:1px solid rgba(108,92,231,.25);border-radius:8px;margin-bottom:.875rem;font-size:.74rem;color:var(--accent2);font-weight:600}
 .tut-action-prompt.show{display:flex}
@@ -720,7 +720,7 @@ header{margin-bottom:2rem}
 /* ── BROKER MODAL ── */
 #brokerModal{position:fixed;inset:0;z-index:8000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
 .broker-card{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:2rem;max-width:440px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,.4)}
-.broker-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:6px}
+.broker-title{font-family:'Manrope',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:6px}
 .broker-sub{font-size:.78rem;color:var(--text2);margin-bottom:1.5rem;line-height:1.6}
 .broker-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem}
 .broker-opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:2px solid var(--border);background:var(--card2);cursor:pointer;transition:all .18s}
@@ -739,7 +739,7 @@ header{margin-bottom:2rem}
 .pt-btn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(0,180,216,.25),rgba(0,180,216,.1));color:var(--teal);border:1px solid rgba(0,180,216,.35);border-radius:10px;padding:9px 18px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s}
 .pt-btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,180,216,.3)}
 .pt-stat{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center}
-.pt-stat-val{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800}
+.pt-stat-val{font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800}
 .pt-stat-lbl{font-size:.6rem;color:var(--text3);letter-spacing:.08em;margin-top:3px}
 
 /* ── CUSTOM HOMEPAGE ── */
@@ -815,7 +815,7 @@ body.mode-advanced .card-hdr { padding: .75rem 1rem; }
 /* ── EMPTY STATES ── */
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem;text-align:center;min-height:220px}
 .empty-state-art{font-size:3.5rem;margin-bottom:1rem;filter:drop-shadow(0 4px 12px rgba(0,0,0,.2))}
-.empty-state-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;margin-bottom:.5rem}
+.empty-state-title{font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;margin-bottom:.5rem}
 .empty-state-sub{font-size:.78rem;color:var(--text2);line-height:1.65;margin-bottom:1.25rem;max-width:280px}
 .empty-state-btn{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:10px;padding:9px 20px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .18s}
 .empty-state-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--glow)}
@@ -948,7 +948,7 @@ html{scroll-behavior:smooth}
  <span style="font-size:.75rem;font-weight:700;color:var(--text)">AAPL</span>
  <span style="font-size:.65rem;color:var(--text3)">Apple Inc.</span>
  </div>
- <span id="prevPrice" style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--green)">$189.34</span>
+ <span id="prevPrice" style="font-family:'Manrope',sans-serif;font-size:.9rem;font-weight:800;color:var(--green)">$189.34</span>
  </div>
  <canvas id="prevChart" height="50" style="width:100%;border-radius:6px"></canvas>
  <div style="display:flex;align-items:center;gap:8px">
@@ -1026,7 +1026,7 @@ html{scroll-behavior:smooth}
  </div>
  </div>
  <div style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:.75rem">
- <div style="font-size:.72rem;font-weight:700;margin-bottom:.625rem;display:flex;align-items:center;gap:5px;color:var(--gold)"><span></span> Why StockSight?</div>
+ <div style="font-size:.72rem;font-weight:700;margin-bottom:.625rem;display:flex;align-items:center;gap:5px;color:var(--accent2)"><span></span> Why StockSight?</div>
  <div style="display:flex;flex-direction:column;gap:5px">
  <div style="font-size:.65rem;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)"></span>Completely free — no subscription, no paywall</div>
  <div style="font-size:.65rem;color:var(--text2);display:flex;gap:6px"><span style="color:var(--green)"></span>AI analysis, predictions &amp; chat on every stock</div>
@@ -1074,7 +1074,7 @@ html{scroll-behavior:smooth}
  <div style="display:flex;align-items:center;gap:1rem">
  <div id="streakBadge" style="display:none;align-items:center;gap:6px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:20px;padding:5px 13px">
  <span style="font-size:1rem"></span>
- <span id="streakCount" style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--gold)"></span>
+ <span id="streakCount" style="font-family:'Manrope',sans-serif;font-size:.9rem;font-weight:800;color:var(--gold)"></span>
  <span style="font-size:.65rem;color:var(--gold);font-weight:600">day streak</span>
  </div>
  <div class="wb-right">
@@ -1283,7 +1283,7 @@ html{scroll-behavior:smooth}
  <div class="pt-card">
  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
  <div>
- <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800"> Paper Trade</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800"> Paper Trade</div>
  <div style="font-size:.7rem;color:var(--text3);margin-top:2px">Virtual money · no real risk</div>
  </div>
  <button onclick="closePtModal()" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit;color:var(--text2);font-size:.8rem"></button>
@@ -1355,7 +1355,7 @@ html{scroll-behavior:smooth}
  <!-- Total -->
  <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.875rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
  <span style="font-size:.75rem;color:var(--text2)" id="ptTotalLabel">Estimated total</span>
- <span style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800" id="ptTotal">$0.00</span>
+ <span style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800" id="ptTotal">$0.00</span>
  </div>
 
  <div id="ptErr" style="font-size:.72rem;color:var(--red);margin-bottom:.75rem;display:none"></div>
@@ -1878,21 +1878,21 @@ html{scroll-behavior:smooth}
  <div class="sg-row">
  <div><div class="sg-label">Stocks tab default</div><div class="sg-desc">Chart shown on Stocks homepage</div></div>
  <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--accent2)" id="dashPickS"></span>
+ <span style="font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:700;color:var(--accent2)" id="dashPickS"></span>
  <button class="tog" onclick="changeDashStockSettings('s')">Change</button>
  </div>
  </div>
  <div class="sg-row">
  <div><div class="sg-label">Indexes tab default</div><div class="sg-desc">Chart shown on Indexes homepage</div></div>
  <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--teal)" id="dashPickI"></span>
+ <span style="font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:700;color:var(--teal)" id="dashPickI"></span>
  <button class="tog" onclick="changeDashStockSettings('i')">Change</button>
  </div>
  </div>
  <div class="sg-row">
  <div><div class="sg-label">Crypto tab default</div><div class="sg-desc">Chart shown on Crypto homepage</div></div>
  <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--gold)" id="dashPickC"></span>
+ <span style="font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:700;color:var(--gold)" id="dashPickC"></span>
  <button class="tog" onclick="changeDashStockSettings('c')">Change</button>
  </div>
  </div>
@@ -2091,7 +2091,7 @@ html{scroll-behavior:smooth}
  <div id="fpStep2" style="display:none">
  <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px"> Account verified</div>
  <div id="fpStep2Subtitle" style="font-size:.72rem;color:var(--text3);margin-bottom:10px">Your reset code is below. Enter it and choose a new password.</div>
- <div id="fpCodeDisplay" style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:900;letter-spacing:.3em;color:var(--accent2);text-align:center;background:rgba(108,92,231,.1);border:1.5px dashed rgba(108,92,231,.4);border-radius:10px;padding:14px;margin-bottom:12px"></div>
+ <div id="fpCodeDisplay" style="font-family:'Manrope',sans-serif;font-size:2rem;font-weight:900;letter-spacing:.3em;color:var(--accent2);text-align:center;background:rgba(108,92,231,.1);border:1.5px dashed rgba(108,92,231,.4);border-radius:10px;padding:14px;margin-bottom:12px"></div>
  <div class="field" style="margin-bottom:8px"><label>CODE</label><input id="fp-code" type="text" placeholder="123456" maxlength="6" style="letter-spacing:.2em;font-size:1.1rem!important;text-align:center"/></div>
  <div class="field" style="margin-bottom:8px"><label>NEW PASSWORD</label><input id="fp-newpw" type="password" placeholder="At least 6 characters"/></div>
  <div class="field" style="margin-bottom:8px"><label>CONFIRM PASSWORD</label><input id="fp-confirmpw" type="password" placeholder="Re-enter your new password"/></div>
@@ -2297,8 +2297,8 @@ async function renderTopSearches(containerId) {
  if (error || !data?.length) { el.innerHTML = '<span style="font-size:.75rem;color:var(--text3)">No searches recorded yet today</span>'; return; }
  el.innerHTML = data.map((row, i) => `
  <div onclick="lookupTicker('${escapeHTML(row.ticker)}')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r2);background:var(--card2);border:1px solid var(--border);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
- <span style="font-family:'Syne',sans-serif;font-size:.75rem;font-weight:800;color:var(--text3);width:18px">${i+1}</span>
- <span style="font-family:'Syne',sans-serif;font-size:.85rem;font-weight:800;color:var(--text);flex:1">${escapeHTML(row.ticker)}</span>
+ <span style="font-family:'Manrope',sans-serif;font-size:.75rem;font-weight:800;color:var(--text3);width:18px">${i+1}</span>
+ <span style="font-family:'Manrope',sans-serif;font-size:.85rem;font-weight:800;color:var(--text);flex:1">${escapeHTML(row.ticker)}</span>
  <span style="font-size:.65rem;color:var(--text3)">${row.search_count} search${row.search_count!==1?'es':''}</span>
  </div>`).join('');
  } catch {
@@ -3056,7 +3056,7 @@ function showSignupNudge(message, isFeatureGate) {
  <button onclick="${!isFeatureGate ? 'nudgeDismissed=true;' : 'switchTab(\'s\');'}document.getElementById('signupNudge').remove()"
  style="position:absolute;top:12px;right:14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:.85rem;color:var(--text3);display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1">&#x2715;</button>
  <div style="text-align:center;margin-bottom:1.5rem">
- <div style="font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;margin-bottom:.5rem">Unlock the full StockSight experience</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.15rem;font-weight:800;margin-bottom:.5rem">Unlock the full StockSight experience</div>
  <div style="font-size:.82rem;color:var(--text2);line-height:1.65">${message}</div>
  </div>
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:1.5rem;padding:1rem;background:var(--card2);border-radius:12px;border:1px solid var(--border)">
@@ -3531,7 +3531,7 @@ function renderFearGreed(containerId) {
  // Score number — large, centred, below arc centre
  const scoreY = cy + Math.round(W_css * 0.14);
  const scoreFs = Math.max(16, Math.round(W_css * 0.13));
- ctx.font = `800 ${scoreFs}px Syne,system-ui,sans-serif`;
+ ctx.font = `800 ${scoreFs}px Manrope,system-ui,sans-serif`;
  ctx.textAlign = 'center';
  ctx.fillStyle = color;
  ctx.fillText(rounded.toString(), cx, scoreY);
@@ -4027,12 +4027,12 @@ function renderStockSightScore(containerId) {
  style="transition:stroke-dashoffset 1s cubic-bezier(.16,1,.3,1)"/>
  </svg>
  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
- <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:${color};line-height:1">${score}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.3rem;font-weight:800;color:${color};line-height:1">${score}</div>
  <div style="font-size:.52rem;color:var(--text3);letter-spacing:.05em">/ 100</div>
  </div>
  </div>
  <div style="flex:1;min-width:160px">
- <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:${color};margin-bottom:3px">${label}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;color:${color};margin-bottom:3px">${label}</div>
  <div style="font-size:.76rem;color:var(--text2);line-height:1.6;margin-bottom:.5rem">${tip}</div>
  <div style="display:flex;flex-direction:column;gap:3px">
  ${[
@@ -4134,15 +4134,15 @@ function runWhatIf(ticker) {
  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:.875rem">
  <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.75rem;text-align:center">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.08em;margin-bottom:4px">YOU PAID (EST.)</div>
- <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800">$${Math.round(thenValue).toLocaleString()}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800">$${Math.round(thenValue).toLocaleString()}</div>
  </div>
  <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.75rem;text-align:center">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.08em;margin-bottom:4px">WORTH TODAY (EST.)</div>
- <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:${isPos?'var(--green)':'var(--red)'}">$${Math.round(amount).toLocaleString()}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;color:${isPos?'var(--green)':'var(--red)'}">$${Math.round(amount).toLocaleString()}</div>
  </div>
  <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.75rem;text-align:center">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.08em;margin-bottom:4px">TOTAL ${isPos?'GAIN':'LOSS'}</div>
- <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:${isPos?'var(--green)':'var(--red)'}">${isPos?'+':''}$${Math.abs(Math.round(growthAmt)).toLocaleString()}<br><span style="font-size:.7rem">(${isPos?'+':''}${growthPct}%)</span></div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;color:${isPos?'var(--green)':'var(--red)'}">${isPos?'+':''}$${Math.abs(Math.round(growthAmt)).toLocaleString()}<br><span style="font-size:.7rem">(${isPos?'+':''}${growthPct}%)</span></div>
  </div>
  </div>
  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:4px">
@@ -5019,7 +5019,7 @@ function renderHome(t) {
  ${isSimple ? `
  <!-- SIMPLE MODE: Clean, friendly, no clutter -->
  <div style="margin-bottom:1rem;background:linear-gradient(135deg,rgba(108,92,231,.1),rgba(0,180,216,.06));border:1px solid rgba(108,92,231,.2);border-radius:14px;padding:1rem 1.25rem">
- <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;margin-bottom:4px"> What would you like to do today?</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;margin-bottom:4px"> What would you like to do today?</div>
  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:.75rem">
  <button onclick="document.getElementById('si').focus()" style="background:var(--card);border:2px solid var(--accent);color:var(--accent2);border-radius:10px;padding:8px 16px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer"> Look up a stock</button>
  <button onclick="switchTab('port')" style="background:var(--card);border:2px solid var(--border2);color:var(--text2);border-radius:10px;padding:8px 16px;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer"> Portfolio</button>
@@ -5043,7 +5043,7 @@ function renderHome(t) {
 
  <!-- Customize panel (hidden by default) -->
  <div id="customizePanel" class="customize-panel" style="display:none">
- <div style="font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;margin-bottom:.5rem"> Pin Stocks to Homepage</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:.88rem;font-weight:800;margin-bottom:.5rem"> Pin Stocks to Homepage</div>
  <div style="font-size:.74rem;color:var(--text2);margin-bottom:1rem">Pin up to 6 stocks for one-click access. Click any stock below to pin/unpin it.</div>
  <div style="display:flex;gap:6px;flex-wrap:wrap" id="pinPickerChips">
  ${PICKS.s.concat(PICKS.c.slice(0,3)).map(t2=>{
@@ -5215,16 +5215,16 @@ function renderAsset(ticker, name, type, overrideSym) {
  <div style="display:flex;gap:.75rem;flex-wrap:wrap">
  <div style="background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:.875rem 1.25rem;text-align:center;min-width:110px">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.1em;margin-bottom:4px">AI VERDICT</div>
- <div style="font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:${verdictColor}">${verdictText}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.05rem;font-weight:800;color:${verdictColor}">${verdictText}</div>
  </div>
  <div style="background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:.875rem 1.25rem;text-align:center;min-width:110px">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.1em;margin-bottom:4px">AI CONFIDENCE</div>
- <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:${confColor}">${aiConf}%</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.3rem;font-weight:800;color:${confColor}">${aiConf}%</div>
  <div style="height:4px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden"><div style="height:100%;width:${aiConf}%;background:${confColor};border-radius:2px;transition:width 1s ease"></div></div>
  </div>
  ${aiData[1] ? `<div style="background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:.875rem 1.25rem;text-align:center;min-width:110px">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.1em;margin-bottom:4px">RISK LEVEL</div>
- <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:${aiData[1]>=70?'var(--red)':aiData[1]>=40?'var(--gold)':'var(--green)'}">${aiData[1]>=70?'Very High':aiData[1]>=40?'Moderate':'Lower'}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;color:${aiData[1]>=70?'var(--red)':aiData[1]>=40?'var(--gold)':'var(--green)'}">${aiData[1]>=70?'Very High':aiData[1]>=40?'Moderate':'Lower'}</div>
  <div style="font-size:.6rem;color:var(--text3);margin-top:2px">~${aiData[1]}% annual vol</div>
  </div>` : ''}
  </div>
@@ -5983,7 +5983,7 @@ function drawAssetForecast(container, ticker, vol, growth5yr) {
  tip.style.top='10px';
  tip.innerHTML=`
  <div style="font-size:11px;color:${textCol2};margin-bottom:3px">${weekLabel}</div>
- <div style="font-size:15px;font-weight:800;font-family:'Syne',sans-serif;color:${isFc?'#a78bfa':val>=100?'#00c97a':'#ff3860'}">${Number(pctChg)>=0?'+':''}${pctChg}%</div>
+ <div style="font-size:15px;font-weight:800;font-family:'Manrope',sans-serif;color:${isFc?'#a78bfa':val>=100?'#00c97a':'#ff3860'}">${Number(pctChg)>=0?'+':''}${pctChg}%</div>
  <div style="font-size:10px;color:${textCol2};margin-top:1px">${isFc?' AI projected':' Historical'}</div>`;
  }
  function onLeave(){ state=render(); tip.style.display='none'; }
@@ -6409,11 +6409,11 @@ function buildAICard(el, ticker, profile) {
  <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:.75rem;margin-bottom:.75rem">
  <div>
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.1em;margin-bottom:4px">${isSimple?'WHAT SHOULD I DO?':'AI VERDICT'}</div>
- <div style="font-family:'Syne',sans-serif;font-size:${isSimple?'.95rem':'1.15rem'};font-weight:800;color:${profile.color};line-height:1.2">${verdictLabel}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:${isSimple?'.95rem':'1.15rem'};font-weight:800;color:${profile.color};line-height:1.2">${verdictLabel}</div>
  </div>
  <div style="text-align:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.5rem .875rem;min-width:80px">
  <div style="font-size:.56rem;color:var(--text3);letter-spacing:.08em;margin-bottom:2px">${isSimple?'CONFIDENCE':'CONVICTION'}</div>
- <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:${scoreColor}">${scoreLabel}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800;color:${scoreColor}">${scoreLabel}</div>
  </div>
  </div>
 
@@ -7274,7 +7274,7 @@ function renderWatchlist() {
  const textByType = {s:'var(--accent2)',i:'var(--teal)',c:'var(--gold)'};
 
  mc.innerHTML = `
- <div style="font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:.875rem;color:var(--text2)">${watchlist.length} saved asset${watchlist.length!==1?'s':''}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:.875rem;color:var(--text2)">${watchlist.length} saved asset${watchlist.length!==1?'s':''}</div>
  <div class="wl-grid">
  ${watchlist.map((w,i) => `
  <div class="wl-card" style="border-left:3px solid ${accentByType[w.type]||'var(--accent)'}">
@@ -7388,7 +7388,7 @@ function runCmp() {
  <div class="two-col" style="margin-bottom:1rem">
  <div class="card" style="margin:0;border-top:3px solid var(--accent2)">
  <div style="padding:1rem;text-align:center">
- <div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--accent2)">${rA.t}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.2rem;font-weight:800;color:var(--accent2)">${rA.t}</div>
  <div style="font-size:.72rem;color:var(--text2);margin:.25rem 0">${rA.n||rA.t}</div>
  ${aiA.verdict?`<div style="font-size:.8rem;font-weight:700;color:${aiA.color||'var(--text)'};margin-top:.5rem">${aiA.verdict}</div>`:''}
  <div style="font-size:.88rem;font-weight:700;margin-top:.5rem">$${priceA.toLocaleString()}</div>
@@ -7396,7 +7396,7 @@ function runCmp() {
  </div>
  <div class="card" style="margin:0;border-top:3px solid #3d9bff">
  <div style="padding:1rem;text-align:center">
- <div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:#3d9bff">${rB.t}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.2rem;font-weight:800;color:#3d9bff">${rB.t}</div>
  <div style="font-size:.72rem;color:var(--text2);margin:.25rem 0">${rB.n||rB.t}</div>
  ${aiB.verdict?`<div style="font-size:.8rem;font-weight:700;color:${aiB.color||'var(--text)'};margin-top:.5rem">${aiB.verdict}</div>`:''}
  <div style="font-size:.88rem;font-weight:700;margin-top:.5rem">$${priceB.toLocaleString()}</div>
@@ -7498,12 +7498,12 @@ function renderPortfolio() {
  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.25rem">
  <div class="card" style="margin:0;padding:1rem">
  <div style="font-size:.6rem;color:var(--text3);letter-spacing:.08em;margin-bottom:4px">POSITIONS</div>
- <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--accent2)">${holdings.length}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;color:var(--accent2)">${holdings.length}</div>
  <div style="font-size:.65rem;color:var(--text3)">active holdings</div>
  </div>
  <div class="card" style="margin:0;padding:1rem">
  <div style="font-size:.6rem;color:var(--text3);letter-spacing:.08em;margin-bottom:4px">TOTAL INVESTED</div>
- <div id="portTotalCost" style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800">$0.00</div>
+ <div id="portTotalCost" style="font-family:'Manrope',sans-serif;font-size:1.3rem;font-weight:800">$0.00</div>
  <div style="font-size:.65rem;color:var(--text3)">cost basis</div>
  </div>
  </div>
@@ -7579,7 +7579,7 @@ function renderPortfolio() {
  </div>
 
  <!-- Live charts grid -->
- <div style="font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:.75rem;color:var(--text2)">Live Charts</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:.75rem;color:var(--text2)">Live Charts</div>
  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1rem">
  ${holdings.map((_,i)=>`<div class="card" style="margin:0">
  <div class="card-hdr"><div class="card-hdr-title" id="pct-${i}"></div></div>
@@ -7771,7 +7771,7 @@ function showP(name) {
  alertList.innerHTML = entries.map(([t, price])=>`
  <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
  <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent2)">${t}</span>
+ <span style="font-family:'Manrope',sans-serif;font-weight:700;color:var(--accent2)">${t}</span>
  <span style="font-size:.72rem;color:var(--text2)">Alert at <strong>$${Number(price).toLocaleString()}</strong></span>
  </div>
  <button onclick="delete priceAlerts['${t}'];_syncAlerts();showP('notif')"
@@ -8853,12 +8853,12 @@ function renderStockOfDay(containerId) {
  <div style="padding:1rem;cursor:pointer;flex:1;display:flex;flex-direction:column" onclick="goAsset('${ticker}','${found.k}')">
  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
  <div>
- <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--accent2)">${ticker}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.4rem;font-weight:800;color:var(--accent2)">${ticker}</div>
  <div style="font-size:.72rem;color:var(--text2);margin-top:2px">${found.n}</div>
  </div>
  <div style="text-align:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.5rem .875rem">
  <div style="font-size:.56rem;color:var(--text3);letter-spacing:.08em;margin-bottom:2px">AI VERDICT</div>
- <div style="font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;color:${verdictColor}">${verdict}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:.88rem;font-weight:800;color:${verdictColor}">${verdict}</div>
  </div>
  </div>
 
@@ -9375,7 +9375,7 @@ function renderPaperPortfolio(containerId) {
  const plPct = ((curPrice - avgCost) / avgCost * 100);
  const plColor = pl >= 0 ? 'var(--green)' : 'var(--red)';
  return `<div style="display:flex;align-items:center;gap:10px;padding:.625rem .875rem;background:var(--card2);border:1px solid var(--border);border-radius:9px">
- <div style="font-family:'Syne',sans-serif;font-weight:800;color:var(--accent2);font-size:.88rem;width:60px">${t}</div>
+ <div style="font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2);font-size:.88rem;width:60px">${t}</div>
  <div style="flex:1;font-size:.75rem;color:var(--text2)">${shares.toFixed(4)} shares<br><span style="font-size:.65rem;color:var(--text3)">avg $${avgCost.toFixed(2)}</span></div>
  <div style="text-align:right">
  <div style="font-size:.82rem;font-weight:700">$${val.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
@@ -9462,7 +9462,7 @@ function renderPaperTradeTab() {
  <!-- Header -->
  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
  <div>
- <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.02em"> Paper Trading</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.02em"> Paper Trading</div>
  <div style="font-size:.8rem;color:var(--text2);margin-top:4px">Practice investing with $10,000 of virtual money — no real risk</div>
  </div>
  <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -9498,7 +9498,7 @@ function renderPaperTradeTab() {
  <div style="background:${sideBg};border:1px solid ${sideBdr};border-radius:7px;padding:4px 10px;font-size:.72rem;font-weight:800;color:${sideColor};flex-shrink:0;text-transform:uppercase">${o.side}</div>
  <div style="flex:1;min-width:0">
  <div style="display:flex;align-items:baseline;gap:6px">
- <span style="font-family:'Syne',sans-serif;font-weight:800;color:var(--accent2);font-size:.88rem">${o.ticker}</span>
+ <span style="font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2);font-size:.88rem">${o.ticker}</span>
  <span style="font-size:.75rem;color:var(--text)">${o.shares.toFixed(4)} shares</span>
  <span style="font-size:.72rem;color:var(--text2)">@ $${o.price.toLocaleString()}</span>
  </div>
@@ -9538,7 +9538,7 @@ function renderPaperTradeTab() {
  <div class="card">
  <div style="padding:3rem;text-align:center">
  <div style="font-size:3rem;margin-bottom:1rem"></div>
- <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:8px">No paper trades yet</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:8px">No paper trades yet</div>
  <div style="font-size:.82rem;color:var(--text2);margin-bottom:1.5rem;line-height:1.65">Search for any stock and click the <strong style="color:var(--teal)"> Paper Trade</strong> button to place your first virtual trade.</div>
  <button class="pt-btn" onclick="switchTab('s');setTimeout(()=>toast('Search for a stock and click Paper Trade','info',3000),100)">
  Start Trading →
@@ -9577,7 +9577,7 @@ function renderPaperTradeTab() {
  return `<tr style="border-bottom:1px solid var(--border);transition:background .15s" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background='transparent'">
  <td style="padding:.875rem .5rem">
  <div style="cursor:pointer" onclick="goAsset('${t}','s')">
- <div style="font-family:'Syne',sans-serif;font-weight:800;color:var(--accent2)">${t}</div>
+ <div style="font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2)">${t}</div>
  <div style="font-size:.65rem;color:var(--text3)">${found.n}</div>
  </div>
  </td>
@@ -9792,7 +9792,7 @@ function renderAnalystTargets(ticker, curPrice) {
  ${upside !== null ? `
  <div style="text-align:center;margin-bottom:1rem;padding:.75rem;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
  <div style="font-size:.65rem;color:var(--text3);margin-bottom:3px">ANALYST CONSENSUS UPSIDE</div>
- <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:${upsideColor}">${upside > 0 ? '+' : ''}${upside}%</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;color:${upsideColor}">${upside > 0 ? '+' : ''}${upside}%</div>
  <div style="font-size:.65rem;color:var(--text3);margin-top:2px">vs current price · per ${d.firm}</div>
  </div>` : ''}
 
@@ -9954,7 +9954,7 @@ function renderReferralSection(containerId) {
  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.875rem">
  <div style="font-size:1.4rem"></div>
  <div>
- <div style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800">Invite Friends</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:.9rem;font-weight:800">Invite Friends</div>
  <div style="font-size:.68rem;color:var(--text2);margin-top:1px">Share your code — both of you unlock a special badge</div>
  </div>
  </div>
@@ -10052,7 +10052,7 @@ function renderOnboardingChecklist(containerId) {
  <div class="ob-check-card">
  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem">
  <div>
- <div style="font-family:'Syne',sans-serif;font-size:.92rem;font-weight:800"> Getting Started</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:.92rem;font-weight:800"> Getting Started</div>
  <div style="font-size:.68rem;color:var(--text2);margin-top:2px">${done.size} of ${CHECKLIST_ITEMS.length} done</div>
  </div>
  <div style="text-align:right">
@@ -10144,7 +10144,7 @@ function showKeyboardShortcuts() {
  el.style.cssText = 'position:fixed;inset:0;z-index:9100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(4px)';
  el.innerHTML = `<div style="background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:1.75rem;max-width:380px;width:calc(100%-2rem);box-shadow:0 24px 64px rgba(0,0,0,.5)">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
- <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800"> Keyboard Shortcuts</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800"> Keyboard Shortcuts</div>
  <button onclick="document.getElementById('kbShortcutsModal').remove()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:1.1rem"></button>
  </div>
  ${[['S','Focus search bar'],['H','Go to homepage'],['P','Open portfolio'],['W','Open watchlist'],['T','Paper trading'],['Esc','Go back / close stock page'],['?','Show this help']]
@@ -10362,7 +10362,7 @@ function renderCryptoFearGreed(containerId) {
  <line x1="100" y1="100" x2="${100+75*Math.cos((deg-180)*Math.PI/180).toFixed(3)}" y2="${100+75*Math.sin((deg-180)*Math.PI/180).toFixed(3)}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
  <circle cx="100" cy="100" r="5" fill="${color}"/>
  </svg>
- <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:${color};margin-top:-.25rem">${val}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;color:${color};margin-top:-.25rem">${val}</div>
  <div style="font-size:.8rem;font-weight:700;color:${color}">${label}</div>
  <div style="font-size:.62rem;color:var(--text3);margin-top:4px">Crypto-specific · BTC momentum, volatility & social volume</div>
  </div>`;
@@ -10395,7 +10395,7 @@ function renderAIRecommendations(containerId) {
  const f=TICKERS.find(t=>t.t===r.ticker)||{n:r.ticker}; const type=f.k||'s';
  const ai=AI_PROFILES[r.ticker]; const verdict=ai?.verdict||''; const vc=ai?.color||'var(--text2)';
  return `<button onclick="goAsset('${r.ticker}','${type}')" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:.75rem 1rem;background:var(--card2);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:left;transition:all .18s;flex:1;min-width:120px" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none'">
- <div style="font-family:'Syne',sans-serif;font-weight:800;color:var(--accent2)">${r.ticker}</div>
+ <div style="font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2)">${r.ticker}</div>
  <div style="font-size:.62rem;color:var(--text3)">${f.n.slice(0,18)}</div>
  <div style="font-size:.58rem;padding:1px 5px;border-radius:5px;background:rgba(108,92,231,.1);color:var(--text2);margin-top:2px">${r.sector}</div>
  ${verdict?`<div style="font-size:.62rem;font-weight:700;color:${vc};margin-top:2px">${verdict}</div>`:''}
@@ -10421,7 +10421,7 @@ function renderRebalancingTool(containerId) {
  const color=Math.abs(diff)<5?'var(--green)':Math.abs(diff)<15?'var(--gold)':'var(--red)';
  return `<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.875rem">
  <div style="font-size:.6rem;color:var(--text3);font-weight:600;margin-bottom:3px">${cat.toUpperCase()}</div>
- <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800">${cp.toFixed(1)}%</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800">${cp.toFixed(1)}%</div>
  <div style="font-size:.6rem;color:var(--text3)">target: ${t}%</div>
  <div style="font-size:.63rem;font-weight:700;color:${color};margin-top:3px">${diff>5?'▲ Over ':diff<-5?'▼ Under ':' '}${Math.abs(diff).toFixed(1)}%</div>
  <div style="height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden"><div style="height:100%;width:${Math.min(100,cp/t*100)}%;background:${color};border-radius:2px"></div></div>
@@ -10449,7 +10449,7 @@ function renderPortfolioWhatIf(containerId) {
  return `<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.875rem;text-align:center">
  <div style="font-size:.6rem;color:var(--text3);margin-bottom:3px">${p.label.toUpperCase()}</div>
  <div style="font-size:.72rem;color:var(--text3)">Cost: $${Math.round(pastVal).toLocaleString()}</div>
- <div style="font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;color:${c};margin-top:3px">${gain>=0?'+':''}$${Math.round(gain).toLocaleString()}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:.95rem;font-weight:800;color:${c};margin-top:3px">${gain>=0?'+':''}$${Math.round(gain).toLocaleString()}</div>
  <div style="font-size:.65rem;color:${c}">${pct>=0?'+':''}${pct.toFixed(1)}%</div>
  </div>`;
  }).join('')}
@@ -10523,7 +10523,7 @@ function openNotificationCenter() {
  panel.style.cssText = 'position:fixed;top:56px;right:12px;width:320px;max-width:calc(100vw - 24px);background:var(--card);border:1px solid var(--border2);border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,.4);z-index:9200;max-height:420px;overflow-y:auto';
  panel.innerHTML = `
  <div style="padding:.875rem 1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--card)">
- <div style="font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800"> Notifications</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:.88rem;font-weight:800"> Notifications</div>
  <button onclick="document.getElementById('notifPanel')?.remove()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:.85rem">&#x2715;</button>
  </div>
  ${notifs.length === 0 ? `<div style="padding:2rem;text-align:center;font-size:.78rem;color:var(--text3)">No notifications yet.<br>Price alerts, badges, and milestones will appear here.</div>` :
@@ -10701,7 +10701,7 @@ function applyScreener() {
  <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">GROWTH</th>
  </tr></thead>
  <tbody>${filtered.map(s => `<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="goAsset('${s.t}','${s.k}')" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background=''">
- <td style="padding:.625rem .875rem;font-family:'Syne',sans-serif;font-weight:800;color:var(--accent2)">${s.t}</td>
+ <td style="padding:.625rem .875rem;font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2)">${s.t}</td>
  <td style="padding:.625rem .875rem;color:var(--text2)">${s.name}</td>
  <td style="padding:.625rem .875rem;text-align:center;color:var(--text3);font-size:.72rem">${s.sector}</td>
  <td style="padding:.625rem .875rem;text-align:center">${s.beta}x</td>
@@ -10756,7 +10756,7 @@ function renderEarningsCalendar(containerId) {
  const color = diff <= 3 ? 'var(--red)' : soon ? 'var(--gold)' : 'var(--text2)';
  const badge = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `In ${diff}d`;
  return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="goAsset('${e.ticker}','s')">
- <div style="width:38px;height:38px;border-radius:8px;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:.65rem;font-weight:800;color:var(--accent2);flex-shrink:0">${e.ticker}</div>
+ <div style="width:38px;height:38px;border-radius:8px;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;font-size:.65rem;font-weight:800;color:var(--accent2);flex-shrink:0">${e.ticker}</div>
  <div style="flex:1;min-width:0">
  <div style="font-size:.8rem;font-weight:600">${e.name}</div>
  <div style="font-size:.63rem;color:var(--text3);margin-top:1px">${e.est} · ${e.dateObj.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
@@ -10816,7 +10816,7 @@ function renderNotFound(ticker, name, type, reason, privateInfo, suggestions) {
  <button onclick="currentAsset=null;var _s=document.getElementById('searchSection');if(_s)_s.style.display='block';renderHome(tab);" style="background:none;border:none;color:var(--text2);font-family:inherit;font-size:.82rem;cursor:pointer;padding:0;margin-bottom:1.5rem;display:inline-flex;align-items:center;gap:5px;transition:color .15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text2)'">← Back</button>
  <div style="text-align:center;padding:3rem 1rem">
  <div style="font-size:3.5rem;margin-bottom:1rem">${isPrivate ? '🔒' : '🔍'}</div>
- <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:${color};margin-bottom:.5rem">${isPrivate ? 'Private Company' : 'Stock Not Found'}</div>
+ <div style="font-family:'Manrope',sans-serif;font-size:1.3rem;font-weight:800;color:${color};margin-bottom:.5rem">${isPrivate ? 'Private Company' : 'Stock Not Found'}</div>
  <div style="font-size:.88rem;color:var(--text2);margin-bottom:1rem">
  ${isPrivate ? `<strong>${name}</strong> is privately held.<br><span style="font-size:.78rem;color:var(--text3)">${privateInfo||''}</span>` : `We couldn't find a stock with the symbol <strong style="color:var(--accent2)">${ticker}</strong>.`}
  </div>
@@ -11161,9 +11161,9 @@ function restartTutorial() {
 
  <!-- Hero -->
  <div style="display:flex;align-items:center;gap:14px;margin:1rem 0 1.2rem">
- <div style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:#fff;flex-shrink:0">S</div>
+ <div style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;font-weight:800;font-size:1.4rem;color:#fff;flex-shrink:0">S</div>
  <div>
- <div style="font-size:1rem;font-weight:800;font-family:'Syne',sans-serif;color:var(--text)">Shravan Appou</div>
+ <div style="font-size:1rem;font-weight:800;font-family:'Manrope',sans-serif;color:var(--text)">Shravan Appou</div>
  <div style="font-size:.75rem;color:var(--text3);margin-top:2px">Student · Investor · Northern Virginia</div>
  <div style="font-size:.72rem;color:var(--text3);margin-top:2px">Tracking smarter investments, one chart at a time.</div>
  </div>
