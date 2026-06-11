@@ -60,6 +60,7 @@
  --glow:rgba(108,92,231,0.22);--glow2:rgba(108,92,231,0.08);
  --shadow:rgba(0,0,0,0.6);--shadow2:rgba(0,0,0,0.22);
  --r:14px;--r2:10px;
+ --ease-out:cubic-bezier(0.23,1,0.32,1);--ease-in-out:cubic-bezier(0.77,0,0.175,1);
 }
 [data-theme="light"]{
  --bg:#e8e8e8;--card:#f2f2f2;--card2:#ebebeb;--card3:#e2e2e2;
@@ -904,6 +905,27 @@ html{scroll-behavior:smooth}
 /* ── POLISH: gain/loss colors ── */
 .gain{color:var(--green)!important}
 .loss{color:var(--red)!important}
+
+/* ── DESIGN ENGINEERING: press feedback & deliberate transitions ──
+   Buttons must feel responsive: scale down on press so the UI confirms it heard you.
+   Transitions name exact properties (never `all`) and use a strong ease-out curve. */
+.btn,.btn-outline,.btn-solid,.icon-btn,.btn-gate-main,.btn-gate-ghost,.btn-modal,.tog,.pick,.atab,.sh-chip,.user-pill{
+ transition:transform 160ms var(--ease-out),background 150ms ease,color 150ms ease,border-color 150ms ease,opacity 150ms ease,box-shadow 150ms ease
+}
+.btn:active,.btn-outline:active,.btn-solid:active,.icon-btn:active,.btn-gate-main:active,.btn-gate-ghost:active,.btn-modal:active,.tog:active,.pick:active,.atab:active,.sh-chip:active{
+ transform:scale(0.97)
+}
+.btn-modal:disabled:active{transform:none}
+
+/* Hover effects only on devices that actually hover (touch taps trigger false hovers) */
+@media (hover:none){
+ [data-tip]:hover::after{opacity:0}
+}
+
+/* Reduced motion: keep opacity/color cues, drop movement */
+@media (prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
 </style>
 </head>
 <body>
@@ -3132,7 +3154,7 @@ function toast(msg, type='info', duration=3500) {
  el.appendChild(prog);
  container.appendChild(el);
  setTimeout(() => {
- el.style.animation = 'toastOut .3s ease forwards';
+ el.style.animation = 'toastOut .2s var(--ease-out) forwards';
  setTimeout(() => el.remove(), 300);
  }, duration);
 }
