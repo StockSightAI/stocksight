@@ -53,7 +53,7 @@
 :root {
  --bg:#1c1c1c;--card:#242424;--card2:#2a2a2a;--card3:#313131;
  --border:rgba(255,255,255,0.055);--border2:rgba(255,255,255,0.11);--border3:rgba(255,255,255,0.18);
- --text:#eeeef8;--text2:rgba(238,238,248,0.52);--text3:rgba(238,238,248,0.25);
+ --text:#eeeef8;--text2:rgba(238,238,248,0.58);--text3:rgba(238,238,248,0.34);
  --accent:#6c5ce7;--accent2:#a89cff;--accent3:#7c70f0;
  --green:#00c97a;--green2:rgba(0,201,122,0.12);--red:#ff3860;--red2:rgba(255,56,96,0.1);
  --gold:#f59e0b;--teal:#00b4d8;
@@ -65,7 +65,7 @@
 [data-theme="light"]{
  --bg:#e8e8e8;--card:#f2f2f2;--card2:#ebebeb;--card3:#e2e2e2;
  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);--border3:rgba(0,0,0,0.2);
- --text:#08081a;--text2:rgba(8,8,26,0.52);--text3:rgba(8,8,26,0.3);
+ --text:#08081a;--text2:rgba(8,8,26,0.6);--text3:rgba(8,8,26,0.4);
  --accent:#4c3dd4;--accent2:#4c3dd4;--accent3:#5a4de0;
  --green:#059669;--green2:rgba(5,150,105,0.1);--red:#dc2626;--red2:rgba(220,38,38,0.08);
  --gold:#d97706;--teal:#0891b2;
@@ -232,9 +232,9 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 /* ASSET HEADER */
 .asset-top{background:linear-gradient(135deg,var(--card),var(--card2));border:1px solid var(--border2);border-radius:var(--r);padding:1.4rem;margin-bottom:1rem;position:relative;overflow:hidden}
 .asset-top::after{content:'';position:absolute;top:0;right:0;width:220px;height:100%;background:linear-gradient(90deg,transparent,rgba(108,92,231,0.03));pointer-events:none}
-.asset-top.s{border-left:3px solid var(--accent)}
-.asset-top.i{border-left:3px solid var(--teal)}
-.asset-top.c{border-left:3px solid var(--gold)}
+.asset-top.s{border-color:rgba(108,92,231,.4)}
+.asset-top.i{border-color:rgba(0,180,216,.4)}
+.asset-top.c{border-color:rgba(245,158,11,.4)}
 .a-ticker{font-family:'Manrope',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.03em;line-height:1}
 .a-name{font-size:.75rem;color:var(--text2);margin-top:4px}
 .a-badges{display:flex;gap:6px;margin-top:10px;align-items:center;flex-wrap:wrap}
@@ -732,8 +732,9 @@ header{margin-bottom:2rem}
 .broker-desc{font-size:.65rem;color:var(--text3);margin-top:1px}
 
 /* ── INVEST NOW BUTTON ── */
-.invest-btn{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#00c97a,#00a860);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(0,201,122,.3)}
-.invest-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,201,122,.4)}
+.invest-btn{display:inline-flex;align-items:center;gap:7px;background:var(--green);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer;transition:background 150ms ease,transform 160ms var(--ease-out);box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.invest-btn:hover{background:#00b56e}
+.invest-btn:active{transform:scale(0.97)}
 /* ── PAPER TRADING ── */
 .pt-modal{position:fixed;inset:0;z-index:8500;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
 .pt-card{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:1.75rem;max-width:420px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,.4)}
@@ -921,6 +922,10 @@ html{scroll-behavior:smooth}
 @media (hover:none){
  [data-tip]:hover::after{opacity:0}
 }
+
+/* Keyboard focus ring — visible only for keyboard navigation, never on mouse click.
+   !important needed because many inputs set outline:none inline. */
+:focus-visible{outline:2px solid var(--accent3)!important;outline-offset:2px}
 
 /* Reduced motion: keep opacity/color cues, drop movement */
 @media (prefers-reduced-motion:reduce){
@@ -7286,14 +7291,14 @@ function renderWatchlist() {
  return;
  }
 
- const accentByType = {s:'var(--accent)',i:'var(--teal)',c:'var(--gold)'};
+ const accentByType = {s:'rgba(108,92,231,.35)',i:'rgba(0,180,216,.35)',c:'rgba(245,158,11,.35)'};
  const textByType = {s:'var(--accent2)',i:'var(--teal)',c:'var(--gold)'};
 
  mc.innerHTML = `
  <div style="font-family:'Manrope',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:.875rem;color:var(--text2)">${watchlist.length} saved asset${watchlist.length!==1?'s':''}</div>
  <div class="wl-grid">
  ${watchlist.map((w,i) => `
- <div class="wl-card" style="border-left:3px solid ${accentByType[w.type]||'var(--accent)'}">
+ <div class="wl-card" style="border-color:${accentByType[w.type]||'rgba(108,92,231,.35)'}">
  <button class="wl-rm" onclick="event.stopPropagation();rmWL(${i})" title="Remove"></button>
  <div class="wl-tick" style="color:${textByType[w.type]||'var(--accent2)'}">${w.ticker}</div>
  <div class="wl-n">${w.name}</div>
@@ -10361,7 +10366,7 @@ function renderEconomicCalendar(containerId) {
  <span style="font-size:.54rem;font-weight:700;padding:1px 5px;border-radius:5px;background:${e.importance==='high'?'rgba(255,56,96,.1)':'rgba(245,158,11,.08)'};color:${e.importance==='high'?'var(--red)':'var(--gold)'}">${e.importance.toUpperCase()}</span>
  </div>
  </div>
- <div class="ed" style="display:none;margin-top:.5rem;font-size:.72rem;color:var(--text2);line-height:1.6;padding:.5rem .75rem;background:var(--card2);border-radius:8px;border-left:3px solid ${e.color}">${e.desc}</div>
+ <div class="ed" style="display:none;margin-top:.5rem;font-size:.72rem;color:var(--text2);line-height:1.6;padding:.5rem .75rem;background:var(--card2);border-radius:8px;border:1px solid var(--border)">${e.desc}</div>
  </div>`;
  }).join('')}
  </div></div>`;
