@@ -2210,14 +2210,8 @@ async function pullUserFromSupabase(email) {
  }
 }
 
-// Track a search in Supabase
-async function trackSearch(ticker) {
- if (!ticker) return;
- try {
- const today = new Date().toISOString().slice(0,10);
- await sb.from('searches').insert({ ticker: ticker.toUpperCase(), date: today });
- } catch {}
-}
+// trackSearch is defined in the TRENDING ON STOCKSIGHT section below
+// (records locally for badges + inserts into Supabase for community trending)
 
 // Cast or update a community vote for a ticker
 async function castVote(ticker, vote) {
@@ -8891,11 +8885,19 @@ function renderStockOfDay(containerId) {
  TRENDING ON STOCKSIGHT
 ════════════════════════════════ */
 function trackSearch(ticker) {
+ if (!ticker) return;
+ // Local count — powers badges + the offline fallback ranking
  try {
  const key = 'ss_trending';
  const data = JSON.parse(localStorage.getItem(key)||'{}');
  data[ticker] = (data[ticker]||0) + 1;
  localStorage.setItem(key, JSON.stringify(data));
+ } catch {}
+ // Community count — one row per search; top_searches aggregates these by day
+ try {
+ const today = new Date().toISOString().slice(0,10);
+ sb.from('searches').insert({ ticker: ticker.toUpperCase(), date: today })
+ .then(({ error }) => { if (error) console.warn('Search tracking failed:', error.message); });
  } catch {}
 }
 
@@ -8928,8 +8930,8 @@ function renderTrending(containerId) {
  const combined = {...Object.fromEntries(rotated.map(([t,c])=>[t,c]))};
  Object.entries(tracked).forEach(([t,c]) => { combined[t] = (combined[t]||0) + c*20; });
  const top = Object.entries(combined).sort((a,b)=>b[1]-a[1]).slice(0,8)
- .map(([t, count]) => ({ t, count, found: TICKERS.find(e=>e.t===t)||{t,n:t,k:'s'} }));
- inner.innerHTML = top.map(({t, count, found}, i) => `
+ .map(([t]) => ({ t, found: TICKERS.find(e=>e.t===t)||{t,n:t,k:'s'} }));
+ inner.innerHTML = top.map(({t, found}, i) => `
  <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .15s"
  onclick="goAsset('${t}','${found.k}')"
  onmouseover="this.style.paddingLeft='6px'" onmouseout="this.style.paddingLeft='0'">
@@ -8938,7 +8940,6 @@ function renderTrending(containerId) {
  <div style="font-size:.82rem;font-weight:700;color:var(--text)">${escapeHTML(t)}</div>
  <div style="font-size:.62rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(found.n)}</div>
  </div>
- ${count ? `<div style="font-size:.62rem;color:var(--text3)">${count} search${count!==1?'es':''}</div>` : ''}
  <div style="font-size:.68rem;color:var(--accent2)">→</div>
  </div>`).join('');
  }
