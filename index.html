@@ -8055,48 +8055,65 @@ const GOOGLE_CLIENT_ID = '215107020140-9n8h7eaor1fl1rlvtnjf1vg5l6upu4ei.apps.goo
 
 function initGSI() {
  if (typeof google === 'undefined' || !google.accounts) return;
+ // Initialize ID token flow (for One Tap, if ever needed)
  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredential, ux_mode: 'popup' });
- google.accounts.id.renderButton(document.getElementById('gsiContainer'), { type: 'standard', theme: 'filled_black', size: 'large' });
 }
 
 function clickGoogleSignIn() {
- if (typeof google === 'undefined' || !google.accounts) { showToast('Google sign-in unavailable. Try again shortly.', 'error', ''); return; }
- // Click the hidden rendered Google button for reliable popup behaviour
- const btn = document.querySelector('#gsiContainer iframe') || document.querySelector('#gsiContainer div[role="button"]');
- if (btn) { btn.click(); return; }
+ if (typeof google === 'undefined' || !google.accounts) {
+ showToast('Google sign-in unavailable. Try again shortly.', 'error', '');
+ return;
+ }
+ // Use OAuth2 token client — opens a real browser popup (most reliable approach)
+ try {
+ const tokenClient = google.accounts.oauth2.initTokenClient({
+ client_id: GOOGLE_CLIENT_ID,
+ scope: 'openid email profile',
+ callback: async (tokenResponse) => {
+ if (tokenResponse.error) {
+ showToast('Google sign-in failed: ' + tokenResponse.error, 'error', '');
+ return;
+ }
+ try {
+ const resp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+ headers: { Authorization: 'Bearer ' + tokenResponse.access_token }
+ });
+ const info = await resp.json();
+ await handleGoogleUserInfo(info);
+ } catch(e) {
+ console.error('Google userinfo fetch failed:', e);
+ showToast('Google sign-in failed. Please try again.', 'error', '');
+ }
+ }
+ });
+ tokenClient.requestAccessToken({ prompt: 'select_account' });
+ } catch(e) {
+ console.error('GSI token client error:', e);
+ // Fallback to ID token prompt
  google.accounts.id.prompt();
+ }
 }
 
-async function handleGoogleCredential(response) {
+async function handleGoogleUserInfo({ sub: googleId, email: rawEmail, name, given_name }) {
  try {
- // Decode JWT payload (no verification needed — issued by Google)
- const base64 = response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
- const payload = JSON.parse(atob(base64));
- const { email: rawEmail, name, given_name, sub: googleId } = payload;
  const email = rawEmail.toLowerCase();
- const displayName = given_name || name.split(' ')[0];
+ const displayName = given_name || (name || '').split(' ')[0] || 'User';
 
- // Check Supabase for existing account
  let { data: existing } = await sb.from('users').select('*').eq('email', email).maybeSingle();
 
  if (!existing) {
- // Also check localStorage
  const localUsers = await getU();
  if (localUsers?.[email]) {
- // Sync localStorage user to Supabase
  await sb.from('users').upsert({ email, name: localUsers[email].name || displayName, google_id: googleId, phash: localUsers[email].phash || '', mode: localUsers[email].mode || 'simple' }, { onConflict: 'email' });
  } else {
- // Brand new user — create account
  await sb.from('users').insert({ email, name: displayName, google_id: googleId, phash: '', mode: 'simple' });
  }
  const { data: fresh } = await sb.from('users').select('*').eq('email', email).maybeSingle();
  existing = fresh;
  } else if (!existing.google_id) {
- // Link Google ID to existing account
  await sb.from('users').update({ google_id: googleId }).eq('email', email);
  }
 
- // Sync to localStorage
  const localUsers = await getU();
  if (!localUsers[email]) {
  localUsers[email] = { name: existing?.name || displayName, email, mode: existing?.mode || 'simple', phash: existing?.phash || '', createdAt: existing?.created_at || new Date().toISOString() };
@@ -8106,11 +8123,23 @@ async function handleGoogleCredential(response) {
  const u = { name: existing?.name || displayName, email, mode: existing?.mode || 'simple', createdAt: existing?.created_at || new Date().toISOString() };
  await setSess(u); user = u;
  closeModal();
- showToast('Signed in with Google!', 'success', '');
+ toast('Signed in with Google!', 'success');
  bootApp(); loadUserData();
  } catch(err) {
  console.error('Google sign-in error:', err);
- showToast('Google sign-in failed. Please try again.', 'error', '');
+ toast('Google sign-in failed. Please try again.', 'error');
+ }
+}
+
+// Legacy ID-token callback (kept for One Tap / fallback)
+async function handleGoogleCredential(response) {
+ try {
+ const base64 = response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+ const payload = JSON.parse(atob(base64));
+ await handleGoogleUserInfo(payload);
+ } catch(err) {
+ console.error('Google credential error:', err);
+ toast('Google sign-in failed. Please try again.', 'error');
  }
 }
 
