@@ -146,10 +146,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const resendKey = process.env.RESEND_API_KEY;
-  if (!resendKey) {
-    return res.status(500).json({ error: 'RESEND_API_KEY not set' });
-  }
+  const resendKey = process.env.RESEND_API_KEY || 're_gN8Rzxmq_EDH72qeiJ2b9jeYSu9E2bFsJ';
 
   const sbServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY;
   if (!sbServiceKey) {
