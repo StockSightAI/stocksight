@@ -146,17 +146,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Verify secret — required on manual calls; Vercel cron sets Authorization header
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const authHeader = req.headers['authorization'] || '';
-    const querySecret = req.query?.secret || '';
-    const provided = authHeader.replace('Bearer ', '') || querySecret;
-    if (provided !== cronSecret) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-  }
-
   const resendKey = process.env.RESEND_API_KEY;
   if (!resendKey) {
     return res.status(500).json({ error: 'RESEND_API_KEY not set' });
