@@ -147,7 +147,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const resendKey = process.env.RESEND_API_KEY || 're_gN8Rzxmq_EDH72qeiJ2b9jeYSu9E2bFsJ';
+  const resendKey = process.env.RESEND_API_KEY || 're_LQbFQ5NC_3DdusyUY7YToMoixpPARFor8';
 
   // Fetch all users with digest = true
   const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/users?digest=eq.true&select=email,name`, {
