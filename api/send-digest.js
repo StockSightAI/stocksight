@@ -12,6 +12,7 @@
  */
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://fgcjbdqvnjzafgnahwai.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY || 'sb_publishable_OfRLOYvNWFmq2x9qF5ix1g_7ynysTdY';
 
 // Top stocks for the featured section — updated periodically by hand or AI
 const FEATURED = [
@@ -148,16 +149,11 @@ export default async function handler(req, res) {
 
   const resendKey = process.env.RESEND_API_KEY || 're_gN8Rzxmq_EDH72qeiJ2b9jeYSu9E2bFsJ';
 
-  const sbServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY;
-  if (!sbServiceKey) {
-    return res.status(500).json({ error: 'SUPABASE_SERVICE_KEY not set' });
-  }
-
   // Fetch all users with digest = true
   const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/users?digest=eq.true&select=email,name`, {
     headers: {
-      'apikey': sbServiceKey,
-      'Authorization': `Bearer ${sbServiceKey}`,
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
     }
   });
 
