@@ -1953,51 +1953,16 @@ html{scroll-behavior:smooth}
     </div>
   </div>
 
-  <!-- risk tolerance slider -->
+  <!-- risk tolerance -->
   <div class="sg" style="margin-top:1rem">
     <div class="sg-lbl">RISK TOLERANCE</div>
-    <div style="padding:.25rem 0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;gap:8px">
-        <span style="font-size:.72rem;color:var(--text2);white-space:nowrap">Conservative</span>
-        <span id="risk-val-label" style="font-size:.78rem;font-weight:700;color:var(--accent2);font-family:'Manrope',sans-serif;white-space:nowrap">5 / 10</span>
-        <span style="font-size:.72rem;color:var(--text2);white-space:nowrap">Aggressive</span>
-      </div>
-      <!-- custom visual bar -->
-      <div style="position:relative;height:8px;background:var(--border);border-radius:6px;overflow:hidden;margin-bottom:6px">
-        <div id="risk-bar-fill" style="height:100%;width:50%;background:linear-gradient(90deg,var(--green),#00e58a);border-radius:6px;transition:width .35s cubic-bezier(.16,1,.3,1)"></div>
-      </div>
-      <input type="range" id="riskSlider" min="1" max="10" value="5" step="1"
-        style="width:100%;accent-color:var(--accent);cursor:pointer;margin-bottom:4px"
-        oninput="updateRiskSlider(this.value)"
-        onchange="saveRiskTolerance(this.value)">
-      <div style="display:flex;justify-content:space-between">
-        <span style="font-size:.62rem;color:var(--text3)">Bonds &amp; dividends</span>
-        <span style="font-size:.62rem;color:var(--text3)">High-growth &amp; crypto</span>
-      </div>
-    </div>
+    <div id="risk-options" style="display:flex;flex-direction:column;gap:8px;padding:.25rem 0"></div>
   </div>
 
-  <!-- dividend vs growth -->
+  <!-- investment style -->
   <div class="sg" style="margin-top:1rem">
     <div class="sg-lbl">INVESTMENT STYLE</div>
-    <div style="padding:.25rem 0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;gap:8px">
-        <span style="font-size:.72rem;color:var(--text2);white-space:nowrap">💰 Income</span>
-        <span id="divgrow-label" style="font-size:.78rem;font-weight:700;color:var(--accent2);font-family:'Manrope',sans-serif;white-space:nowrap">Balanced</span>
-        <span style="font-size:.72rem;color:var(--text2);white-space:nowrap">🚀 Growth</span>
-      </div>
-      <div style="position:relative;height:8px;background:var(--border);border-radius:6px;overflow:hidden;margin-bottom:6px">
-        <div id="divgrow-bar" style="height:100%;width:50%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:6px;transition:width .35s cubic-bezier(.16,1,.3,1)"></div>
-      </div>
-      <input type="range" id="divgrowSlider" min="1" max="5" value="3" step="1"
-        style="width:100%;accent-color:var(--accent);cursor:pointer;margin-bottom:4px"
-        oninput="updateDivGrow(this.value)"
-        onchange="saveDivGrow(this.value)">
-      <div style="display:flex;justify-content:space-between">
-        <span style="font-size:.62rem;color:var(--text3)">Dividends &amp; stable income</span>
-        <span style="font-size:.62rem;color:var(--text3)">High-growth stocks</span>
-      </div>
-    </div>
+    <div id="style-options" style="display:flex;flex-direction:column;gap:8px;padding:.25rem 0"></div>
   </div>
 
   <!-- investment goals -->
@@ -10362,54 +10327,98 @@ function loadQuizResult() {
 }
 
 // ── Risk Tolerance ──────────────────────────────────────────
-function updateRiskSlider(v) {
-  const el = document.getElementById('risk-val-label');
-  if (el) el.textContent = v + ' / 10';
-  const bar = document.getElementById('risk-bar-fill');
-  if (bar) bar.style.width = ((v - 1) / 9 * 100) + '%';
+// ── Risk Tolerance Cards ────────────────────────────────────
+const RISK_OPTS = [
+  {v:1, label:'Very Low',   icon:'🛡️', desc:'Bonds, cash, stable assets only',          color:'#4d8fff'},
+  {v:2, label:'Low',        icon:'🔵', desc:'Mostly stable stocks and ETFs',             color:'#6c8fff'},
+  {v:3, label:'Medium',     icon:'⚖️', desc:'Mix of growth and stable',                  color:'#f59e0b'},
+  {v:4, label:'High',       icon:'📈', desc:'Growth stocks, some volatility ok',          color:'#ff8c00'},
+  {v:5, label:'Very High',  icon:'🔥', desc:'Aggressive growth, crypto, options',         color:'#ff3860'},
+];
+function renderRiskOptions() {
+  const el = document.getElementById('risk-options');
+  if (!el) return;
+  el.innerHTML = RISK_OPTS.map(o => `
+    <button id="risk-opt-${o.v}" onclick="selectRisk(${o.v})"
+      style="display:flex;align-items:center;gap:12px;background:var(--card2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;transition:all .15s;width:100%;font-family:inherit">
+      <span style="font-size:1.2rem;flex-shrink:0">${o.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.82rem;font-weight:700;color:var(--text);font-family:'Manrope',sans-serif">${o.label}</div>
+        <div style="font-size:.7rem;color:var(--text3);margin-top:1px">${o.desc}</div>
+      </div>
+    </button>`).join('');
 }
-async function saveRiskTolerance(v) {
+function selectRisk(v) {
+  RISK_OPTS.forEach(o => {
+    const btn = document.getElementById('risk-opt-' + o.v);
+    if (!btn) return;
+    const active = o.v === v;
+    btn.style.background = active ? o.color + '1a' : 'var(--card2)';
+    btn.style.borderColor = active ? o.color : 'var(--border2)';
+    btn.querySelector('div > div').style.color = active ? o.color : 'var(--text)';
+  });
   if (!user) return;
-  user.risk_tolerance = parseInt(v);
+  user.risk_tolerance = v;
   localStorage.setItem('ss_risk_' + user.email, v);
-  if (sb) await sb.from('users').update({ risk_tolerance: parseInt(v) }).eq('email', user.email);
+  if (sb) sb.from('users').update({ risk_tolerance: v }).eq('email', user.email).then(()=>{});
   toast('Risk tolerance saved', 'success');
 }
 function loadRiskTolerance() {
+  renderRiskOptions();
   if (!user) return;
   const saved = localStorage.getItem('ss_risk_' + user.email) || user.risk_tolerance;
   if (!saved) return;
   const v = parseInt(saved);
   if (isNaN(v)) return;
   user.risk_tolerance = v;
-  const slider = document.getElementById('riskSlider');
-  if (slider) { slider.value = v; updateRiskSlider(v); }
+  setTimeout(() => selectRisk(v), 50);
 }
 
-// ── Dividend vs Growth ──────────────────────────────────────
-const DIVGROW_LABELS = ['Income Focus','Income Leaning','Balanced','Growth Leaning','Growth Focus'];
-function updateDivGrow(v) {
-  const lbl = document.getElementById('divgrow-label');
-  if (lbl) lbl.textContent = DIVGROW_LABELS[v - 1] || 'Balanced';
-  const bar = document.getElementById('divgrow-bar');
-  if (bar) bar.style.width = ((v - 1) / 4 * 100) + '%';
+// ── Investment Style Cards ──────────────────────────────────
+const STYLE_OPTS = [
+  {v:1, label:'Income Focus',    icon:'💰', desc:'Dividends, REITs, high-yield bonds',       color:'#00c97a'},
+  {v:2, label:'Income + Growth', icon:'📊', desc:'Dividend growers and stable stocks',        color:'#00b4d8'},
+  {v:3, label:'Balanced',        icon:'⚖️', desc:'Mix of income and growth assets',           color:'#6c5ce7'},
+  {v:4, label:'Growth + Income', icon:'📈', desc:'Mostly growth with some dividends',         color:'#f59e0b'},
+  {v:5, label:'Growth Focus',    icon:'🚀', desc:'High-growth stocks, reinvest everything',   color:'#ff3860'},
+];
+function renderStyleOptions() {
+  const el = document.getElementById('style-options');
+  if (!el) return;
+  el.innerHTML = STYLE_OPTS.map(o => `
+    <button id="style-opt-${o.v}" onclick="selectStyle(${o.v})"
+      style="display:flex;align-items:center;gap:12px;background:var(--card2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;transition:all .15s;width:100%;font-family:inherit">
+      <span style="font-size:1.2rem;flex-shrink:0">${o.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.82rem;font-weight:700;color:var(--text);font-family:'Manrope',sans-serif">${o.label}</div>
+        <div style="font-size:.7rem;color:var(--text3);margin-top:1px">${o.desc}</div>
+      </div>
+    </button>`).join('');
 }
-async function saveDivGrow(v) {
+function selectStyle(v) {
+  STYLE_OPTS.forEach(o => {
+    const btn = document.getElementById('style-opt-' + o.v);
+    if (!btn) return;
+    const active = o.v === v;
+    btn.style.background = active ? o.color + '1a' : 'var(--card2)';
+    btn.style.borderColor = active ? o.color : 'var(--border2)';
+    btn.querySelector('div > div').style.color = active ? o.color : 'var(--text)';
+  });
   if (!user) return;
-  user.invest_style = parseInt(v);
+  user.invest_style = v;
   localStorage.setItem('ss_divgrow_' + user.email, v);
-  if (sb) await sb.from('users').update({ invest_style: parseInt(v) }).eq('email', user.email);
+  if (sb) sb.from('users').update({ invest_style: v }).eq('email', user.email).then(()=>{});
   toast('Investment style saved', 'success');
 }
 function loadDivGrow() {
+  renderStyleOptions();
   if (!user) return;
   const saved = localStorage.getItem('ss_divgrow_' + user.email) || user.invest_style;
   if (!saved) return;
   const v = parseInt(saved);
   if (isNaN(v)) return;
   user.invest_style = v;
-  const slider = document.getElementById('divgrowSlider');
-  if (slider) { slider.value = v; updateDivGrow(v); }
+  setTimeout(() => selectStyle(v), 50);
 }
 
 // ── Investment Goals ────────────────────────────────────────
