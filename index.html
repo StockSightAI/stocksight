@@ -1490,6 +1490,7 @@ html{scroll-behavior:smooth}
  <div class="pni" id="pni-rewards" onclick="showP('rewards')">🏅 Achievements</div>
  <div class="pni" id="pni-referral" onclick="showP('referral')">🎁 Referral</div>
  <div class="pni" id="pni-set" onclick="showP('set')">⚙️ Settings</div>
+ <div class="pni" id="pni-quiz" onclick="showP('quiz')" style="gap:9px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Investor Profile</div>
  </div>
  <div class="prof-footer"><button class="btn-so" onclick="logout()">Sign out</button></div>
  </div>
@@ -1994,6 +1995,51 @@ html{scroll-behavior:smooth}
 </div>
 
 </div><!-- end prof-layout content -->
+
+<!-- ── Investor Profile Quiz Section ── -->
+<div class="psec" id="p-quiz">
+  <div class="psec-title">Investor Profile</div>
+  <div id="quiz-result-banner" style="display:none;margin-bottom:1.2rem;border-radius:14px;padding:1.1rem 1.25rem;border:1px solid var(--border2)">
+    <div style="font-size:.68rem;color:var(--text3);letter-spacing:.08em;font-weight:700;margin-bottom:4px">YOUR INVESTOR TYPE</div>
+    <div id="quiz-result-type" style="font-size:1.2rem;font-weight:800;font-family:'Manrope',sans-serif;margin-bottom:4px"></div>
+    <div id="quiz-result-desc" style="font-size:.78rem;color:var(--text2);line-height:1.6"></div>
+    <button onclick="openQuizModal()" style="margin-top:.9rem;background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:7px 14px;font-family:inherit;font-size:.76rem;font-weight:600;cursor:pointer">Retake Quiz →</button>
+  </div>
+  <div id="quiz-empty-state">
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:2rem;text-align:center">
+      <div style="font-size:2rem;margin-bottom:.75rem">🎯</div>
+      <div style="font-weight:800;font-family:'Manrope',sans-serif;font-size:1rem;margin-bottom:.4rem">Discover your investor type</div>
+      <div style="font-size:.78rem;color:var(--text2);line-height:1.65;margin-bottom:1.2rem;max-width:280px;margin-left:auto;margin-right:auto">Answer 5 quick questions and we'll tell you if you're a Conservative, Moderate, or Aggressive investor.</div>
+      <button onclick="openQuizModal()" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:10px;padding:11px 28px;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer">Take the Quiz</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Quiz Modal ── -->
+<div id="quizModal" style="position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);padding:1rem">
+  <div style="background:var(--card);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:420px;padding:1.75rem 1.5rem;position:relative;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.5)">
+    <button onclick="closeQuizModal()" style="position:absolute;top:14px;right:14px;background:var(--card2);border:1px solid var(--border);color:var(--text3);width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem">✕</button>
+
+    <!-- progress bar -->
+    <div style="margin-bottom:1.25rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:.68rem;color:var(--text3);letter-spacing:.08em;font-weight:700">INVESTOR PROFILE QUIZ</div>
+        <div id="quiz-progress-label" style="font-size:.7rem;color:var(--text3)">1 of 5</div>
+      </div>
+      <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div id="quiz-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:4px;transition:width .35s cubic-bezier(.16,1,.3,1);width:20%"></div>
+      </div>
+    </div>
+
+    <div id="quiz-q-wrap"></div>
+
+    <div style="display:flex;gap:10px;margin-top:1.25rem">
+      <button id="quiz-back-btn" onclick="quizBack()" style="flex:1;background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:10px;padding:11px;font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer;display:none">← Back</button>
+      <button id="quiz-next-btn" onclick="quizNext()" style="flex:2;background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;opacity:.4;pointer-events:none">Next →</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- end S-profile -->
 
 <!-- ═══════════════════════════════
@@ -7753,6 +7799,7 @@ function loadProfilePage() {
  renderReferralSection('referralSection');
  renderAvatarPicker('avatarPickerContainer');
  checkMilestones();
+ loadQuizResult();
  // Sync broker preference in settings
  const savedBroker = localStorage.getItem('ss_broker_'+(user?.email||''));
  const lbl = document.getElementById('currentBrokerLabel');
@@ -10017,6 +10064,178 @@ function getReferralCode() {
  let hash = 0;
  for (const c of user.email) hash = ((hash << 5) - hash + c.charCodeAt(0)) | 0;
  return 'SS' + Math.abs(hash).toString(36).toUpperCase().slice(0, 6);
+}
+
+// ── Investor Profile Quiz ─────────────────────────────────────────────────
+const QUIZ_QUESTIONS = [
+  {
+    q: 'How would you react if your portfolio dropped 20% in a month?',
+    opts: [
+      { label: "I'd sell everything to stop the bleeding", score: 0 },
+      { label: "I'd be worried but hold and wait", score: 1 },
+      { label: "I'd see it as a buying opportunity", score: 2 },
+    ]
+  },
+  {
+    q: 'What is your main investing goal?',
+    opts: [
+      { label: 'Preserve what I have — safety first', score: 0 },
+      { label: 'Steady growth over time', score: 1 },
+      { label: 'Maximum growth, I can handle swings', score: 2 },
+    ]
+  },
+  {
+    q: 'How long do you plan to hold your investments?',
+    opts: [
+      { label: 'Less than 2 years', score: 0 },
+      { label: '2–7 years', score: 1 },
+      { label: '7+ years', score: 2 },
+    ]
+  },
+  {
+    q: 'Which would you choose?',
+    opts: [
+      { label: 'A guaranteed 4% return every year', score: 0 },
+      { label: 'A likely 9% return with some risk', score: 1 },
+      { label: 'A possible 20% return with high risk', score: 2 },
+    ]
+  },
+  {
+    q: 'How much investing experience do you have?',
+    opts: [
+      { label: "I'm just getting started", score: 0 },
+      { label: "I've been investing for 1–3 years", score: 1 },
+      { label: "I'm experienced and follow markets closely", score: 2 },
+    ]
+  },
+];
+
+const QUIZ_PROFILES = [
+  {
+    type: 'Conservative Investor',
+    emoji: '🛡️',
+    color: '#4d8fff',
+    desc: 'You prioritize protecting your capital over high returns. You prefer stable, lower-risk investments like bonds, dividend stocks, and blue-chips. Slow and steady wins the race for you.',
+  },
+  {
+    type: 'Moderate Investor',
+    emoji: '⚖️',
+    color: '#f59e0b',
+    desc: "You're comfortable with some risk in exchange for better returns. You likely prefer a mix of growth stocks and stable assets, balancing opportunity with caution.",
+  },
+  {
+    type: 'Aggressive Investor',
+    emoji: '🚀',
+    color: '#00c97a',
+    desc: "You're in it for maximum growth and aren't afraid of volatility. You're drawn to high-growth stocks, emerging tech, and crypto — and you know the market rewards patience.",
+  },
+];
+
+let _quizStep = 0;
+let _quizAnswers = [];
+
+function openQuizModal() {
+  _quizStep = 0;
+  _quizAnswers = [];
+  document.getElementById('quizModal').style.display = 'flex';
+  renderQuizStep();
+}
+
+function closeQuizModal() {
+  document.getElementById('quizModal').style.display = 'none';
+}
+
+function renderQuizStep() {
+  const q = QUIZ_QUESTIONS[_quizStep];
+  const wrap = document.getElementById('quiz-q-wrap');
+  const nextBtn = document.getElementById('quiz-next-btn');
+  const backBtn = document.getElementById('quiz-back-btn');
+  const bar = document.getElementById('quiz-progress-bar');
+  const label = document.getElementById('quiz-progress-label');
+
+  bar.style.width = (((_quizStep + 1) / QUIZ_QUESTIONS.length) * 100) + '%';
+  label.textContent = (_quizStep + 1) + ' of ' + QUIZ_QUESTIONS.length;
+  backBtn.style.display = _quizStep > 0 ? 'block' : 'none';
+  nextBtn.textContent = _quizStep === QUIZ_QUESTIONS.length - 1 ? 'See my results ✓' : 'Next →';
+
+  const selected = _quizAnswers[_quizStep];
+  wrap.innerHTML = `
+    <div style="font-size:.95rem;font-weight:700;font-family:'Manrope',sans-serif;color:var(--text);line-height:1.45;margin-bottom:1rem">${q.q}</div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      ${q.opts.map((o, i) => `
+        <button onclick="quizSelect(${i})" id="qopt-${i}" style="text-align:left;background:${selected===i?'var(--accent)':'var(--card2)'};border:1.5px solid ${selected===i?'var(--accent)':'var(--border2)'};color:${selected===i?'#fff':'var(--text)'};border-radius:12px;padding:13px 16px;font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.4">
+          <span style="display:inline-block;width:22px;height:22px;border-radius:50%;border:2px solid ${selected===i?'rgba(255,255,255,.5)':'var(--border2)'};margin-right:10px;vertical-align:middle;background:${selected===i?'rgba(255,255,255,.25)':'transparent'};flex-shrink:0"></span>
+          ${o.label}
+        </button>
+      `).join('')}
+    </div>
+  `;
+
+  const isAnswered = _quizAnswers[_quizStep] !== undefined;
+  nextBtn.style.opacity = isAnswered ? '1' : '.4';
+  nextBtn.style.pointerEvents = isAnswered ? 'auto' : 'none';
+}
+
+function quizSelect(i) {
+  _quizAnswers[_quizStep] = i;
+  renderQuizStep();
+}
+
+function quizNext() {
+  if (_quizAnswers[_quizStep] === undefined) return;
+  if (_quizStep < QUIZ_QUESTIONS.length - 1) {
+    _quizStep++;
+    renderQuizStep();
+  } else {
+    finishQuiz();
+  }
+}
+
+function quizBack() {
+  if (_quizStep > 0) { _quizStep--; renderQuizStep(); }
+}
+
+function finishQuiz() {
+  const total = _quizAnswers.reduce((s, answerIdx, qi) => s + QUIZ_QUESTIONS[qi].opts[answerIdx].score, 0);
+  const max = QUIZ_QUESTIONS.length * 2;
+  const pct = total / max;
+  const profileIdx = pct < 0.35 ? 0 : pct < 0.7 ? 1 : 2;
+  const profile = QUIZ_PROFILES[profileIdx];
+
+  // Save to user object and Supabase
+  if (user) {
+    user.investor_profile = profileIdx;
+    localStorage.setItem('ss_investor_profile_' + user.email, profileIdx);
+    sb.from('users').update({ investor_profile: profileIdx }).eq('email', user.email).then(()=>{});
+  }
+
+  closeQuizModal();
+  renderQuizResult(profile);
+}
+
+function renderQuizResult(profile) {
+  const banner = document.getElementById('quiz-result-banner');
+  const empty = document.getElementById('quiz-empty-state');
+  const typeEl = document.getElementById('quiz-result-type');
+  const descEl = document.getElementById('quiz-result-desc');
+
+  banner.style.background = profile.color + '14';
+  banner.style.borderColor = profile.color + '44';
+  typeEl.innerHTML = `<span style="color:${profile.color}">${profile.emoji} ${profile.type}</span>`;
+  descEl.textContent = profile.desc;
+  banner.style.display = 'block';
+  empty.style.display = 'none';
+
+  toast('Investor profile saved!', 'success');
+}
+
+function loadQuizResult() {
+  if (!user) return;
+  const saved = localStorage.getItem('ss_investor_profile_' + user.email);
+  if (saved === null || saved === '') return;
+  const profileIdx = parseInt(saved);
+  if (isNaN(profileIdx) || profileIdx < 0 || profileIdx > 2) return;
+  renderQuizResult(QUIZ_PROFILES[profileIdx]);
 }
 
 function renderReferralSection(containerId) {
