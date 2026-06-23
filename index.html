@@ -1503,6 +1503,21 @@ html{scroll-behavior:smooth}
  <div class="sg-row"><div><div class="sg-label" id="ov-e"></div><div class="sg-desc">Email</div></div></div>
  <div class="sg-row"><div><div class="sg-label" id="ov-s"></div><div class="sg-desc">Member since</div></div></div>
  </div>
+ <!-- Investor Profile quick card -->
+ <div class="sg">
+ <div class="sg-lbl">INVESTOR PROFILE</div>
+ <div class="sg-row" style="flex-direction:column;align-items:flex-start;gap:10px">
+   <div id="ov-quiz-result" style="display:none;width:100%">
+     <div id="ov-quiz-type" style="font-size:.95rem;font-weight:800;font-family:'Manrope',sans-serif;margin-bottom:3px"></div>
+     <div id="ov-quiz-desc" style="font-size:.75rem;color:var(--text2);line-height:1.6;margin-bottom:8px"></div>
+     <button onclick="showP('quiz')" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 12px;font-family:inherit;font-size:.74rem;font-weight:600;cursor:pointer">Retake Quiz →</button>
+   </div>
+   <div id="ov-quiz-empty" style="width:100%">
+     <div style="font-size:.8rem;color:var(--text2);margin-bottom:8px">Find out if you're Conservative, Moderate, or Aggressive.</div>
+     <button onclick="openQuizModal()" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer">Take the Quiz →</button>
+   </div>
+ </div>
+ </div>
  <!-- Portfolio value summary -->
  <div class="sg">
  <div class="sg-lbl">PORTFOLIO SUMMARY</div>
@@ -2022,9 +2037,9 @@ html{scroll-behavior:smooth}
 
     <!-- progress bar -->
     <div style="margin-bottom:1.25rem">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
         <div style="font-size:.68rem;color:var(--text3);letter-spacing:.08em;font-weight:700">INVESTOR PROFILE QUIZ</div>
-        <div id="quiz-progress-label" style="font-size:.7rem;color:var(--text3)">1 of 5</div>
+        <div id="quiz-progress-label" style="font-size:.7rem;color:var(--text3);white-space:nowrap">1 of 5</div>
       </div>
       <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden">
         <div id="quiz-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:4px;transition:width .35s cubic-bezier(.16,1,.3,1);width:20%"></div>
@@ -10213,20 +10228,32 @@ function finishQuiz() {
   renderQuizResult(profile);
 }
 
-function renderQuizResult(profile) {
+function renderQuizResult(profile, silent) {
+  // quiz section
   const banner = document.getElementById('quiz-result-banner');
   const empty = document.getElementById('quiz-empty-state');
   const typeEl = document.getElementById('quiz-result-type');
   const descEl = document.getElementById('quiz-result-desc');
-
-  banner.style.background = profile.color + '14';
-  banner.style.borderColor = profile.color + '44';
-  typeEl.innerHTML = `<span style="color:${profile.color}">${profile.emoji} ${profile.type}</span>`;
-  descEl.textContent = profile.desc;
-  banner.style.display = 'block';
-  empty.style.display = 'none';
-
-  toast('Investor profile saved!', 'success');
+  if (banner) {
+    banner.style.background = profile.color + '14';
+    banner.style.borderColor = profile.color + '44';
+    typeEl.innerHTML = `<span style="color:${profile.color}">${profile.emoji} ${profile.type}</span>`;
+    descEl.textContent = profile.desc;
+    banner.style.display = 'block';
+    empty.style.display = 'none';
+  }
+  // overview card
+  const ovResult = document.getElementById('ov-quiz-result');
+  const ovEmpty = document.getElementById('ov-quiz-empty');
+  const ovType = document.getElementById('ov-quiz-type');
+  const ovDesc = document.getElementById('ov-quiz-desc');
+  if (ovResult) {
+    ovType.innerHTML = `<span style="color:${profile.color}">${profile.emoji} ${profile.type}</span>`;
+    ovDesc.textContent = profile.desc;
+    ovResult.style.display = 'block';
+    ovEmpty.style.display = 'none';
+  }
+  if (!silent) toast('Investor profile saved!', 'success');
 }
 
 function loadQuizResult() {
@@ -10235,7 +10262,7 @@ function loadQuizResult() {
   if (saved === null || saved === '') return;
   const profileIdx = parseInt(saved);
   if (isNaN(profileIdx) || profileIdx < 0 || profileIdx > 2) return;
-  renderQuizResult(QUIZ_PROFILES[profileIdx]);
+  renderQuizResult(QUIZ_PROFILES[profileIdx], true);
 }
 
 function renderReferralSection(containerId) {
