@@ -10356,15 +10356,82 @@ function loadRiskTolerance() {
 }
 
 // ── Investment Goals ────────────────────────────────────────
+const DEFAULT_GOALS = ['Retirement','Buy a house','Build long-term wealth','Generate passive income','Learn investing','Save for college'];
+
 function renderGoalsList() {
   const el = document.getElementById('goals-list');
   if (!el) return;
-  el.innerHTML = ['Retirement','Buy a house','Build long-term wealth','Generate passive income','Learn investing','Save for college'].map(g=>`
-    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.82rem;color:var(--text)">
-      <input type="checkbox" data-goal="${g}" onchange="saveGoals()" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0">
-      ${g}
-    </label>`).join('');
+  // Merge default goals with any custom ones stored
+  let allGoals = [...DEFAULT_GOALS];
+  try {
+    const saved = localStorage.getItem('ss_goals_all_' + (user?.email||''));
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      parsed.forEach(g => { if (!allGoals.includes(g)) allGoals.push(g); });
+    }
+  } catch(e) {}
+
+  el.innerHTML = allGoals.map(g => {
+    const isCustom = !DEFAULT_GOALS.includes(g);
+    return `<div style="display:flex;align-items:center;gap:8px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.82rem;color:var(--text);flex:1">
+        <input type="checkbox" data-goal="${g}" onchange="saveGoals()" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0">
+        ${g}
+      </label>
+      ${isCustom ? `<button onclick="deleteGoal('${g.replace(/'/g,"\\'")}',this)" title="Remove" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:2px 6px;border-radius:4px;line-height:1" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">✕</button>` : ''}
+    </div>`;
+  }).join('') + `
+  <div style="display:flex;gap:8px;margin-top:6px">
+    <input id="goal-custom-inp" type="text" placeholder="Add your own goal…" maxlength="48"
+      style="flex:1;background:var(--card2);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:.8rem;outline:none"
+      onkeydown="if(event.key==='Enter')addCustomGoal()"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
+    <button onclick="addCustomGoal()" style="background:var(--card2);border:1px solid var(--border2);color:var(--accent2);border-radius:8px;padding:7px 12px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap">+ Add</button>
+  </div>`;
 }
+
+function addCustomGoal() {
+  const inp = document.getElementById('goal-custom-inp');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (!val) return;
+  inp.value = '';
+  // Persist the full goal list (all goals)
+  const allGoals = getAllGoals();
+  if (allGoals.includes(val)) { toast('Goal already exists', 'warn'); return; }
+  allGoals.push(val);
+  localStorage.setItem('ss_goals_all_' + (user?.email||''), JSON.stringify(allGoals));
+  renderGoalsList();
+  // auto-check the new goal
+  setTimeout(() => {
+    const cb = document.querySelector(`#goals-list input[data-goal="${val}"]`);
+    if (cb) { cb.checked = true; saveGoals(); }
+  }, 50);
+}
+
+function deleteGoal(g, btn) {
+  let allGoals = getAllGoals().filter(x => x !== g);
+  localStorage.setItem('ss_goals_all_' + (user?.email||''), JSON.stringify(allGoals));
+  // also uncheck from saved checked list
+  try {
+    const saved = JSON.parse(localStorage.getItem('ss_goals_' + (user?.email||'')) || '[]');
+    const updated = saved.filter(x => x !== g);
+    localStorage.setItem('ss_goals_' + (user?.email||''), JSON.stringify(updated));
+    if (user) user.investment_goals = updated;
+  } catch(e) {}
+  renderGoalsList();
+  loadGoals();
+}
+
+function getAllGoals() {
+  let all = [...DEFAULT_GOALS];
+  try {
+    const saved = JSON.parse(localStorage.getItem('ss_goals_all_' + (user?.email||'')) || '[]');
+    saved.forEach(g => { if (!all.includes(g)) all.push(g); });
+  } catch(e) {}
+  return all;
+}
+
 async function saveGoals() {
   if (!user) return;
   const checked = [...document.querySelectorAll('#goals-list input[type=checkbox]:checked')].map(c => c.dataset.goal);
@@ -10381,6 +10448,12 @@ function loadGoals() {
   try {
     const goals = JSON.parse(saved);
     user.investment_goals = goals;
+    // restore custom goals into the all-goals list so they show up
+    const allKey = 'ss_goals_all_' + user.email;
+    if (!localStorage.getItem(allKey)) {
+      const customs = goals.filter(g => !DEFAULT_GOALS.includes(g));
+      if (customs.length) localStorage.setItem(allKey, JSON.stringify([...DEFAULT_GOALS, ...customs]));
+    }
     document.querySelectorAll('#goals-list input[type=checkbox]').forEach(cb => {
       cb.checked = goals.includes(cb.dataset.goal);
     });
