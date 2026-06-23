@@ -2054,22 +2054,13 @@ html{scroll-behavior:smooth}
   <!-- investment goals -->
   <div class="sg" style="margin-top:1rem">
     <div class="sg-lbl">INVESTMENT GOALS</div>
-    <div style="display:flex;flex-direction:column;gap:8px;padding:.25rem 0" id="goals-list">
-      ${['Retirement', 'Buy a house', 'Build long-term wealth', 'Generate passive income', 'Learn investing', 'Save for college'].map(g=>`
-      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.82rem;color:var(--text)">
-        <input type="checkbox" data-goal="${g}" onchange="saveGoals()" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0">
-        ${g}
-      </label>`).join('')}
-    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;padding:.25rem 0" id="goals-list"></div>
   </div>
 
   <!-- preferred sectors -->
   <div class="sg" style="margin-top:1rem">
     <div class="sg-lbl">PREFERRED SECTORS <span style="color:var(--text3);font-weight:400;letter-spacing:0">(pick up to 3)</span></div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;padding:.25rem 0" id="sectors-list">
-      ${['Technology','Healthcare','Finance','Energy','Consumer','Crypto','Defense','Real Estate','Industrials','Retail'].map(s=>`
-      <button data-sector="${s}" onclick="toggleSector(this)" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:20px;padding:6px 14px;font-family:inherit;font-size:.76rem;font-weight:600;cursor:pointer;transition:all .15s">${s}</button>`).join('')}
-    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;padding:.25rem 0" id="sectors-list"></div>
     <div id="sector-save-msg" style="display:none;font-size:.7rem;color:var(--green);margin-top:6px"> Saved</div>
   </div>
 </div>
@@ -7889,8 +7880,8 @@ function loadProfilePage() {
  checkMilestones();
  loadQuizResult();
  loadRiskTolerance();
- loadGoals();
- loadSectors();
+ renderGoalsList(); loadGoals();
+ renderSectorsList(); loadSectors();
  // Sync broker preference in settings
  const savedBroker = localStorage.getItem('ss_broker_'+(user?.email||''));
  const lbl = document.getElementById('currentBrokerLabel');
@@ -10365,6 +10356,15 @@ function loadRiskTolerance() {
 }
 
 // ── Investment Goals ────────────────────────────────────────
+function renderGoalsList() {
+  const el = document.getElementById('goals-list');
+  if (!el) return;
+  el.innerHTML = ['Retirement','Buy a house','Build long-term wealth','Generate passive income','Learn investing','Save for college'].map(g=>`
+    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.82rem;color:var(--text)">
+      <input type="checkbox" data-goal="${g}" onchange="saveGoals()" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0">
+      ${g}
+    </label>`).join('');
+}
 async function saveGoals() {
   if (!user) return;
   const checked = [...document.querySelectorAll('#goals-list input[type=checkbox]:checked')].map(c => c.dataset.goal);
@@ -10388,6 +10388,12 @@ function loadGoals() {
 }
 
 // ── Preferred Sectors ───────────────────────────────────────
+function renderSectorsList() {
+  const el = document.getElementById('sectors-list');
+  if (!el) return;
+  el.innerHTML = ['Technology','Healthcare','Finance','Energy','Consumer','Crypto','Defense','Real Estate','Industrials','Retail'].map(s=>`
+    <button data-sector="${s}" onclick="toggleSector(this)" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:20px;padding:6px 14px;font-family:inherit;font-size:.76rem;font-weight:600;cursor:pointer;transition:all .15s">${s}</button>`).join('');
+}
 function toggleSector(btn) {
   const active = [...document.querySelectorAll('#sectors-list button.sector-on')];
   if (btn.classList.contains('sector-on')) {
