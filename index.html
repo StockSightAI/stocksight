@@ -10372,13 +10372,12 @@ function renderGoalsList() {
   } catch(e) {}
 
   el.innerHTML = allGoals.map(g => {
-    const isCustom = !DEFAULT_GOALS.includes(g);
-    return `<div style="display:flex;align-items:center;gap:8px">
+      return `<div style="display:flex;align-items:center;gap:8px">
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.82rem;color:var(--text);flex:1">
         <input type="checkbox" data-goal="${g}" onchange="saveGoals()" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0">
         ${g}
       </label>
-      ${isCustom ? `<button onclick="deleteGoal('${g.replace(/'/g,"\\'")}',this)" title="Remove" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:2px 6px;border-radius:4px;line-height:1" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">✕</button>` : ''}
+      <button onclick="deleteGoal('${g.replace(/'/g,"\\'")}',this)" title="Remove" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:2px 6px;border-radius:4px;line-height:1" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">✕</button>
     </div>`;
   }).join('') + `
   <div style="display:flex;gap:8px;margin-top:6px">
