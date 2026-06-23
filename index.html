@@ -2011,22 +2011,66 @@ html{scroll-behavior:smooth}
 
 </div><!-- end prof-layout content -->
 
-<!-- ── Investor Profile Quiz Section ── -->
+<!-- ── Investor Profile Section ── -->
 <div class="psec" id="p-quiz">
   <div class="psec-title">Investor Profile</div>
-  <div id="quiz-result-banner" style="display:none;margin-bottom:1.2rem;border-radius:14px;padding:1.1rem 1.25rem;border:1px solid var(--border2)">
-    <div style="font-size:.68rem;color:var(--text3);letter-spacing:.08em;font-weight:700;margin-bottom:4px">YOUR INVESTOR TYPE</div>
-    <div id="quiz-result-type" style="font-size:1.2rem;font-weight:800;font-family:'Manrope',sans-serif;margin-bottom:4px"></div>
-    <div id="quiz-result-desc" style="font-size:.78rem;color:var(--text2);line-height:1.6"></div>
-    <button onclick="openQuizModal()" style="margin-top:.9rem;background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:7px 14px;font-family:inherit;font-size:.76rem;font-weight:600;cursor:pointer">Retake Quiz →</button>
-  </div>
-  <div id="quiz-empty-state">
-    <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:2rem;text-align:center">
-      <div style="font-size:2rem;margin-bottom:.75rem">🎯</div>
-      <div style="font-weight:800;font-family:'Manrope',sans-serif;font-size:1rem;margin-bottom:.4rem">Discover your investor type</div>
-      <div style="font-size:.78rem;color:var(--text2);line-height:1.65;margin-bottom:1.2rem;max-width:280px;margin-left:auto;margin-right:auto">Answer 5 quick questions and we'll tell you if you're a Conservative, Moderate, or Aggressive investor.</div>
-      <button onclick="openQuizModal()" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:10px;padding:11px 28px;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer">Take the Quiz</button>
+
+  <!-- investor type result / empty state -->
+  <div class="sg">
+    <div class="sg-lbl">INVESTOR TYPE</div>
+    <div id="quiz-result-banner" style="display:none;border-radius:12px;padding:1rem 1.1rem;border:1px solid var(--border2);margin-bottom:.5rem">
+      <div id="quiz-result-type" style="font-size:1.1rem;font-weight:800;font-family:'Manrope',sans-serif;margin-bottom:4px"></div>
+      <div id="quiz-result-desc" style="font-size:.76rem;color:var(--text2);line-height:1.6;margin-bottom:.75rem"></div>
+      <button onclick="openQuizModal()" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 12px;font-family:inherit;font-size:.74rem;font-weight:600;cursor:pointer">Retake Quiz →</button>
     </div>
+    <div id="quiz-empty-state">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center">
+        <div style="font-size:.82rem;color:var(--text2);margin-bottom:.75rem">Answer 5 quick questions and we'll personalise your experience.</div>
+        <button onclick="openQuizModal()" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:8px;padding:9px 22px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer">Take the Quiz 🎯</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- risk tolerance slider -->
+  <div class="sg" style="margin-top:1rem">
+    <div class="sg-lbl">RISK TOLERANCE</div>
+    <div style="padding:.25rem 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+        <span style="font-size:.74rem;color:var(--text2)">Conservative</span>
+        <span id="risk-val-label" style="font-size:.78rem;font-weight:700;color:var(--accent2);font-family:'Manrope',sans-serif">5 / 10</span>
+        <span style="font-size:.74rem;color:var(--text2)">Aggressive</span>
+      </div>
+      <input type="range" id="riskSlider" min="1" max="10" value="5" step="1"
+        style="width:100%;accent-color:var(--accent);cursor:pointer"
+        oninput="updateRiskSlider(this.value)"
+        onchange="saveRiskTolerance(this.value)">
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span style="font-size:.62rem;color:var(--text3)">Bonds &amp; dividends</span>
+        <span style="font-size:.62rem;color:var(--text3)">High-growth &amp; crypto</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- investment goals -->
+  <div class="sg" style="margin-top:1rem">
+    <div class="sg-lbl">INVESTMENT GOALS</div>
+    <div style="display:flex;flex-direction:column;gap:8px;padding:.25rem 0" id="goals-list">
+      ${['Retirement', 'Buy a house', 'Build long-term wealth', 'Generate passive income', 'Learn investing', 'Save for college'].map(g=>`
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.82rem;color:var(--text)">
+        <input type="checkbox" data-goal="${g}" onchange="saveGoals()" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0">
+        ${g}
+      </label>`).join('')}
+    </div>
+  </div>
+
+  <!-- preferred sectors -->
+  <div class="sg" style="margin-top:1rem">
+    <div class="sg-lbl">PREFERRED SECTORS <span style="color:var(--text3);font-weight:400;letter-spacing:0">(pick up to 3)</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;padding:.25rem 0" id="sectors-list">
+      ${['Technology','Healthcare','Finance','Energy','Consumer','Crypto','Defense','Real Estate','Industrials','Retail'].map(s=>`
+      <button data-sector="${s}" onclick="toggleSector(this)" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:20px;padding:6px 14px;font-family:inherit;font-size:.76rem;font-weight:600;cursor:pointer;transition:all .15s">${s}</button>`).join('')}
+    </div>
+    <div id="sector-save-msg" style="display:none;font-size:.7rem;color:var(--green);margin-top:6px"> Saved</div>
   </div>
 </div>
 
@@ -3856,6 +3900,9 @@ function renderHomeSections(t) {
  </div>
  </div>
 
+ <!-- Stocks For You (personalised) -->
+ <div id="stocks-for-you" class="card" style="margin-top:1rem;display:none"></div>
+
  <!-- AI Recommendations -->
  <div id="aiRecsContainer" style="margin-top:1rem"></div>
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;align-items:stretch">
@@ -3873,6 +3920,7 @@ function renderHomeSections(t) {
  renderCryptoFearGreed('cryptoFGContainer');
  renderAIRecommendations('aiRecsContainer');
  }
+ if (mode !== 'simple') renderStocksForYou();
  renderStockOfDay('sotdCard');
  renderTrending('trendingCard');
  renderNewsSentimentGuide('newsSentimentGuide');
@@ -6499,6 +6547,26 @@ function buildAICard(el, ticker, profile) {
  const growth = d?.[3] ?? '—';
  const riskLvl = d ? (d[1]>=70?'Very High ':d[1]>=45?'High ':d[1]>=25?'Moderate ':'Lower ') : '—';
 
+ // Personalised note based on investor profile
+ const investorProfileIdx = user?.investor_profile ?? -1;
+ let personalNote = '';
+ if (!isSimple && investorProfileIdx >= 0) {
+   const stockRisk = d?.[1] ?? 30;
+   if (investorProfileIdx === 0) { // Conservative
+     if (['Strong Buy','Buy'].includes(profile.verdict) && stockRisk >= 45)
+       personalNote = `⚠️ <strong>Conservative investor note:</strong> This stock carries <strong>${riskLvl}risk</strong>. Consider position-sizing carefully or looking at lower-volatility alternatives.`;
+     else if (['Strong Buy','Buy'].includes(profile.verdict))
+       personalNote = `🛡️ <strong>Conservative investor note:</strong> This aligns well with your conservative profile — ${riskLvl}volatility fits your risk tolerance.`;
+   } else if (investorProfileIdx === 2) { // Aggressive
+     if (['Hold','Sell'].includes(profile.verdict))
+       personalNote = `🚀 <strong>Aggressive investor note:</strong> Even with a Hold rating, watch for breakout catalysts if you have high conviction. High-risk tolerance may support a speculative position.`;
+     else
+       personalNote = `🚀 <strong>Aggressive investor note:</strong> Strong upside potential here — aligns with your growth-oriented profile.`;
+   } else { // Moderate
+     personalNote = `⚖️ <strong>Moderate investor note:</strong> ${profile.verdict === 'Strong Buy' || profile.verdict === 'Buy' ? 'This looks like a balanced opportunity — consider scaling in gradually.' : 'Wait for a better entry point or a clearer trend before committing.'}`;
+   }
+ }
+
  el.innerHTML = `
  <!-- AI scanning header -->
  <div style="display:flex;align-items:center;gap:8px;margin-bottom:.875rem;padding:.6rem .875rem;background:linear-gradient(135deg,rgba(108,92,231,.08),rgba(108,92,231,.03));border:1px solid rgba(108,92,231,.18);border-radius:8px">
@@ -6535,6 +6603,11 @@ function buildAICard(el, ticker, profile) {
  <div style="font-size:.74rem;color:var(--text);line-height:1.65">${bearReason || (isSimple ? `${ticker} is subject to market volatility${d?` and has ~${vol}% annual price swings`:''}. Never invest more than you can afford to lose.` : `No specific risk breakdown available. Research ${ticker}'s competitive position and balance sheet on Yahoo Finance.`)}</div>
  </div>
  </div>
+
+ ${personalNote ? `
+ <!-- Personalised investor note -->
+ <div style="background:rgba(108,92,231,.07);border:1px solid rgba(108,92,231,.22);border-radius:9px;padding:.7rem .875rem;margin-bottom:.875rem;font-size:.76rem;color:var(--text2);line-height:1.6">${personalNote}</div>
+ ` : ''}
 
  <!-- Key metrics row -->
  ${d ? `
@@ -7815,6 +7888,9 @@ function loadProfilePage() {
  renderAvatarPicker('avatarPickerContainer');
  checkMilestones();
  loadQuizResult();
+ loadRiskTolerance();
+ loadGoals();
+ loadSectors();
  // Sync broker preference in settings
  const savedBroker = localStorage.getItem('ss_broker_'+(user?.email||''));
  const lbl = document.getElementById('currentBrokerLabel');
@@ -10263,6 +10339,148 @@ function loadQuizResult() {
   const profileIdx = parseInt(saved);
   if (isNaN(profileIdx) || profileIdx < 0 || profileIdx > 2) return;
   renderQuizResult(QUIZ_PROFILES[profileIdx], true);
+}
+
+// ── Risk Tolerance ──────────────────────────────────────────
+function updateRiskSlider(v) {
+  const el = document.getElementById('risk-val-label');
+  if (el) el.textContent = v + ' / 10';
+}
+async function saveRiskTolerance(v) {
+  if (!user) return;
+  user.risk_tolerance = parseInt(v);
+  localStorage.setItem('ss_risk_' + user.email, v);
+  if (sb) await sb.from('users').update({ risk_tolerance: parseInt(v) }).eq('email', user.email);
+  toast('Risk tolerance saved', 'success');
+}
+function loadRiskTolerance() {
+  if (!user) return;
+  const saved = localStorage.getItem('ss_risk_' + user.email) || user.risk_tolerance;
+  if (!saved) return;
+  const v = parseInt(saved);
+  if (isNaN(v)) return;
+  user.risk_tolerance = v;
+  const slider = document.getElementById('riskSlider');
+  if (slider) { slider.value = v; updateRiskSlider(v); }
+}
+
+// ── Investment Goals ────────────────────────────────────────
+async function saveGoals() {
+  if (!user) return;
+  const checked = [...document.querySelectorAll('#goals-list input[type=checkbox]:checked')].map(c => c.dataset.goal);
+  user.investment_goals = checked;
+  localStorage.setItem('ss_goals_' + user.email, JSON.stringify(checked));
+  if (sb) await sb.from('users').update({ investment_goals: JSON.stringify(checked) }).eq('email', user.email);
+  toast('Goals saved', 'success');
+}
+function loadGoals() {
+  if (!user) return;
+  let saved = localStorage.getItem('ss_goals_' + user.email);
+  if (!saved && user.investment_goals) saved = typeof user.investment_goals === 'string' ? user.investment_goals : JSON.stringify(user.investment_goals);
+  if (!saved) return;
+  try {
+    const goals = JSON.parse(saved);
+    user.investment_goals = goals;
+    document.querySelectorAll('#goals-list input[type=checkbox]').forEach(cb => {
+      cb.checked = goals.includes(cb.dataset.goal);
+    });
+  } catch(e) {}
+}
+
+// ── Preferred Sectors ───────────────────────────────────────
+function toggleSector(btn) {
+  const active = [...document.querySelectorAll('#sectors-list button.sector-on')];
+  if (btn.classList.contains('sector-on')) {
+    btn.classList.remove('sector-on');
+    btn.style.background = 'var(--card2)';
+    btn.style.borderColor = 'var(--border2)';
+    btn.style.color = 'var(--text2)';
+  } else {
+    if (active.length >= 3) { toast('Pick up to 3 sectors', 'warn'); return; }
+    btn.classList.add('sector-on');
+    btn.style.background = 'rgba(108,92,231,.18)';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = 'var(--accent2)';
+  }
+  saveSectors();
+}
+async function saveSectors() {
+  if (!user) return;
+  const selected = [...document.querySelectorAll('#sectors-list button.sector-on')].map(b => b.dataset.sector);
+  user.preferred_sectors = selected;
+  localStorage.setItem('ss_sectors_' + user.email, JSON.stringify(selected));
+  if (sb) await sb.from('users').update({ preferred_sectors: JSON.stringify(selected) }).eq('email', user.email);
+  const msg = document.getElementById('sector-save-msg');
+  if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 2000); }
+}
+function loadSectors() {
+  if (!user) return;
+  let saved = localStorage.getItem('ss_sectors_' + user.email);
+  if (!saved && user.preferred_sectors) saved = typeof user.preferred_sectors === 'string' ? user.preferred_sectors : JSON.stringify(user.preferred_sectors);
+  if (!saved) return;
+  try {
+    const sectors = JSON.parse(saved);
+    user.preferred_sectors = sectors;
+    document.querySelectorAll('#sectors-list button').forEach(btn => {
+      if (sectors.includes(btn.dataset.sector)) {
+        btn.classList.add('sector-on');
+        btn.style.background = 'rgba(108,92,231,.18)';
+        btn.style.borderColor = 'var(--accent)';
+        btn.style.color = 'var(--accent2)';
+      }
+    });
+  } catch(e) {}
+}
+
+// ── Stocks For You ──────────────────────────────────────────
+const SECTOR_TICKERS = {
+  Technology: ['AAPL','MSFT','NVDA','META','GOOGL','AMD'],
+  Healthcare: ['JNJ','UNH','PFE','ABBV','MRK','LLY'],
+  Finance: ['JPM','BAC','GS','MS','V','MA'],
+  Energy: ['XOM','CVX','COP','SLB','OXY','BP'],
+  Consumer: ['AMZN','TSLA','NKE','SBUX','MCD','TGT'],
+  Crypto: ['BTC','ETH','SOL','BNB','XRP'],
+  Defense: ['LMT','RTX','NOC','GD','BA'],
+  'Real Estate': ['AMT','PLD','EQIX','SPG','O'],
+  Industrials: ['CAT','DE','HON','GE','MMM'],
+  Retail: ['WMT','COST','TGT','HD','LOW'],
+};
+function renderStocksForYou() {
+  const el = document.getElementById('stocks-for-you');
+  if (!el) return;
+  const sectors = user?.preferred_sectors || [];
+  const profileIdx = user?.investor_profile ?? -1;
+  if (!sectors.length && profileIdx < 0) { el.style.display = 'none'; return; }
+
+  let picks = [];
+  sectors.forEach(s => { if (SECTOR_TICKERS[s]) picks.push(...SECTOR_TICKERS[s].slice(0,2)); });
+
+  // fallback by profile if no sectors set
+  if (!picks.length) {
+    picks = profileIdx === 0 ? ['JNJ','V','MCD','PG','KO','WMT'] :
+            profileIdx === 2 ? ['NVDA','TSLA','AMD','SOL','ETH','META'] :
+            ['AAPL','MSFT','AMZN','GOOGL','JPM','UNH'];
+  }
+
+  picks = [...new Set(picks)].slice(0, 6);
+  el.style.display = 'block';
+
+  const profileName = profileIdx >= 0 ? QUIZ_PROFILES[profileIdx].type : null;
+  const sectorLabel = sectors.length ? sectors.join(', ') : 'your profile';
+
+  el.innerHTML = `
+  <div style="font-size:.62rem;color:var(--text3);letter-spacing:.08em;font-weight:700;margin-bottom:.75rem"> STOCKS FOR YOU${profileName ? ` · ${profileName.toUpperCase()}` : ''}</div>
+  <div style="font-size:.74rem;color:var(--text3);margin-bottom:.875rem">${sectors.length ? 'Based on your interest in ' + sectorLabel : 'Matched to your investor type'}</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px">
+    ${picks.map(t => {
+      const found = TICKERS.find(e=>e.t===t);
+      const tp = ['BTC','ETH','SOL','BNB','XRP'].includes(t) ? 'c' : 's';
+      return `<button onclick="goAsset('${t}','${tp}')" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-family:inherit;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'">
+        <div style="font-size:.78rem;font-weight:800;color:var(--accent2);font-family:'Manrope',sans-serif">${t}</div>
+        ${found ? `<div style="font-size:.65rem;color:var(--text3);margin-top:1px">${found.n.slice(0,16)}</div>` : ''}
+      </button>`;
+    }).join('')}
+  </div>`;
 }
 
 function renderReferralSection(containerId) {
