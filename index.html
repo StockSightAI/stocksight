@@ -1933,6 +1933,59 @@ html{scroll-behavior:smooth}
  </div>
  </div>
 
+ <div class="psec" id="p-quiz">
+  <div class="psec-title">Investor Profile</div>
+
+  <!-- investor type result / empty state -->
+  <div class="sg">
+    <div class="sg-lbl">INVESTOR TYPE</div>
+    <div id="quiz-result-banner" style="display:none;border-radius:12px;padding:1rem 1.1rem;border:1px solid var(--border2);margin-bottom:.5rem">
+      <div id="quiz-result-type" style="font-size:1.1rem;font-weight:800;font-family:'Manrope',sans-serif;margin-bottom:4px"></div>
+      <div id="quiz-result-desc" style="font-size:.76rem;color:var(--text2);line-height:1.6;margin-bottom:.75rem"></div>
+      <button onclick="openQuizModal()" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 12px;font-family:inherit;font-size:.74rem;font-weight:600;cursor:pointer">Retake Quiz →</button>
+    </div>
+    <div id="quiz-empty-state">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center">
+        <div style="font-size:.82rem;color:var(--text2);margin-bottom:.75rem">Answer 5 quick questions and we'll personalise your experience.</div>
+        <button onclick="openQuizModal()" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:8px;padding:9px 22px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer">Take the Quiz 🎯</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- risk tolerance slider -->
+  <div class="sg" style="margin-top:1rem">
+    <div class="sg-lbl">RISK TOLERANCE</div>
+    <div style="padding:.25rem 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+        <span style="font-size:.74rem;color:var(--text2)">Conservative</span>
+        <span id="risk-val-label" style="font-size:.78rem;font-weight:700;color:var(--accent2);font-family:'Manrope',sans-serif">5 / 10</span>
+        <span style="font-size:.74rem;color:var(--text2)">Aggressive</span>
+      </div>
+      <input type="range" id="riskSlider" min="1" max="10" value="5" step="1"
+        style="width:100%;accent-color:var(--accent);cursor:pointer"
+        oninput="updateRiskSlider(this.value)"
+        onchange="saveRiskTolerance(this.value)">
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span style="font-size:.62rem;color:var(--text3)">Bonds &amp; dividends</span>
+        <span style="font-size:.62rem;color:var(--text3)">High-growth &amp; crypto</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- investment goals -->
+  <div class="sg" style="margin-top:1rem">
+    <div class="sg-lbl">INVESTMENT GOALS</div>
+    <div style="display:flex;flex-direction:column;gap:8px;padding:.25rem 0" id="goals-list"></div>
+  </div>
+
+  <!-- preferred sectors -->
+  <div class="sg" style="margin-top:1rem">
+    <div class="sg-lbl">PREFERRED SECTORS <span style="color:var(--text3);font-weight:400;letter-spacing:0">(pick up to 3)</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;padding:.25rem 0" id="sectors-list"></div>
+    <div id="sector-save-msg" style="display:none;font-size:.7rem;color:var(--green);margin-top:6px"> Saved</div>
+  </div>
+ </div>
+
  </div>
  </div>
 
@@ -2009,58 +2062,6 @@ html{scroll-behavior:smooth}
 
 </div>
 
- <div class="psec" id="p-quiz">
-  <div class="psec-title">Investor Profile</div>
-
-  <!-- investor type result / empty state -->
-  <div class="sg">
-    <div class="sg-lbl">INVESTOR TYPE</div>
-    <div id="quiz-result-banner" style="display:none;border-radius:12px;padding:1rem 1.1rem;border:1px solid var(--border2);margin-bottom:.5rem">
-      <div id="quiz-result-type" style="font-size:1.1rem;font-weight:800;font-family:'Manrope',sans-serif;margin-bottom:4px"></div>
-      <div id="quiz-result-desc" style="font-size:.76rem;color:var(--text2);line-height:1.6;margin-bottom:.75rem"></div>
-      <button onclick="openQuizModal()" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 12px;font-family:inherit;font-size:.74rem;font-weight:600;cursor:pointer">Retake Quiz →</button>
-    </div>
-    <div id="quiz-empty-state">
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center">
-        <div style="font-size:.82rem;color:var(--text2);margin-bottom:.75rem">Answer 5 quick questions and we'll personalise your experience.</div>
-        <button onclick="openQuizModal()" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:8px;padding:9px 22px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer">Take the Quiz 🎯</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- risk tolerance slider -->
-  <div class="sg" style="margin-top:1rem">
-    <div class="sg-lbl">RISK TOLERANCE</div>
-    <div style="padding:.25rem 0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
-        <span style="font-size:.74rem;color:var(--text2)">Conservative</span>
-        <span id="risk-val-label" style="font-size:.78rem;font-weight:700;color:var(--accent2);font-family:'Manrope',sans-serif">5 / 10</span>
-        <span style="font-size:.74rem;color:var(--text2)">Aggressive</span>
-      </div>
-      <input type="range" id="riskSlider" min="1" max="10" value="5" step="1"
-        style="width:100%;accent-color:var(--accent);cursor:pointer"
-        oninput="updateRiskSlider(this.value)"
-        onchange="saveRiskTolerance(this.value)">
-      <div style="display:flex;justify-content:space-between;margin-top:4px">
-        <span style="font-size:.62rem;color:var(--text3)">Bonds &amp; dividends</span>
-        <span style="font-size:.62rem;color:var(--text3)">High-growth &amp; crypto</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- investment goals -->
-  <div class="sg" style="margin-top:1rem">
-    <div class="sg-lbl">INVESTMENT GOALS</div>
-    <div style="display:flex;flex-direction:column;gap:8px;padding:.25rem 0" id="goals-list"></div>
-  </div>
-
-  <!-- preferred sectors -->
-  <div class="sg" style="margin-top:1rem">
-    <div class="sg-lbl">PREFERRED SECTORS <span style="color:var(--text3);font-weight:400;letter-spacing:0">(pick up to 3)</span></div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;padding:.25rem 0" id="sectors-list"></div>
-    <div id="sector-save-msg" style="display:none;font-size:.7rem;color:var(--green);margin-top:6px"> Saved</div>
-  </div>
- </div>
 
 </div><!-- end prof-layout content -->
 
