@@ -224,10 +224,10 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .pick.pc{border-color:rgba(245,158,11,.45);color:var(--gold);background:rgba(245,158,11,.08)}
 
 /* CARDS */
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1rem;transition:border-color .2s}
-.card-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;background:linear-gradient(135deg,var(--card),var(--card2))}
-.card-hdr-title{font-family:'Manrope',sans-serif;font-size:.84rem;font-weight:700;letter-spacing:-.01em}
-.card-hdr-sub{font-size:.62rem;color:var(--text3)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.25rem;transition:border-color .2s}
+.card-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;background:linear-gradient(135deg,var(--card),var(--card2))}
+.card-hdr-title{font-family:'Manrope',sans-serif;font-size:.97rem;font-weight:800;letter-spacing:-.01em}
+.card-hdr-sub{font-size:.66rem;color:var(--text3);margin-top:2px}
 
 /* ASSET HEADER */
 .asset-top{background:linear-gradient(135deg,var(--card),var(--card2));border:1px solid var(--border2);border-radius:var(--r);padding:1.4rem;margin-bottom:1rem;position:relative;overflow:hidden}
@@ -303,8 +303,8 @@ tr:hover td{background:var(--card2)}
 .psec{display:none}
 .psec.on{display:block}
 .psec-title{font-family:'Manrope',sans-serif;font-size:1.08rem;font-weight:700;margin-bottom:1.1rem;padding-bottom:.875rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;letter-spacing:-.02em}
-.sg{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
-.sg-lbl{font-size:.61rem;color:var(--text3);letter-spacing:.12em;padding:9px 14px 6px;background:var(--card2);border-bottom:1px solid var(--border);font-weight:600}
+.sg{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.1rem}
+.sg-lbl{font-size:.63rem;color:var(--text3);letter-spacing:.12em;padding:10px 16px 7px;background:var(--card2);border-bottom:1px solid var(--border);font-weight:700}
 .sg-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);gap:12px}
 .sg-row:last-child{border-bottom:none}
 .sg-label{font-size:.8rem;font-weight:500}
@@ -797,13 +797,25 @@ header{margin-bottom:2rem}
 body.mode-simple .adv-only { display: none !important; }
 /* Hide beginner-only elements in advanced mode */
 body.mode-advanced .simple-only { display: none !important; }
-/* Simple mode: bigger friendlier fonts on key areas */
+/* Simple (Experienced) mode */
 body.mode-simple .search-wrap input { font-size: .95rem; }
 body.mode-simple .welcome-bar { background: linear-gradient(135deg,rgba(108,92,231,.12),rgba(0,180,216,.06)); }
 body.mode-simple #tabBar .tab { font-size: .75rem; }
 /* Advanced mode: tighter compact feel */
 body.mode-advanced .welcome-bar { padding: 10px 16px; }
 body.mode-advanced .card-hdr { padding: .75rem 1rem; }
+/* Beginner mode: maximum breathing room, bigger everything */
+body.mode-beginner .card { margin-bottom: 1.75rem; border-radius: 18px; }
+body.mode-beginner .card-hdr { padding: 20px 24px; }
+body.mode-beginner .card-hdr-title { font-size: 1.15rem; font-weight: 900; }
+body.mode-beginner .card-hdr-sub { font-size: .78rem; margin-top: 4px; }
+body.mode-beginner .sg { margin-bottom: 1.5rem; border-radius: 16px; }
+body.mode-beginner .sg-lbl { font-size: .72rem; padding: 12px 18px 9px; letter-spacing: .1em; }
+body.mode-beginner .sg-row { padding: 16px 18px; }
+body.mode-beginner .search-wrap input { font-size: 1.05rem; padding: 14px 18px; border-radius: 14px; }
+body.mode-beginner #tabBar .tab { font-size: .8rem; padding: 10px 18px; font-weight: 700; }
+body.mode-beginner .welcome-bar { padding: 18px 20px; background: linear-gradient(135deg,rgba(108,92,231,.15),rgba(0,180,216,.08)); border-radius: 16px; margin-bottom: 1.5rem; }
+body.mode-beginner .main-content { padding: 20px 18px; gap: 0; }
 .ob-check-card{background:var(--card);border:1px solid rgba(108,92,231,.3);border-radius:14px;padding:1.25rem;margin-bottom:1rem;position:relative;overflow:hidden}
 .ob-check-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(108,92,231,.06),transparent);pointer-events:none}
 .ob-check-item{display:flex;align-items:center;gap:12px;padding:.625rem 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .15s}
@@ -1830,10 +1842,11 @@ html{scroll-behavior:smooth}
  <div class="sg">
  <div class="sg-lbl">INVESTOR MODE</div>
  <div class="sg-row">
- <div><div class="sg-label">Display mode</div><div class="sg-desc">Simple = beginner-friendly labels · Advanced = full data</div></div>
+ <div><div class="sg-label">Display mode</div><div class="sg-desc">Beginner = super simple · Experienced = standard · Advanced = full data</div></div>
  <div class="tog-row">
- <button class="tog on-g" id="mS" onclick="setMode('simple')"> Simple</button>
- <button class="tog" id="mA" onclick="setMode('advanced')"> Advanced</button>
+ <button class="tog" id="mB" onclick="setMode('beginner')">🐣 Beginner</button>
+ <button class="tog on-g" id="mS" onclick="setMode('simple')">📈 Experienced</button>
+ <button class="tog" id="mA" onclick="setMode('advanced')">⚡ Advanced</button>
  </div>
  </div>
  </div>
@@ -3793,35 +3806,35 @@ function renderPortfolioChart(containerId) {
 function renderHomeSections(t) {
  const el = document.getElementById('homeSections');
  if(!el) return;
- const isSimple = mode==='simple';
+ const isSimple = mode==='simple' || mode==='beginner';
 
  if (isSimple) {
  el.innerHTML = `
  <div class="card" style="margin-bottom:1rem">
  <div class="card-hdr" style="background:linear-gradient(135deg,rgba(108,92,231,.08),rgba(108,92,231,.03))">
- <div class="card-hdr-title" style="color:var(--accent2)"> What's happening in markets today?</div>
- <div class="card-hdr-sub">Plain-English summary — no jargon</div>
+ <div class="card-hdr-title" style="color:var(--accent2)">${mode==='beginner' ? '🌅 What\'s going on today?' : ' What\'s happening in markets today?'}</div>
+ <div class="card-hdr-sub">${mode==='beginner' ? 'A super simple summary of what\'s happening with money and stocks today' : 'Plain-English summary — no jargon'}</div>
  </div>
  <div style="padding:.875rem 1rem;font-size:.82rem;color:var(--text2);line-height:1.75">${getDailyBrief()}</div>
  </div>
  <div class="card" style="margin-bottom:1rem">
  <div class="card-hdr">
- <div class="card-hdr-title"> Is the market scared or greedy right now?</div>
- <div class="card-hdr-sub">Lower = investors are fearful · Higher = investors are greedy</div>
+ <div class="card-hdr-title">${mode==='beginner' ? '😨 Are investors scared or excited right now?' : ' Is the market scared or greedy right now?'}</div>
+ <div class="card-hdr-sub">${mode==='beginner' ? 'Low score = people are worried. High score = people are feeling confident!' : 'Lower = investors are fearful · Higher = investors are greedy'}</div>
  </div>
  <div class="gauge-wrap" id="fg-container" style="padding:0"></div>
  </div>
  <div class="card" style="margin-bottom:1rem;overflow:visible">
  <div class="card-hdr">
- <div class="card-hdr-title"> Which industries are doing well today?</div>
- <div class="card-hdr-sub">Green = up · Red = down · Click any tile to explore stocks in that sector</div>
+ <div class="card-hdr-title">${mode==='beginner' ? '🏭 Which types of businesses are winning today?' : ' Which industries are doing well today?'}</div>
+ <div class="card-hdr-sub">${mode==='beginner' ? 'Green = doing great today 🟢 · Red = having a rough day 🔴' : 'Green = up · Red = down · Click any tile to explore stocks in that sector'}</div>
  </div>
  <div id="heatmap-container"></div>
  </div>
  <div class="card" style="margin-bottom:1rem;overflow:visible">
  <div class="card-hdr">
- <div class="card-hdr-title"> Today's market news</div>
- <div class="card-hdr-sub">Latest headlines from around the world</div>
+ <div class="card-hdr-title">${mode==='beginner' ? '📰 What\'s in the news today?' : ' Today\'s market news'}</div>
+ <div class="card-hdr-sub">${mode==='beginner' ? 'Big news stories that could affect stock prices' : 'Latest headlines from around the world'}</div>
  </div>
  <div id="tv-news" style="height:500px"></div>
  </div>
@@ -4662,21 +4675,26 @@ function updateThemeBtn(){
  const b=document.getElementById('themeBtn');
  if(b) b.innerHTML=theme==='dark'?icon('moon',15):icon('sun',15);
  const mb=document.getElementById('modeBtn');
- if(mb) mb.innerHTML=mode==='simple'
-  ?`${icon('book-open',13)}<span style="margin-left:4px">Beginner</span>`
+ if(mb) mb.innerHTML=mode==='beginner'
+  ?`${icon('smile',13)}<span style="margin-left:4px">Beginner</span>`
+  :mode==='simple'
+  ?`${icon('book-open',13)}<span style="margin-left:4px">Experienced</span>`
   :`${icon('zap',13)}<span style="margin-left:4px">Advanced</span>`;
 }
 function toggleMode(){
- mode = mode==='simple'?'advanced':'simple';
+ mode = mode==='beginner'?'simple':mode==='simple'?'advanced':'beginner';
  if(user) { try{ const u=JSON.parse(localStorage.getItem('ss3_u')||'{}'); if(u[user.email]) { u[user.email].mode=mode; localStorage.setItem('ss3_u',JSON.stringify(u)); } }catch{} }
  updateThemeBtn();
  applyModeLabels();
  renderHome(tab);
- toast(`Switched to ${mode==='simple'?'Beginner':'Advanced'} mode`, 'info', 2500);
+ const label = mode==='beginner'?'Beginner':mode==='simple'?'Experienced':'Advanced';
+ toast(`Switched to ${label} mode`, 'info', 2500);
 }
 function applyMode(save=true){
- const s=document.getElementById('mS'), a=document.getElementById('mA');
- if(s){ s.className='tog'+(mode==='simple'?' on-g':''); a.className='tog'+(mode==='advanced'?' on-gold':''); }
+ const b=document.getElementById('mB'), s=document.getElementById('mS'), a=document.getElementById('mA');
+ if(b) b.className='tog'+(mode==='beginner'?' on-g':'');
+ if(s) s.className='tog'+(mode==='simple'?' on-g':'');
+ if(a) a.className='tog'+(mode==='advanced'?' on-gold':'');
  if(save) saveP();
 }
 function setMode(m){ mode=m; applyMode(); setTimeout(()=>{ applyModeLabels(); reRenderCurrentView(); }, 0); }
@@ -5026,6 +5044,17 @@ function doSearch() {
  SIMPLE / ADVANCED MODE LABELS
  Call applyModeLabels() after any mode change
 ════════════════════════════════ */
+const BEGINNER_LABELS = {
+ 's': '📈 Markets', 'i': '🌍 Indexes', 'c': '₿ Crypto',
+ 'w': '⭐ My List', 'cmp': '⚖️ Compare', 'port': '💼 My Money', 'screen': '🔍 Find Stocks', 'pt': '🎮 Practice',
+ 'search_ph_s': 'Search for a company — like Apple or Tesla...',
+ 'search_ph_i': 'Search for a market — like S&P 500...',
+ 'search_ph_c': 'Search for a coin — like Bitcoin or Ethereum...',
+ 'go_btn_s': 'Look it up →',
+ 'go_btn_i': 'Look it up →',
+ 'go_btn_c': 'Look it up →',
+ 'go_btn': 'Look it up →',
+};
 const SIMPLE_LABELS = {
  's': 'Markets', 'i': 'Indexes', 'c': 'Crypto',
  'w': 'Watchlist', 'cmp': 'Compare', 'port': 'Portfolio', 'screen': 'Screener', 'pt': 'Paper Trade',
@@ -5050,12 +5079,14 @@ const ADV_LABELS = {
 };
 
 function applyModeLabels() {
- const L = mode === 'simple' ? SIMPLE_LABELS : ADV_LABELS;
- const isSimple = mode === 'simple';
+ const L = mode === 'beginner' ? BEGINNER_LABELS : mode === 'simple' ? SIMPLE_LABELS : ADV_LABELS;
+ const isSimple = mode === 'simple' || mode === 'beginner';
+ const isBeginner = mode === 'beginner';
 
- // Body class for CSS-level hiding
- document.body.classList.toggle('mode-simple', isSimple);
- document.body.classList.toggle('mode-advanced', !isSimple);
+ // Body class for CSS-level switching
+ document.body.classList.toggle('mode-beginner', isBeginner);
+ document.body.classList.toggle('mode-simple', mode === 'simple');
+ document.body.classList.toggle('mode-advanced', mode === 'advanced');
 
  // Tab text — update all tabs
  const tabMap = {s:'tab-s',i:'tab-s',c:'tab-s',w:'tab-w',cmp:'tab-cmp',port:'tab-port',screen:'tab-screen',pt:'tab-pt'};
@@ -5132,7 +5163,7 @@ function renderHome(t) {
  const tickerType = t === 'c' ? 'c' : t === 'i' ? 'i' : 's';
  const defaultChartSym = tvSym(ticker, tickerType) || (t==='c' ? 'BITSTAMP:BTCUSD' : t==='i' ? 'SP:SPX' : 'NASDAQ:AAPL');
 
- const isSimple = mode === 'simple';
+ const isSimple = mode === 'simple' || mode === 'beginner';
 
  const ovLabel = {
  s: ' Top Movers — Stocks',
@@ -5194,16 +5225,16 @@ function renderHome(t) {
 
  <div class="card" style="margin-bottom:.9rem;overflow:visible">
  <div class="card-hdr">
- <div class="card-hdr-title">${isSimple ? ' What\'s Moving Today?' : ' Top Movers of the Day'}</div>
- <div class="card-hdr-sub">${isSimple ? 'Stocks going up and down the most right now' : 'Biggest gainers & losers · real-time'}</div>
+ <div class="card-hdr-title">${mode==='beginner' ? '🔥 What\'s Hot Right Now?' : isSimple ? ' What\'s Moving Today?' : ' Top Movers of the Day'}</div>
+ <div class="card-hdr-sub">${mode==='beginner' ? 'These stocks are going up or down the most today — like a scoreboard!' : isSimple ? 'Stocks going up and down the most right now' : 'Biggest gainers & losers · real-time'}</div>
  </div>
  <div id="tv-ov-${uid}" style="height:${isSimple?380:450}px"></div>
  </div>
  <div class="card" style="margin-bottom:1rem">
  <div class="card-hdr">
- <div class="card-hdr-title">${isSimple ? ` ${displayName} Price Chart` : `${displayName} (${ticker}) — ${chartLabel}`}</div>
+ <div class="card-hdr-title">${mode==='beginner' ? `📊 ${displayName} — Price Over Time` : isSimple ? ` ${displayName} Price Chart` : `${displayName} (${ticker}) — ${chartLabel}`}</div>
  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
- <div class="card-hdr-sub">${isSimple ? 'The price over time — higher = more valuable' : 'Click any quick pick · drag & zoom · add indicators'}</div>
+ <div class="card-hdr-sub">${mode==='beginner' ? 'When the line goes up = the price went up. Simple as that! 📈' : isSimple ? 'The price over time — higher = more valuable' : 'Click any quick pick · drag & zoom · add indicators'}</div>
  ${!isSimple ? `<button onclick="changeDashStock('${t}')" style="font-size:.62rem;padding:2px 9px;border-radius:6px;border:1px solid var(--border2);background:var(--card2);color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text2)'"> Change</button>` : ''}
  </div>
  </div>
@@ -5267,7 +5298,7 @@ function renderAsset(ticker, name, type, overrideSym) {
  const typeLabel = {s:'STOCK',i:'INDEX',c:'CRYPTO'}[type] || 'ASSET';
  const bc = {s:'b-s',i:'b-i',c:'b-c'}[type] || 'b-s';
  const accentColor = {s:'var(--accent2)',i:'var(--teal)',c:'var(--gold)'}[type]||'var(--accent2)';
- const isSimple = mode === 'simple';
+ const isSimple = mode === 'simple' || mode === 'beginner';
  const simpleTypeLabel = {s:'Company Stock',i:'Market Index',c:'Cryptocurrency'}[type]||'Asset';
 
  // Exchange info
@@ -5475,7 +5506,7 @@ function renderAsset(ticker, name, type, overrideSym) {
  <!-- AI Analysis -->
  <div class="card" style="margin-bottom:1rem">
  <div class="card-hdr">
- <div class="card-hdr-title"> ${isSimple ? 'Should You Buy This?' : 'StockSight AI — Investment Analysis'}</div>
+ <div class="card-hdr-title"> ${mode==='beginner' ? '🤖 Should I Buy This? (AI Says...)' : isSimple ? 'Should You Buy This?' : 'StockSight AI — Investment Analysis'}</div>
  <div class="card-hdr-sub">${isSimple ? 'Simple breakdown' : 'Buy / Hold / Sell · not financial advice'}</div>
  </div>
  <div id="aiContent" style="padding:1rem"><div style="display:flex;align-items:center;gap:8px;color:var(--text3);font-size:.78rem"><div class="live-dot" style="background:var(--accent)"></div>Analyzing...</div></div>
@@ -6169,7 +6200,7 @@ function renderPrediction(ticker, name, type) {
 
  const data = ASSET_DATA[ticker] || (type==='c'?[3,80,'Crypto',40]:[1.0,25,'Stock',10]);
  const [beta, vol, sector, growth5yr] = data;
- const isSimple = mode === 'simple';
+ const isSimple = mode === 'simple' || mode === 'beginner';
  const currSym = {USD:'$',EUR:'€',GBP:'£',JPY:'¥'}[currency]||'$';
  const currRate = {USD:1,EUR:0.92,GBP:0.79,JPY:149.5}[currency]||1;
 
@@ -6490,7 +6521,7 @@ function renderAIAnalysis(ticker, name, type) {
 
 function buildAICard(el, ticker, profile) {
  const scoreColor = profile.score >= 75 ? 'var(--green)' : profile.score >= 55 ? 'var(--gold)' : 'var(--red)';
- const isSimple = mode === 'simple';
+ const isSimple = mode === 'simple' || mode === 'beginner';
  const kbp = KB.profiles[ticker];
  const d = ASSET_DATA[ticker];
 
