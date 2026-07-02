@@ -117,26 +117,29 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .user-name{font-size:.76rem;color:var(--text2);font-weight:500}
 
 /* GATE */
-.gate-body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:74vh;text-align:center;position:relative;overflow:hidden}
-.gate-body::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 0%,rgba(108,92,231,0.10) 0%,transparent 55%)}
-@keyframes meshFloat{0%{transform:scale(1) translate(0px,0px)}33%{transform:scale(1.04) translate(-12px,8px)}66%{transform:scale(.97) translate(10px,-6px)}100%{transform:scale(1.02) translate(-6px,12px)}}
+.gate-body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;position:relative;overflow:hidden}
 @keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.8}}
-.gate-tag{display:inline-flex;align-items:center;gap:6px;font-size:.64rem;color:var(--accent2);letter-spacing:.16em;margin-bottom:.9rem;font-weight:600;background:var(--glow2);border:1px solid rgba(108,92,231,.25);padding:4px 14px;border-radius:20px}
-.gate-title{font-family:'Manrope',sans-serif;font-size:2.6rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.8rem;line-height:1.08}
-.gate-title span{color:var(--accent2)}
-.gate-sub{font-size:.9rem;color:var(--text2);line-height:1.75;max-width:440px;margin-bottom:2rem}
-.gate-features{display:flex;flex-direction:column;gap:9px;margin-bottom:2rem;text-align:left}
-.gf{display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--text2)}
-.gf-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
-.gate-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%}
-@media(max-width:480px){
+.gate-tag{display:none}
+.gate-title{font-family:'Manrope',sans-serif;font-size:3.5rem;font-weight:900;letter-spacing:-.05em;margin-bottom:1rem;line-height:.97;max-width:700px}
+.gate-title span{color:var(--green)}
+.gate-sub{font-size:.95rem;color:var(--text2);line-height:1.75;max-width:480px;margin-bottom:2rem}
+.gate-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%;margin-bottom:.75rem}
+@media(max-width:520px){
  .gate-btns{flex-direction:column}
- .btn-gate-main,.btn-gate-ghost{width:100%;text-align:center;padding:13px 20px}
+ .btn-gate-main,.btn-gate-ghost{width:100%;text-align:center;padding:14px 20px}
+ .gate-title{font-size:2.3rem}
 }
-.btn-gate-main{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:13px 32px;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:background .15s}
-.btn-gate-main:hover{background:var(--accent3)}
-.btn-gate-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:12px;padding:13px 26px;font-family:inherit;font-size:.92rem;cursor:pointer;transition:all .15s;font-weight:500}
-.btn-gate-ghost:hover{color:var(--text);border-color:rgba(108,92,231,.4);background:var(--glow2)}
+.btn-gate-main{background:var(--green);color:#0a1a12;border:none;border-radius:10px;padding:14px 34px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 2px 16px rgba(0,201,122,.22);transition:all .18s;letter-spacing:-.01em}
+.btn-gate-main:hover{background:#00e68a;box-shadow:0 4px 24px rgba(0,201,122,.35);transform:translateY(-1px)}
+.btn-gate-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:10px;padding:14px 28px;font-family:inherit;font-size:.95rem;cursor:pointer;transition:all .18s;font-weight:500}
+.btn-gate-ghost:hover{color:var(--text);border-color:var(--border3);background:var(--card)}
+.gate-pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem;max-width:700px;margin:2.25rem auto 0;text-align:left;width:100%}
+.gate-pillar{padding:1.2rem 1.3rem;border:1px solid var(--border);border-radius:14px;background:var(--card);transition:border-color .2s}
+.gate-pillar:hover{border-color:var(--border2)}
+.gp-num{font-family:'Manrope',sans-serif;font-size:.58rem;font-weight:800;color:var(--green);letter-spacing:.16em;margin-bottom:.55rem;opacity:.7}
+.gp-title{font-family:'Manrope',sans-serif;font-size:.84rem;font-weight:800;margin-bottom:.45rem;letter-spacing:-.015em;line-height:1.25}
+.gp-body{font-size:.71rem;color:var(--text2);line-height:1.65}
+@media(max-width:640px){.gate-pillars{grid-template-columns:1fr}}
 
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(10px) saturate(180%);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
@@ -373,8 +376,8 @@ tr:hover td{background:var(--card2)}
  .poll-pct{font-size:.9rem}
 
  /* ── Gate/landing page title ── */
- .gate-title{font-size:1.65rem;margin-bottom:.6rem}
- .gate-sub{font-size:.82rem;margin-bottom:1.4rem}
+ .gate-title{font-size:2rem;margin-bottom:.75rem;letter-spacing:-.03em}
+ .gate-sub{font-size:.84rem;margin-bottom:1.5rem}
 
  /* ── Footer ── */
  #siteFooter{padding:1.25rem .875rem 1.5rem;gap:8px}
@@ -969,88 +972,62 @@ html{scroll-behavior:smooth}
  </header>
  <div class="gate-body">
  <div style="position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center">
- <div class="gate-tag">FREE FOREVER &nbsp;·&nbsp; REAL-TIME DATA</div>
- <div class="gate-title">The smarter way to<br><span>track your investments</span></div>
- <div class="gate-sub">Live charts, AI-powered analysis, price predictions, and a full portfolio tracker, all in one clean dashboard. Completely free.</div>
+
+ <div class="gate-title">Stock research<br>for people who aren't<br><span>stock people.</span> Yet.</div>
+ <div class="gate-sub">StockSight reads the market, explains what it means, and tells you what to watch. Free. No credit card. No finance degree required.</div>
+
+ <div class="gate-btns">
+ <button class="btn-gate-main" onclick="bootGuest()">Look up any stock →</button>
+ <button class="btn-gate-ghost" onclick="openModal('signup')">Save your data — it's free</button>
+ </div>
+ <div style="font-size:.69rem;color:var(--text3);margin-bottom:2.25rem">Already have an account? <span style="color:var(--accent2);cursor:pointer;font-weight:500" onclick="openModal('login')">Sign in →</span></div>
 
  <!-- Product preview -->
- <div style="margin:1.5rem 0;width:100%;max-width:560px;background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;box-shadow:0 8px 32px var(--shadow)">
+ <div style="width:100%;max-width:520px;background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.5)">
  <div style="padding:10px 14px;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">
- <div style="width:10px;height:10px;border-radius:50%;background:#ff5f57;flex-shrink:0"></div>
- <div style="width:10px;height:10px;border-radius:50%;background:#febc2e;flex-shrink:0"></div>
- <div style="width:10px;height:10px;border-radius:50%;background:#28c840;flex-shrink:0"></div>
- <span style="font-size:.7rem;color:var(--text3);margin:0 auto">stocksight.app</span>
+ <div style="width:9px;height:9px;border-radius:50%;background:#ff5f57;flex-shrink:0"></div>
+ <div style="width:9px;height:9px;border-radius:50%;background:#febc2e;flex-shrink:0"></div>
+ <div style="width:9px;height:9px;border-radius:50%;background:#28c840;flex-shrink:0"></div>
+ <span style="font-size:.68rem;color:var(--text3);margin:0 auto;letter-spacing:.03em">stocksight.app</span>
  </div>
  <div style="padding:1.25rem;display:flex;flex-direction:column;gap:.625rem">
  <div style="display:flex;align-items:center;justify-content:space-between">
  <div style="display:flex;align-items:center;gap:8px">
- <span style="font-size:.75rem;font-weight:700;color:var(--text)">AAPL</span>
+ <span style="font-size:.8rem;font-weight:800;color:var(--text);font-family:'Manrope',sans-serif">AAPL</span>
  <span style="font-size:.65rem;color:var(--text3)">Apple Inc.</span>
  </div>
- <span id="prevPrice" style="font-family:'Manrope',sans-serif;font-size:.9rem;font-weight:800;color:var(--green)">$189.34</span>
+ <span id="prevPrice" style="font-family:'Manrope',sans-serif;font-size:.95rem;font-weight:800;color:var(--green)">$189.34</span>
  </div>
- <canvas id="prevChart" height="50" style="width:100%;border-radius:6px"></canvas>
+ <canvas id="prevChart" height="52" style="width:100%;border-radius:6px"></canvas>
  <div style="display:flex;align-items:center;gap:8px">
- <span id="prevVerdict" style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(0,201,122,.15);color:var(--green);border:1px solid rgba(0,201,122,.3)"> BUY</span>
+ <span id="prevVerdict" style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(0,201,122,.15);color:var(--green);border:1px solid rgba(0,201,122,.3)">● BUY</span>
  <span style="font-size:.62rem;color:var(--text3)">StockSight Score: 82/100</span>
  </div>
- <div style="background:var(--card2);border-radius:8px;height:10px;width:75%;animation:shimmer 1.8s infinite"></div>
- <div style="background:var(--card2);border-radius:8px;height:10px;width:55%;animation:shimmer 1.8s .3s infinite"></div>
+ <div style="background:var(--card2);border-radius:6px;height:8px;width:72%;animation:shimmer 1.8s infinite"></div>
+ <div style="background:var(--card2);border-radius:6px;height:8px;width:50%;animation:shimmer 1.8s .3s infinite"></div>
  </div>
- <div style="font-size:.7rem;color:var(--text3);padding:8px 0;border-top:1px solid var(--border);text-align:center">Live dashboard. Search any stock, index, or crypto.</div>
- </div>
-
- <div class="gate-features">
- <div class="gf"><div class="gf-dot"></div><span><strong>Live data</strong> from the same feed as Google Finance, Bloomberg &amp; Reuters</span></div>
- <div class="gf"><div class="gf-dot"></div><span><strong>AI analysis</strong> with buy/hold/sell verdicts in plain English</span></div>
- <div class="gf"><div class="gf-dot"></div><span><strong>Price predictions</strong> on statistical forecast charts you can drag to explore</span></div>
- <div class="gf"><div class="gf-dot"></div><span><strong>Stocks, indexes &amp; crypto</strong> searchable by name or ticker</span></div>
- <div class="gf"><div class="gf-dot"></div><span><strong>Watchlist, portfolio &amp; compare</strong> in one place</span></div>
- <div class="gf"><div class="gf-dot"></div><span><strong>Stays logged in</strong> so your data is saved automatically</span></div>
- </div>
- <div class="gate-btns">
- <button class="btn-gate-main" onclick="openModal('signup')">Create free account →</button>
- <button class="btn-gate-ghost" onclick="openModal('login')">Already have an account</button>
- <button class="btn-gate-ghost" onclick="bootGuest()" style="margin-top:6px;width:100%">Explore without signing up →</button>
+ <div style="font-size:.68rem;color:var(--text3);padding:9px 0;border-top:1px solid var(--border);text-align:center;letter-spacing:.02em">Search any stock, index, or crypto — live.</div>
  </div>
 
- <div style="margin-top:1.5rem;font-size:.7rem;color:var(--text3);text-align:center">
- No credit card required. Works in any browser.
+ <!-- 3 numbered pillars -->
+ <div class="gate-pillars">
+ <div class="gate-pillar">
+ <div class="gp-num">01</div>
+ <div class="gp-title">It tells you what a stock actually means</div>
+ <div class="gp-body">Live charts, a plain-English verdict (Buy / Hold / Sell), price predictions, and analyst targets — without the jargon.</div>
+ </div>
+ <div class="gate-pillar">
+ <div class="gp-num">02</div>
+ <div class="gp-title">It keeps track of what you own</div>
+ <div class="gp-body">Portfolio tracker, watchlist, paper trading to practice with fake money, and a compare tool. All in one place.</div>
+ </div>
+ <div class="gate-pillar">
+ <div class="gp-num">03</div>
+ <div class="gp-title">It costs nothing. Not now, not later.</div>
+ <div class="gp-body">No trial. No paywall. No Pro plan. The same live data used by Bloomberg and Reuters — completely free.</div>
+ </div>
  </div>
 
- <!-- Why make an account + Why StockSight -->
- <div style="margin-top:1.75rem;display:grid;grid-template-columns:1fr 1fr;gap:.75rem;max-width:560px;margin-left:auto;margin-right:auto">
- <div style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:.75rem">
- <div style="font-size:.72rem;font-weight:700;margin-bottom:.625rem;display:flex;align-items:center;gap:5px;color:var(--accent2)">Why make an account?</div>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 10px">
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> Watchlist</div>
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> Portfolio tracker</div>
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> Paper trading</div>
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> Community voting</div>
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> AI Chat</div>
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> Price alerts</div>
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> Stock notes</div>
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> Badges &amp; streaks</div>
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> Broker integration</div>
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> Custom settings</div>
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> Custom homepage</div>
- <div style="font-size:.65rem;color:var(--text2);padding:2px 0"> Weekly digest</div>
- </div>
- </div>
- <div style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:.75rem">
- <div style="font-size:.72rem;font-weight:700;margin-bottom:.625rem;display:flex;align-items:center;gap:5px;color:var(--accent2)">Why StockSight?</div>
- <div style="display:flex;flex-direction:column;gap:5px">
- <div style="font-size:.65rem;color:var(--text2);display:flex;gap:6px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px"></span>Completely free. No subscription, no paywall</div>
- <div style="font-size:.65rem;color:var(--text2);display:flex;gap:6px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px"></span>AI analysis, predictions &amp; chat on every stock</div>
- <div style="font-size:.65rem;color:var(--text2);display:flex;gap:6px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px"></span>Paper trading to practice risk-free</div>
- <div style="font-size:.65rem;color:var(--text2);display:flex;gap:6px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px"></span>Stocks, indexes, AND crypto in one place</div>
- <div style="font-size:.65rem;color:var(--text2);display:flex;gap:6px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px"></span>No ads, no clutter. Built for clarity</div>
- <div style="font-size:.65rem;color:var(--text2);display:flex;gap:6px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px"></span>One-click broker integration</div>
- <div style="font-size:.65rem;color:var(--text2);display:flex;gap:6px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px"></span>Beginner &amp; advanced modes</div>
- <div style="font-size:.65rem;color:var(--text2);display:flex;gap:6px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px"></span>Weekly AI market digest</div>
- </div>
- </div>
- </div>
  </div><!-- end z-index wrapper -->
  </div>
 </div>
@@ -3838,7 +3815,7 @@ function renderHomeSections(t) {
  </div>
  <div id="tv-news" style="height:500px"></div>
  </div>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:stretch">
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:stretch;margin-top:1.5rem">
  <div class="card" id="sotdCard" style="margin:0;overflow:visible;display:flex;flex-direction:column"></div>
  <div class="card" id="trendingCard" style="margin:0;overflow:visible;display:flex;flex-direction:column"></div>
  </div>`;
@@ -9991,19 +9968,21 @@ function renderAnalystTargets(ticker, curPrice) {
  const holdPct = totalRatings ? Math.round((d.hold||0)/totalRatings*100) : null;
  const sellPct = totalRatings ? Math.round((d.sell||0)/totalRatings*100) : null;
 
+ const isBeginner = mode === 'beginner';
  return `
  <div class="card" style="margin-bottom:1rem">
  <div class="card-hdr">
- <div class="card-hdr-title"> Analyst Price Targets</div>
- <div class="card-hdr-sub">Wall St consensus · ${d.updated}</div>
+ <div class="card-hdr-title">${isBeginner ? '💰 What Do the Experts Think?' : ' Analyst Price Targets'}</div>
+ <div class="card-hdr-sub">${isBeginner ? `Pro stock experts weighed in · ${d.updated}` : `Wall St consensus · ${d.updated}`}</div>
  </div>
  <div style="padding:1rem">
+ ${isBeginner ? `<div style="font-size:.75rem;color:var(--text3);margin-bottom:.85rem;line-height:1.5">Stock experts study this company and predict where the price is going. Here's what they said 👇</div>` : ''}
  <!-- Price target bar -->
  <div style="position:relative;margin-bottom:1.25rem">
  <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--text3);margin-bottom:6px">
- <span>Low $${d.low.toLocaleString()}</span>
- ${d.avg ? `<span style="font-weight:700;color:var(--text)">Avg $${d.avg.toLocaleString()}</span>` : ''}
- <span>High $${d.high.toLocaleString()}</span>
+ <span>${isBeginner ? '📉 Worst case $' : 'Low $'}${d.low.toLocaleString()}</span>
+ ${d.avg ? `<span style="font-weight:700;color:var(--text)">${isBeginner ? '🎯 Middle guess $' : 'Avg $'}${d.avg.toLocaleString()}</span>` : ''}
+ <span>${isBeginner ? '📈 Best case $' : 'High $'}${d.high.toLocaleString()}</span>
  </div>
  <div style="height:6px;background:var(--border);border-radius:3px;position:relative;overflow:visible">
  <div style="position:absolute;left:0;right:0;height:100%;background:linear-gradient(90deg,rgba(255,56,96,.3),rgba(0,201,122,.3));border-radius:3px"></div>
@@ -10013,8 +9992,8 @@ function renderAnalystTargets(ticker, curPrice) {
  <div style="display:flex;justify-content:space-between;font-size:.58rem;color:var(--text3);margin-top:6px">
  <span></span>
  <span style="display:flex;align-items:center;gap:6px">
- <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:50%;background:var(--teal);display:inline-block"></span>Current $${curPrice.toLocaleString()}</span>
- ${d.avg ? `<span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent2);display:inline-block"></span>Avg target</span>` : ''}
+ <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:50%;background:var(--teal);display:inline-block"></span>${isBeginner ? 'Price now $' : 'Current $'}${curPrice.toLocaleString()}</span>
+ ${d.avg ? `<span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent2);display:inline-block"></span>${isBeginner ? 'Expert guess' : 'Avg target'}</span>` : ''}
  </span>
  <span></span>
  </div>
@@ -10022,23 +10001,23 @@ function renderAnalystTargets(ticker, curPrice) {
 
  ${upside !== null ? `
  <div style="text-align:center;margin-bottom:1rem;padding:.75rem;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
- <div style="font-size:.65rem;color:var(--text3);margin-bottom:3px">ANALYST CONSENSUS UPSIDE</div>
+ <div style="font-size:.65rem;color:var(--text3);margin-bottom:3px">${isBeginner ? (upside > 0 ? '🚀 EXPERTS THINK IT COULD GO UP BY' : '⚠️ EXPERTS THINK IT MIGHT DROP BY') : 'ANALYST CONSENSUS UPSIDE'}</div>
  <div style="font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;color:${upsideColor}">${upside > 0 ? '+' : ''}${upside}%</div>
- <div style="font-size:.65rem;color:var(--text3);margin-top:2px">vs current price · per ${d.firm}</div>
+ <div style="font-size:.65rem;color:var(--text3);margin-top:2px">${isBeginner ? `compared to what it costs right now · from ${d.firm}` : `vs current price · per ${d.firm}`}</div>
  </div>` : ''}
 
  ${totalRatings ? `
  <!-- Ratings breakdown -->
- <div style="margin-bottom:.5rem;font-size:.62rem;color:var(--text3);letter-spacing:.06em;font-weight:600">ANALYST RATINGS (${totalRatings} analysts)</div>
+ <div style="margin-bottom:.5rem;font-size:.62rem;color:var(--text3);letter-spacing:.06em;font-weight:600">${isBeginner ? `👥 WHAT ${totalRatings} EXPERTS SAY` : `ANALYST RATINGS (${totalRatings} analysts)`}</div>
  <div style="display:flex;gap:4px;height:8px;border-radius:4px;overflow:hidden;margin-bottom:.625rem">
  <div style="flex:${buyPct};background:var(--green)"></div>
  <div style="flex:${holdPct};background:var(--gold)"></div>
  <div style="flex:${sellPct};background:var(--red)"></div>
  </div>
  <div style="display:flex;gap:1rem">
- <div style="display:flex;align-items:center;gap:5px;font-size:.7rem"><span style="width:8px;height:8px;border-radius:2px;background:var(--green);display:inline-block"></span><span style="color:var(--green);font-weight:700">${d.buy} Buy</span><span style="color:var(--text3)">(${buyPct}%)</span></div>
- <div style="display:flex;align-items:center;gap:5px;font-size:.7rem"><span style="width:8px;height:8px;border-radius:2px;background:var(--gold);display:inline-block"></span><span style="color:var(--gold);font-weight:700">${d.hold} Hold</span><span style="color:var(--text3)">(${holdPct}%)</span></div>
- <div style="display:flex;align-items:center;gap:5px;font-size:.7rem"><span style="width:8px;height:8px;border-radius:2px;background:var(--red);display:inline-block"></span><span style="color:var(--red);font-weight:700">${d.sell} Sell</span><span style="color:var(--text3)">(${sellPct}%)</span></div>
+ <div style="display:flex;align-items:center;gap:5px;font-size:.7rem"><span style="width:8px;height:8px;border-radius:2px;background:var(--green);display:inline-block"></span><span style="color:var(--green);font-weight:700">${d.buy} ${isBeginner ? '✅ Buy it' : 'Buy'}</span><span style="color:var(--text3)">(${buyPct}%)</span></div>
+ <div style="display:flex;align-items:center;gap:5px;font-size:.7rem"><span style="width:8px;height:8px;border-radius:2px;background:var(--gold);display:inline-block"></span><span style="color:var(--gold);font-weight:700">${d.hold} ${isBeginner ? '⏸️ Wait & see' : 'Hold'}</span><span style="color:var(--text3)">(${holdPct}%)</span></div>
+ <div style="display:flex;align-items:center;gap:5px;font-size:.7rem"><span style="width:8px;height:8px;border-radius:2px;background:var(--red);display:inline-block"></span><span style="color:var(--red);font-weight:700">${d.sell} ${isBeginner ? '❌ Sell it' : 'Sell'}</span><span style="color:var(--text3)">(${sellPct}%)</span></div>
  </div>` : ''}
  </div>
  </div>`;
