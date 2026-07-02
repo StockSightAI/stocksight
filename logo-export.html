@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head><title>StockSight Logo Export</title></head>
+<body style="margin:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px">
+
+<canvas id="c" width="1024" height="1024" style="width:300px;height:300px;border-radius:20px"></canvas>
+
+<button onclick="download()" style="padding:12px 28px;background:#6c5ce7;color:#fff;border:none;border-radius:10px;font-size:16px;cursor:pointer;font-family:sans-serif">
+  Download PNG (1024×1024)
+</button>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const S = 1024; // canvas size
+
+// Background
+const bg = ctx.createRadialGradient(S/2, S/2, 0, S/2, S/2, S*0.6);
+bg.addColorStop(0, '#12102a');
+bg.addColorStop(1, '#05050e');
+ctx.fillStyle = bg;
+roundRect(ctx, 0, 0, S, S, S * 0.18);
+ctx.fill();
+
+// Subtle inner glow
+const glow = ctx.createRadialGradient(S/2, S*0.42, 0, S/2, S*0.42, S*0.45);
+glow.addColorStop(0, 'rgba(108,92,231,0.22)');
+glow.addColorStop(1, 'rgba(108,92,231,0)');
+ctx.fillStyle = glow;
+ctx.fillRect(0, 0, S, S);
+
+// Chart line — purple #7c6ff7
+const pts = [
+  [0.12, 0.72],
+  [0.28, 0.50],
+  [0.44, 0.60],
+  [0.62, 0.28],
+  [0.88, 0.38],
+];
+ctx.beginPath();
+ctx.moveTo(pts[0][0]*S, pts[0][1]*S);
+for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0]*S, pts[i][1]*S);
+ctx.strokeStyle = '#7c6ff7';
+ctx.lineWidth = S * 0.055;
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
+ctx.shadowColor = '#7c6ff7';
+ctx.shadowBlur = S * 0.04;
+ctx.stroke();
+ctx.shadowBlur = 0;
+
+// Green + tick at end point
+const ex = pts[4][0]*S, ey = pts[4][1]*S;
+const tw = S * 0.06;
+ctx.strokeStyle = '#00cc88';
+ctx.lineWidth = S * 0.046;
+ctx.lineCap = 'round';
+ctx.shadowColor = '#00cc88';
+ctx.shadowBlur = S * 0.035;
+// horizontal bar
+ctx.beginPath(); ctx.moveTo(ex - tw, ey + tw*1.4); ctx.lineTo(ex + tw, ey + tw*1.4); ctx.stroke();
+// vertical bar
+ctx.beginPath(); ctx.moveTo(ex, ey + tw*1.4 - tw); ctx.lineTo(ex, ey + tw*1.4 + tw); ctx.stroke();
+ctx.shadowBlur = 0;
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function download() {
+  const a = document.createElement('a');
+  a.download = 'stocksight-logo.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+</script>
+</body>
+</html>

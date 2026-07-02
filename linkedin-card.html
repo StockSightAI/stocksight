@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StockSight LinkedIn Card</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #e8e8e8; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: Arial, Helvetica, sans-serif; }
+  .wrap {
+    background: #ffffff;
+    width: 680px;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid #e8e8e8;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+  }
+  .topbar {
+    background: #0a1628;
+    color: #fff;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 11px 20px;
+  }
+  .topbar a { color: #a29bfe; text-decoration: underline; }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 28px;
+    border-bottom: 1px solid #eee;
+    gap: 10px;
+  }
+  .nav img { width: 34px; height: 34px; object-fit: contain; }
+  .nav-name { font-size: 18px; font-weight: 900; color: #0a1628; letter-spacing: -0.3px; }
+  .hero {
+    padding: 52px 48px 60px;
+    text-align: center;
+    position: relative;
+    background-color: #ffffff;
+    background-image:
+      linear-gradient(#d8d0ff 1px, transparent 1px),
+      linear-gradient(90deg, #d8d0ff 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.72) 50%, rgba(255,255,255,0.88) 100%);
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; z-index: 1; }
+  .eyebrow { font-size: 13px; color: #999; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  .h1 {
+    font-size: 54px; font-weight: 900; color: #0a1628;
+    line-height: 1.08; letter-spacing: -1.5px; margin-bottom: 2px;
+    display: inline-block; position: relative;
+  }
+  .h1::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 6px;
+    height: 10px; background: #6c5ce728; border-radius: 2px; z-index: -1;
+  }
+  .h2 { font-size: 46px; font-weight: 900; color: #6c5ce7; line-height: 1.1; letter-spacing: -1px; margin: 4px 0 28px; }
+  .sub { font-size: 16px; color: #555; line-height: 1.7; max-width: 460px; margin: 0 auto 32px; }
+  .bullets { display: inline-grid; grid-template-columns: 1fr 1fr; gap: 10px 32px; text-align: left; }
+  .bullet { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 600; color: #2a1a6e; }
+  .bullet-dot { width: 7px; height: 7px; border-radius: 50%; background: #6c5ce7; flex-shrink: 0; }
+  .footer-row {
+    display: flex; align-items: center; justify-content: center;
+    padding: 18px 28px; background: #f7f5ff; border-top: 1px solid #e4deff;
+  }
+  .footer-row a { font-size: 14px; font-weight: 700; color: #0a1628; text-decoration: none; letter-spacing: 0.02em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    Now live — <a href="#">Try StockSight free</a>
+  </div>
+
+  <div class="nav">
+    <img src="stocksight-logo.png" alt="StockSight">
+    <div class="nav-name">StockSight</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">Research · Decide · Invest</p>
+      <div><span class="h1">AI Stock Research.</span></div>
+      <div class="h2">Made easy.</div>
+      <p class="sub">
+        StockSight is the AI-powered platform that gives you instant Buy / Hold / Sell verdicts, live charts, and price predictions — completely free.
+      </p>
+      <div class="bullets">
+        <div class="bullet"><div class="bullet-dot"></div>AI verdicts on any stock</div>
+        <div class="bullet"><div class="bullet-dot"></div>Live price charts</div>
+        <div class="bullet"><div class="bullet-dot"></div>Price predictions</div>
+        <div class="bullet"><div class="bullet-dot"></div>News sentiment</div>
+        <div class="bullet"><div class="bullet-dot"></div>Portfolio tracker</div>
+        <div class="bullet"><div class="bullet-dot"></div>100% free to use</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-row">
+    <a href="#">stocksightai.com</a>
+  </div>
+</div>
+</body>
+</html>
