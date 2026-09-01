@@ -5521,6 +5521,9 @@ function renderAsset(ticker, name, type, overrideSym) {
  <!-- Analyst Price Targets -->
  <div id="analystTargetsContainer"></div>
 
+ <!-- ELI5 Earnings Summary -->
+ ${renderEarningsSummary(ticker)}
+
  <!-- Price Alerts -->
  <div id="alertSection_${ticker}"></div>
 
@@ -10311,6 +10314,164 @@ function showAssetSkeleton() {
 /* ════════════════════════════════
  ANALYST PRICE TARGETS
 ════════════════════════════════ */
+/* ════════════════════════════════
+ ELI5 EARNINGS SUMMARIES
+════════════════════════════════ */
+const EARNINGS_SUMMARIES = {
+ AAPL:{ quarter:'Q2 FY2025', date:'May 1, 2025', beat:true, revenue:'$95.4B', eps:'$1.65',
+  headline:'Apple beat expectations, driven by strong iPhone 16 sales and a record Services quarter.',
+  bullets:['Made $95.4 billion in revenue — more than Wall Street expected','iPhone 16 sold well globally, especially in India and China','The App Store, iCloud, and Apple TV+ together hit a record $26.6B','CEO Tim Cook said Apple Intelligence (their AI features) is driving people to upgrade their phones'],
+  bottomLine:'A steady, profitable quarter. Nothing explosive, but Apple keeps printing money.' },
+ MSFT:{ quarter:'Q3 FY2025', date:'Apr 30, 2025', beat:true, revenue:'$70.1B', eps:'$3.46',
+  headline:'Microsoft crushed it — mostly because companies are spending big on their AI cloud.',
+  bullets:['Made $70.1B in revenue, beating expectations comfortably','Azure (their cloud) grew 33% — AI tools like Copilot are driving the demand','Office 365 subscriptions keep growing as businesses add AI features','CEO Satya Nadella said every customer they talk to is asking about AI infrastructure'],
+  bottomLine:'If you believe AI is the future, Microsoft is right in the middle of it.' },
+ GOOGL:{ quarter:'Q1 2025', date:'Apr 29, 2025', beat:true, revenue:'$90.2B', eps:'$2.81',
+  headline:'Google had a great quarter — advertising is booming and their cloud is accelerating.',
+  bullets:['Made $90.2B in revenue — beat expectations by a solid margin','Google Search ad revenue grew 10% as businesses spent more on digital ads','Google Cloud grew 28%, competing hard with Amazon and Microsoft','YouTube ad revenue hit $8.9B — people are watching more video than ever'],
+  bottomLine:'Google is still the king of ads, and their cloud business is catching up fast.' },
+ AMZN:{ quarter:'Q1 2025', date:'May 1, 2025', beat:true, revenue:'$155.7B', eps:'$1.59',
+  headline:'Amazon had a massive quarter — their cloud and advertising businesses are on fire.',
+  bullets:['Made $155.7B in total revenue — way more than expected','AWS (Amazon Web Services, their cloud) grew 17% and is wildly profitable','Advertising revenue hit $13.9B — sellers pay Amazon to show their products','CEO Andy Jassy said AI infrastructure spending will only accelerate from here'],
+  bottomLine:'Amazon is no longer just a store. Cloud and ads are where the real money is.' },
+ META:{ quarter:'Q1 2025', date:'Apr 30, 2025', beat:true, revenue:'$42.3B', eps:'$6.43',
+  headline:'Meta had a record quarter — their AI ad tools are making advertisers spend more.',
+  bullets:['Made $42.3B in revenue, well above what analysts expected','AI-powered ad targeting is working — advertisers are seeing better results and spending more','Daily active users across Facebook, Instagram, and WhatsApp hit 3.43 billion','CEO Zuckerberg said they\'re investing heavily in AI infrastructure — $60-65B this year'],
+  bottomLine:'Meta turned things around completely. Ads are booming and the metaverse stuff is a side note now.' },
+ NVDA:{ quarter:'Q1 FY2026', date:'May 28, 2025', beat:true, revenue:'$44.1B', eps:'$0.96',
+  headline:'NVIDIA absolutely smashed expectations — AI demand for their chips keeps going up.',
+  bullets:['Made $44.1B in revenue — almost doubled compared to a year ago','Their data center chips (H100, B100) are what every AI company wants and can\'t get enough of','Gross margins are extremely high at ~75% — each chip sold is extremely profitable','CEO Jensen Huang said demand for Blackwell AI chips exceeds supply right now'],
+  bottomLine:'NVIDIA prints money because the entire world is racing to build AI and needs their chips to do it.' },
+ TSLA:{ quarter:'Q1 2025', date:'Apr 22, 2025', beat:false, revenue:'$19.3B', eps:'$0.27',
+  headline:'Tesla missed expectations — deliveries dropped and profits got squeezed.',
+  bullets:['Made $19.3B in revenue — below what analysts expected','Delivered 336,681 cars in Q1, down 13% from the same time last year','Profit margins fell as Tesla cut prices to compete with cheaper Chinese EVs','CEO Elon Musk mentioned Full Self-Driving and a cheaper model coming, but gave no firm dates'],
+  bottomLine:'A rough quarter. Tesla is in a tough spot with rising competition and Musk\'s attention split across multiple companies.' },
+ NFLX:{ quarter:'Q1 2025', date:'Apr 15, 2025', beat:true, revenue:'$10.5B', eps:'$6.61',
+  headline:'Netflix had a strong quarter — more subscribers and higher revenue per user.',
+  bullets:['Made $10.5B in revenue, above expectations','Added 4.6 million new subscribers — the password-sharing crackdown keeps driving sign-ups','The cheaper, ad-supported plan now has 55M+ subscribers worldwide','They announced a price hike in several countries — users stayed anyway'],
+  bottomLine:'Netflix figured out how to grow again. Ads + cracking down on password sharing was the right move.' },
+ AMD:{ quarter:'Q1 2025', date:'Apr 29, 2025', beat:true, revenue:'$7.4B', eps:'$0.96',
+  headline:'AMD beat expectations — their AI chips are gaining serious traction against NVIDIA.',
+  bullets:['Made $7.4B in revenue, above what analysts expected','Data center revenue hit $3.7B as big tech companies buy their MI300X AI chips','Their consumer laptop chips (Ryzen) continued to gain market share vs Intel','CEO Lisa Su said demand for AI accelerators is growing faster than anyone predicted'],
+  bottomLine:'AMD is the main challenger to NVIDIA in AI chips. Still a distant #2, but gaining ground.' },
+ INTC:{ quarter:'Q1 2025', date:'Apr 24, 2025', beat:false, revenue:'$12.7B', eps:'-$0.19',
+  headline:'Intel lost money again — their turnaround is taking longer than expected.',
+  bullets:['Made $12.7B in revenue — roughly in line with low expectations','Lost money on a per-share basis as their chip factories burn cash','Their foundry business (making chips for others) is still deeply unprofitable','New CEO Lip-Bu Tan is restructuring the company, but it will take years'],
+  bottomLine:'Intel is in a difficult rebuilding phase. They missed the AI wave and are paying for it.' },
+ META:{ quarter:'Q1 2025', date:'Apr 30, 2025', beat:true, revenue:'$42.3B', eps:'$6.43',
+  headline:'Meta had a record quarter driven by AI-powered advertising.',
+  bullets:['Revenue of $42.3B crushed Wall Street expectations','AI ad tools are delivering better results for advertisers — they\'re spending more','3.43 billion people use Facebook, Instagram or WhatsApp daily','Zuckerberg plans to spend $60-65B on AI infrastructure in 2025 alone'],
+  bottomLine:'Meta is back. Ads are booming and AI investments are paying off.' },
+ JPM:{ quarter:'Q1 2025', date:'Apr 11, 2025', beat:true, revenue:'$46.0B', eps:'$5.07',
+  headline:'JPMorgan had a strong quarter — higher interest rates mean they make more on loans.',
+  bullets:['Made $46.0B in net revenue, ahead of expectations','Net interest income (what they earn on loans) remained strong despite rate uncertainty','Investment banking fees surged as more companies did deals','CEO Jamie Dimon warned about global economic uncertainty but called the consumer "resilient"'],
+  bottomLine:'When rates are high, banks make money. JPMorgan is the strongest bank in the US.' },
+ BAC:{ quarter:'Q1 2025', date:'Apr 15, 2025', beat:true, revenue:'$27.4B', eps:'$0.90',
+  headline:'Bank of America beat expectations — consumer spending stayed healthy.',
+  bullets:['Made $27.4B in revenue, above estimates','Net interest income grew as they benefit from higher interest rates','Consumer banking deposits are stable — customers kept their money in','CEO Brian Moynihan said the US economy is holding up better than feared'],
+  bottomLine:'Solid quarter. Big banks are benefiting from the higher interest rate environment.' },
+ WMT:{ quarter:'Q1 FY2026', date:'May 15, 2025', beat:true, revenue:'$165.6B', eps:'$0.61',
+  headline:'Walmart crushed it — people are shopping more and their ad business is booming.',
+  bullets:['Made $165.6B in revenue, beating expectations','US comparable store sales grew 4.6% — people are buying more groceries and everyday items','Walmart\'s advertising business (showing ads to shoppers) grew 50% — it\'s now a big profit driver','E-commerce grew 22% as more people order groceries and goods for delivery'],
+  bottomLine:'Walmart is firing on all cylinders. They\'re not just a store anymore — they\'re an ad and delivery business too.' },
+ DIS:{ quarter:'Q2 FY2025', date:'May 7, 2025', beat:true, revenue:'$23.6B', eps:'$1.45',
+  headline:'Disney beat expectations — streaming finally turned profitable.',
+  bullets:['Made $23.6B in revenue, above estimates','Disney+ streaming turned a profit for the first time — a huge milestone','Theme parks revenue stayed strong despite higher ticket prices','CEO Bob Iger said they\'re focused on making streaming the core of the company'],
+  bottomLine:'Disney is figuring out streaming profitability. Parks keep printing money too.' },
+ UBER:{ quarter:'Q1 2025', date:'May 7, 2025', beat:true, revenue:'$11.5B', eps:'$0.83',
+  headline:'Uber had a great quarter — more rides, more deliveries, more money.',
+  bullets:['Made $11.5B in revenue, beating expectations','Gross bookings hit $42.8B — a record for the company','Rides and Uber Eats both grew double-digits globally','CEO Dara Khosrowshahi said autonomous vehicles are an opportunity, not a threat'],
+  bottomLine:'Uber is solidly profitable now and growing fast. The ride-sharing wars are basically over — Uber won.' },
+ COIN:{ quarter:'Q1 2025', date:'May 8, 2025', beat:true, revenue:'$2.0B', eps:'$1.94',
+  headline:'Coinbase had a great quarter as crypto prices surged and trading picked up.',
+  bullets:['Made $2.0B in revenue — way above what analysts expected','Transaction revenue jumped as Bitcoin and other cryptos saw big price moves','Subscription revenue (staking, custody fees) provides more stable income','CEO Brian Armstrong said regulatory clarity in the US is finally improving'],
+  bottomLine:'When crypto is hot, Coinbase makes money. This was a very good crypto environment quarter.' },
+ PLTR:{ quarter:'Q1 2025', date:'May 5, 2025', beat:true, revenue:'$884M', eps:'$0.13',
+  headline:'Palantir crushed it — US government and commercial AI deals are accelerating.',
+  bullets:['Made $884M in revenue, well above expectations','US commercial revenue grew 71% — companies are buying their AI software','US government revenue grew 45% — defense and intelligence agencies spending more','CEO Alex Karp said Palantir is the only company doing what they do at scale'],
+  bottomLine:'Palantir is expensive but growing fast. Government AI contracts are a huge advantage.' },
+ SNAP:{ quarter:'Q1 2025', date:'Apr 29, 2025', beat:false, revenue:'$1.36B', eps:'-$0.08',
+  headline:'Snap struggled — ad revenue growth slowed and they\'re still losing money.',
+  bullets:['Made $1.36B in revenue — roughly in line but still growing slowly','Daily active users grew to 460M, but growth is slowing in key markets','Still not consistently profitable despite years of trying','Competition from Instagram Reels and TikTok keeps squeezing them'],
+  bottomLine:'Snap is in a tough spot. They\'re caught between TikTok and Instagram with no clear advantage.' },
+ RBLX:{ quarter:'Q1 2025', date:'May 7, 2025', beat:true, revenue:'$1.0B', eps:'-$0.28',
+  headline:'Roblox grew users and revenue, but is still burning cash.',
+  bullets:['Made $1.0B in revenue for the first time ever — a big milestone','Daily active users hit 97.8M — mostly kids and teens playing games','Bookings (what people spend in the game) grew 16%','Still losing money as they invest heavily in the platform'],
+  bottomLine:'Roblox is growing but not yet profitable. Long-term bet on kids staying on the platform.' },
+ CRM:{ quarter:'Q1 FY2026', date:'May 28, 2025', beat:true, revenue:'$9.8B', eps:'$2.58',
+  headline:'Salesforce beat expectations — their AI product Agentforce is gaining traction.',
+  bullets:['Made $9.8B in revenue, above estimates','Agentforce (their AI agent product) signed 5,000+ customers already','Subscription revenue grew steadily as businesses keep using their CRM software','CEO Marc Benioff called Agentforce a "breakthrough" and the next chapter of AI'],
+  bottomLine:'Salesforce is betting big on AI agents. Early results are encouraging.' },
+ SPOT:{ quarter:'Q1 2025', date:'Apr 29, 2025', beat:true, revenue:'€4.19B', eps:'€2.52',
+  headline:'Spotify had a great quarter — more listeners, higher prices, better profits.',
+  bullets:['Made €4.19B in revenue, beating expectations','Monthly active users hit 678M — still growing despite price hikes','Premium subscribers hit 268M — people are willing to pay more for music','Profit margins improved significantly as they raised prices and cut costs'],
+  bottomLine:'Spotify\'s strategy is working. Higher prices plus more users equals much better profits.' },
+ SHOP:{ quarter:'Q1 2025', date:'May 8, 2025', beat:true, revenue:'$2.36B', eps:'$0.31',
+  headline:'Shopify had a strong quarter — small businesses keep using their platform to sell online.',
+  bullets:['Made $2.36B in revenue, above expectations','Gross Merchandise Volume (total sales through Shopify) grew 23% to $74.8B','More merchants signed up as they expanded internationally','CEO Tobi Lütke said they\'re focused on making Shopify the default for commerce everywhere'],
+  bottomLine:'Shopify is the backbone of e-commerce for millions of small businesses. Steady and growing.' },
+ V:{ quarter:'Q2 FY2025', date:'Apr 22, 2025', beat:true, revenue:'$9.6B', eps:'$2.76',
+  headline:'Visa had a solid quarter — people kept swiping their cards around the world.',
+  bullets:['Made $9.6B in revenue, above estimates','Payments volume grew 8% as consumer spending stayed healthy','Cross-border travel payments surged — people are still traveling a lot','CEO Ryan McInerney said the global shift from cash to card payments is still early'],
+  bottomLine:'Visa makes money every time someone swipes a card. Consumer spending held up, so they did too.' },
+ MA:{ quarter:'Q1 2025', date:'Apr 29, 2025', beat:true, revenue:'$7.3B', eps:'$3.73',
+  headline:'Mastercard had a strong quarter — same story as Visa, spending stayed healthy.',
+  bullets:['Made $7.3B in revenue, beating expectations','Switched volume (cards processed) grew 12% globally','Services revenue (fraud tools, data, analytics) growing faster than core payments','Cross-border volume up 15% — international travel and shopping remains strong'],
+  bottomLine:'Mastercard and Visa are essentially duopolies. As long as people spend money, they make money.' },
+ ORCL:{ quarter:'Q3 FY2025', date:'Mar 11, 2025', beat:true, revenue:'$14.1B', eps:'$1.47',
+  headline:'Oracle had a great quarter — AI cloud demand is fueling their best growth in years.',
+  bullets:['Made $14.1B in revenue, comfortably beating estimates','Cloud infrastructure (OCI) grew 49% — companies use it to train AI models','CEO Larry Ellison said demand for their AI cloud is "staggering"','Remaining performance obligations (future contracts signed) hit $130B — a massive backlog'],
+  bottomLine:'Oracle used to be boring. Now they\'re an AI infrastructure company growing faster than ever.' },
+ PYPL:{ quarter:'Q1 2025', date:'Apr 29, 2025', beat:true, revenue:'$7.9B', eps:'$1.33',
+  headline:'PayPal beat expectations — their new CEO is cutting costs and improving margins.',
+  bullets:['Made $7.9B in revenue, above estimates','Total payment volume grew 4% to $417B','Profit margins improved significantly as they cut costs and focused on profitability','CEO Alex Chriss said they\'re focused on "profitable growth" over chasing user numbers'],
+  bottomLine:'PayPal is in a turnaround phase. Less about growth, more about being efficient and profitable.' },
+ HOOD:{ quarter:'Q1 2025', date:'Apr 30, 2025', beat:true, revenue:'$927M', eps:'$0.37',
+  headline:'Robinhood had a massive quarter — crypto trading went crazy and customers spent more.',
+  bullets:['Made $927M in revenue — way above expectations, nearly doubled year-over-year','Crypto trading revenue surged as Bitcoin hit new highs','Gold subscribers (paid tier) grew to 3M+ customers','CEO Vlad Tenev said they\'re expanding into banking and retirement accounts'],
+  bottomLine:'When markets are hot and crypto is up, Robinhood makes a lot of money. High risk, high reward type of company.' },
+ RIVN:{ quarter:'Q1 2025', date:'May 6, 2025', beat:false, revenue:'$1.24B', eps:'-$0.48',
+  headline:'Rivian is still losing money but production is ramping up.',
+  bullets:['Made $1.24B in revenue — roughly in line with estimates','Produced 14,611 vehicles in Q1 — still small but growing','Partnership with Volkswagen brought in important cash and technology','CEO RJ Scaringe said their cheaper R2 SUV is still on track for 2026'],
+  bottomLine:'Rivian is a bet on the future. They\'re burning cash now but if the R2 succeeds, it could be a big deal.' },
+};
+
+function renderEarningsSummary(ticker) {
+ const e = EARNINGS_SUMMARIES[ticker];
+ const isBeginner = mode === 'beginner';
+ if (!e) return '';
+ const beatColor = e.beat ? 'var(--green)' : 'var(--red)';
+ const beatBg = e.beat ? 'rgba(0,201,122,.1)' : 'rgba(255,56,96,.08)';
+ const beatBdr = e.beat ? 'rgba(0,201,122,.3)' : 'rgba(255,56,96,.25)';
+ const beatLabel = e.beat ? '✅ Beat expectations' : '❌ Missed expectations';
+ const title = isBeginner ? '📋 What Happened This Quarter?' : 'Latest Earnings — Plain English';
+ const sub = isBeginner ? `${e.quarter} · ${e.date} · explained simply` : `${e.quarter} · ${e.date}`;
+ return `
+ <div class="card" style="margin-bottom:1rem">
+ <div class="card-hdr" style="background:linear-gradient(135deg,rgba(0,180,216,.07),rgba(0,180,216,.02))">
+ <div>
+ <div class="card-hdr-title" style="color:var(--teal)">${title}</div>
+ <div class="card-hdr-sub">${sub}</div>
+ </div>
+ <div style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:20px;background:${beatBg};color:${beatColor};border:1px solid ${beatBdr};white-space:nowrap">${beatLabel}</div>
+ </div>
+ <div style="padding:1rem">
+ <div style="font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:.875rem;line-height:1.5">${e.headline}</div>
+ <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem">
+ ${e.bullets.map(b => `
+ <div style="display:flex;align-items:flex-start;gap:8px;font-size:.78rem;color:var(--text2);line-height:1.55">
+ <span style="color:var(--teal);flex-shrink:0;margin-top:2px">→</span>
+ <span>${b}</span>
+ </div>`).join('')}
+ </div>
+ <div style="background:var(--card2);border-radius:10px;padding:.75rem 1rem;border-left:3px solid var(--teal)">
+ <div style="font-size:.62rem;color:var(--text3);letter-spacing:.08em;font-weight:600;margin-bottom:3px">${isBeginner ? 'WHAT THIS MEANS FOR YOU' : 'BOTTOM LINE'}</div>
+ <div style="font-size:.78rem;color:var(--text);line-height:1.55">${e.bottomLine}</div>
+ </div>
+ </div>
+ </div>`;
+}
+
 const ANALYST_TARGETS = {
  AAPL: { low:180, avg:215, high:260, buy:28, hold:12, sell:4, firm:'Goldman Sachs', updated:'May 2025' },
  MSFT: { low:340, avg:435, high:550, buy:35, hold:8, sell:1, firm:'Morgan Stanley', updated:'May 2025' },
