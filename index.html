@@ -11871,6 +11871,73 @@ function getAvatar() {
 /* ════════════════════════════════
  SCREENER
 ════════════════════════════════ */
+const NARRATIVE_MAP = [
+ { tags:['ai','artificial intelligence','machine learning','chatgpt','openai'], tickers:['NVDA','MSFT','GOOGL','META','AMZN','PLTR','CRM','AMD','ORCL'], label:'AI & Machine Learning' },
+ { tags:['crypto','bitcoin','blockchain','btc','eth','ethereum','coin'], tickers:['BTC','ETH','SOL','BNB','XRP','DOGE','ADA','AVAX','COIN','HOOD'], label:'Crypto' },
+ { tags:['safe','low risk','stable','conservative','defensive','boring'], beta:'low', vol:'low', label:'Low Risk / Stable' },
+ { tags:['risky','volatile','speculative','aggressive','yolo','high risk'], beta:'high', vol:'high', label:'High Risk / Volatile' },
+ { tags:['dividend','income','passive income','yield'], sectors:['Financials','Healthcare','Energy','Consumer Staples'], label:'Dividend / Income' },
+ { tags:['tech','technology','software','saas','cloud'], sectors:['Technology'], label:'Technology' },
+ { tags:['energy','oil','gas','petroleum','renewable','solar','wind'], sectors:['Energy'], label:'Energy' },
+ { tags:['healthcare','pharma','biotech','medicine','drug','hospital'], sectors:['Healthcare'], label:'Healthcare' },
+ { tags:['finance','banking','bank','financial','payment','fintech'], sectors:['Financials'], label:'Financials' },
+ { tags:['retail','consumer','shopping','ecommerce','e-commerce','store'], sectors:['Consumer Discretionary','Retail'], label:'Retail / Consumer' },
+ { tags:['growth','fast growing','high growth','momentum','up'], minGrowth:20, label:'High Growth' },
+ { tags:['value','cheap','undervalued','affordable','bargain'], beta:'low', minGrowth:0, maxGrowth:10, label:'Value Stocks' },
+ { tags:['index','market','etf','s&p','nasdaq','dow'], types:['i'], label:'Market Indexes' },
+ { tags:['buy','strong buy','analysts like','recommended'], verdict:'Buy', label:'Analyst Buy Picks' },
+ { tags:['cybersecurity','security','hacking','cyber'], tickers:['CRWD','PLTR','MSFT','GOOGL','AMZN'], label:'Cybersecurity' },
+ { tags:['space','rocket','satellite','aerospace','defense'], tickers:['RIVN','TSLA','AMZN','MSFT'], label:'Space & Aerospace' },
+ { tags:['electric','ev','electric vehicle','tesla','car'], tickers:['TSLA','RIVN','GM','F'], label:'Electric Vehicles' },
+ { tags:['social media','social','instagram','facebook','tiktok','twitter','x'], tickers:['META','SNAP','RBLX','SPOT'], label:'Social Media' },
+ { tags:['streaming','video','movies','tv','entertainment','netflix'], tickers:['NFLX','DIS','SPOT','RBLX'], label:'Streaming & Entertainment' },
+ { tags:['beginner','easy','simple','safe start','new investor'], beta:'low', vol:'low', label:'Beginner-Friendly' },
+];
+
+function parseNarrativeQuery(query) {
+ const q = query.toLowerCase().trim();
+ if (!q) return null;
+ let best = null, bestScore = 0;
+ NARRATIVE_MAP.forEach(rule => {
+ const score = rule.tags.reduce((s, tag) => s + (q.includes(tag) ? tag.split(' ').length : 0), 0);
+ if (score > bestScore) { bestScore = score; best = rule; }
+ });
+ if (bestScore === 0) return null;
+ return best;
+}
+
+function applyNarrativeResults(rule) {
+ const el = document.getElementById('scr-results');
+ const cnt = document.getElementById('scr-count');
+ if (!el) return;
+
+ const allStocks = Object.entries(ASSET_DATA).map(([t, d]) => {
+ const found = TICKERS.find(tk => tk.t === t);
+ return { t, name: found?.n || t, beta: d[0], vol: d[1], sector: d[2], growth: d[3], k: found?.k || 's' };
+ });
+
+ let results = [];
+ if (rule.tickers) {
+ results = rule.tickers.map(t => allStocks.find(s => s.t === t) || { t, name: t, beta:1, vol:25, sector:'', growth:10, k:'s' });
+ } else {
+ results = allStocks.filter(s => {
+ if (rule.sectors && !rule.sectors.includes(s.sector)) return false;
+ if (rule.beta === 'low' && s.beta >= 1) return false;
+ if (rule.beta === 'high' && s.beta < 1) return false;
+ if (rule.vol === 'low' && s.vol >= 30) return false;
+ if (rule.vol === 'high' && s.vol < 30) return false;
+ if (rule.minGrowth !== undefined && s.growth < rule.minGrowth) return false;
+ if (rule.maxGrowth !== undefined && s.growth > rule.maxGrowth) return false;
+ if (rule.verdict) { const ai = AI_PROFILES[s.t]; if (!ai || ai.verdict !== rule.verdict) return false; }
+ if (rule.types && !rule.types.includes(s.k)) return false;
+ return true;
+ }).sort((a,b) => b.growth - a.growth);
+ }
+
+ if (cnt) cnt.textContent = `${results.length} results for "${rule.label}"`;
+ renderScreenerTable(results, el);
+}
+
 function renderScreener() {
  clMark('cl_screener');
  refreshChecklist();
@@ -11879,19 +11946,41 @@ function renderScreener() {
  localStorage.setItem('ss_screener_used_' + (user?.email || ''), '1');
 
  const sectors = [...new Set(Object.values(ASSET_DATA).map(d => d[2]))].filter(Boolean);
+ const examples = ['AI stocks','Safe dividend','High growth tech','Crypto','Cybersecurity','Beginner-friendly','Streaming','Electric vehicles'];
 
  mc.innerHTML = `
+ <!-- AI Narrative Search -->
+ <div class="card" style="margin-bottom:1rem;border-color:rgba(52,211,153,.3)">
+ <div class="card-hdr" style="background:linear-gradient(135deg,rgba(52,211,153,.08),rgba(52,211,153,.02))">
+ <div class="card-hdr-title" style="color:#34d399">🔍 Find Stocks by Idea</div>
+ <div class="card-hdr-sub">Describe what you're looking for in plain English</div>
+ </div>
+ <div style="padding:1rem">
+ <div style="display:flex;gap:8px;margin-bottom:.75rem">
+ <input id="scr-narrative" type="text" placeholder='Try: "safe dividend stocks" or "high growth AI companies"'
+ style="flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-family:inherit;font-size:.85rem;outline:none;transition:border-color .2s"
+ onfocus="this.style.borderColor='#34d399'" onblur="this.style.borderColor='var(--border2)'"
+ onkeydown="if(event.key==='Enter')runNarrativeSearch()"/>
+ <button onclick="runNarrativeSearch()" style="background:linear-gradient(135deg,rgba(52,211,153,.3),rgba(52,211,153,.15));color:#34d399;border:1px solid rgba(52,211,153,.4);border-radius:10px;padding:11px 20px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap">Search →</button>
+ </div>
+ <div style="display:flex;flex-wrap:wrap;gap:6px">
+ ${examples.map(ex => `<button onclick="document.getElementById('scr-narrative').value='${ex}';runNarrativeSearch()" style="background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-family:inherit;font-size:.7rem;color:var(--text2);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='#34d399';this.style.color='#34d399'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">${ex}</button>`).join('')}
+ </div>
+ </div>
+ </div>
+
+ <!-- Classic Filters -->
  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
- <select id="scr-sector" onchange="applyScreener()" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:.78rem;outline:none">
+ <select id="scr-sector" onchange="clearNarrative();applyScreener()" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:.78rem;outline:none">
  <option value="all">All Sectors</option>
  ${sectors.map(s => `<option value="${s}">${s}</option>`).join('')}
  </select>
- <select id="scr-risk" onchange="applyScreener()" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:.78rem;outline:none">
+ <select id="scr-risk" onchange="clearNarrative();applyScreener()" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:.78rem;outline:none">
  <option value="all">All Risk Levels</option>
  <option value="low">Low Risk (β &lt; 1)</option>
  <option value="high">High Risk (β ≥ 1)</option>
  </select>
- <select id="scr-growth" onchange="applyScreener()" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:.78rem;outline:none">
+ <select id="scr-growth" onchange="clearNarrative();applyScreener()" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:.78rem;outline:none">
  <option value="0">Any Growth</option>
  <option value="10">10%+ Growth</option>
  <option value="20">20%+ Growth</option>
@@ -11901,6 +11990,55 @@ function renderScreener() {
  </div>
  <div id="scr-results"></div>`;
  applyScreener();
+}
+
+function clearNarrative() {
+ const el = document.getElementById('scr-narrative');
+ if (el) el.value = '';
+}
+
+function runNarrativeSearch() {
+ const q = document.getElementById('scr-narrative')?.value || '';
+ if (!q.trim()) { applyScreener(); return; }
+ const rule = parseNarrativeQuery(q);
+ if (!rule) {
+ const cnt = document.getElementById('scr-count');
+ if (cnt) cnt.textContent = 'No match — try "AI stocks" or "safe dividend"';
+ applyScreener();
+ return;
+ }
+ applyNarrativeResults(rule);
+}
+
+function renderScreenerTable(filtered, el) {
+ if (!filtered.length) {
+ el.innerHTML = `<div class="empty-state">
+ <div class="empty-state-art" style="font-size:2.5rem"></div>
+ <div class="empty-state-title" style="font-size:.9rem">No stocks match</div>
+ <div class="empty-state-sub" style="font-size:.73rem">Try a different search or adjust the filters above.</div>
+ <button class="empty-state-btn" onclick="clearNarrative();document.getElementById('scr-sector').value='all';document.getElementById('scr-risk').value='all';document.getElementById('scr-growth').value='0';applyScreener()">Reset</button>
+ </div>`; return;
+ }
+ el.innerHTML = `<div class="card" style="overflow:auto">
+ <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+ <thead><tr style="border-bottom:1px solid var(--border)">
+ <th style="padding:.5rem .875rem;text-align:left;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">TICKER</th>
+ <th style="padding:.5rem .875rem;text-align:left;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">NAME</th>
+ <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">SECTOR</th>
+ <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">BETA</th>
+ <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">VOL</th>
+ <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">GROWTH</th>
+ </tr></thead>
+ <tbody>${filtered.map(s => `<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="goAsset('${s.t}','${s.k || 's'}')" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background=''">
+ <td style="padding:.625rem .875rem;font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2)">${s.t}</td>
+ <td style="padding:.625rem .875rem;color:var(--text2)">${s.name}</td>
+ <td style="padding:.625rem .875rem;text-align:center;color:var(--text3);font-size:.72rem">${s.sector||''}</td>
+ <td style="padding:.625rem .875rem;text-align:center">${s.beta}x</td>
+ <td style="padding:.625rem .875rem;text-align:center;color:var(--text3)">${s.vol}%</td>
+ <td style="padding:.625rem .875rem;text-align:center;color:${s.growth>=20?'var(--green)':s.growth>=10?'var(--gold)':'var(--text2)'}">+${s.growth}%/yr</td>
+ </tr>`).join('')}</tbody>
+ </table>
+ </div>`;
 }
 
 function applyScreener() {
@@ -11922,36 +12060,7 @@ function applyScreener() {
 
  const cnt = document.getElementById('scr-count');
  if (cnt) cnt.textContent = filtered.length + ' stocks found';
-
- if (!filtered.length) {
- el.innerHTML = `<div class="empty-state">
- <div class="empty-state-art" style="font-size:2.5rem"></div>
- <div class="empty-state-title" style="font-size:.9rem">No stocks match your filters</div>
- <div class="empty-state-sub" style="font-size:.73rem">Try adjusting the filters above.</div>
- <button class="empty-state-btn" onclick="document.getElementById('scr-sector').value='all';document.getElementById('scr-risk').value='all';document.getElementById('scr-growth').value='0';applyScreener()">Clear filters</button>
- </div>`; return;
- }
-
- el.innerHTML = `<div class="card" style="overflow:auto">
- <table style="width:100%;border-collapse:collapse;font-size:.78rem">
- <thead><tr style="border-bottom:1px solid var(--border)">
- <th style="padding:.5rem .875rem;text-align:left;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">TICKER</th>
- <th style="padding:.5rem .875rem;text-align:left;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">NAME</th>
- <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">SECTOR</th>
- <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">BETA</th>
- <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">VOL</th>
- <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">GROWTH</th>
- </tr></thead>
- <tbody>${filtered.map(s => `<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="goAsset('${s.t}','${s.k}')" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background=''">
- <td style="padding:.625rem .875rem;font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2)">${s.t}</td>
- <td style="padding:.625rem .875rem;color:var(--text2)">${s.name}</td>
- <td style="padding:.625rem .875rem;text-align:center;color:var(--text3);font-size:.72rem">${s.sector}</td>
- <td style="padding:.625rem .875rem;text-align:center">${s.beta}x</td>
- <td style="padding:.625rem .875rem;text-align:center;color:var(--text3)">${s.vol}%</td>
- <td style="padding:.625rem .875rem;text-align:center;color:${s.growth>=20?'var(--green)':s.growth>=10?'var(--gold)':'var(--text2)'}">+${s.growth}%/yr</td>
- </tr>`).join('')}</tbody>
- </table>
- </div>`;
+ renderScreenerTable(filtered, el);
 }
 
 /* ════════════════════════════════
