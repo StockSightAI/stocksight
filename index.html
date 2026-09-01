@@ -10041,7 +10041,9 @@ function renderPaperTradeTab() {
  </div>
  </div>
 
- <!-- Community Leaderboard -->
+ </div>`}
+
+ <!-- Community Leaderboard (always visible) -->
  <div class="card" style="margin-top:1rem">
  <div class="card-hdr" style="background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(245,158,11,.02))">
  <div>
@@ -10056,7 +10058,7 @@ function renderPaperTradeTab() {
  <div id="leaderboardList" style="padding:.25rem 0">
  <div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:.78rem">Loading rankings...</div>
  </div>
- </div>`}`;
+ </div>`;
 
  // Load leaderboard async after render
  setTimeout(loadLeaderboard, 50);
