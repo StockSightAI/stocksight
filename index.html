@@ -9800,6 +9800,167 @@ function renderPaperPortfolio(containerId) {
 /* ════════════════════════════════
  PAPER TRADE TAB
 ════════════════════════════════ */
+function sharePtCard() {
+ const pt = getPtPortfolio();
+ const entries = Object.entries(pt.holdings);
+ let portfolioValue = pt.cash;
+ entries.forEach(([t, h]) => { portfolioValue += (typeof h === 'object' ? h.shares : h) * ptDailyPrice(t); });
+ const totalReturn = portfolioValue - 10000;
+ const totalReturnPct = (totalReturn / 10000 * 100);
+ const isUp = totalReturn >= 0;
+
+ const W = 1080, H = 608;
+ const canvas = document.createElement('canvas');
+ canvas.width = W; canvas.height = H;
+ const ctx = canvas.getContext('2d');
+
+ // Background
+ ctx.fillStyle = '#141414';
+ ctx.fillRect(0, 0, W, H);
+
+ // Subtle grid lines
+ ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+ ctx.lineWidth = 1;
+ for (let x = 0; x < W; x += 60) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+ for (let y = 0; y < H; y += 60) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+ // Glow blob
+ const grd = ctx.createRadialGradient(W*0.15, H*0.4, 0, W*0.15, H*0.4, 320);
+ grd.addColorStop(0, isUp ? 'rgba(0,201,122,0.12)' : 'rgba(255,56,96,0.12)');
+ grd.addColorStop(1, 'transparent');
+ ctx.fillStyle = grd;
+ ctx.fillRect(0, 0, W, H);
+
+ // Top accent line
+ const accentColor = isUp ? '#00c97a' : '#ff3860';
+ ctx.fillStyle = accentColor;
+ ctx.fillRect(0, 0, W, 4);
+
+ // Logo area
+ ctx.fillStyle = 'rgba(108,92,231,0.2)';
+ roundRect(ctx, 48, 44, 42, 42, 12);
+ ctx.fill();
+ ctx.strokeStyle = 'rgba(108,92,231,0.6)';
+ ctx.lineWidth = 1.5;
+ roundRect(ctx, 48, 44, 42, 42, 12);
+ ctx.stroke();
+ // Chart icon in logo
+ ctx.strokeStyle = '#a89cff';
+ ctx.lineWidth = 2.5;
+ ctx.lineCap = 'round';
+ ctx.lineJoin = 'round';
+ ctx.beginPath();
+ ctx.moveTo(58, 76); ctx.lineTo(64, 66); ctx.lineTo(70, 70); ctx.lineTo(78, 58); ctx.lineTo(82, 62);
+ ctx.stroke();
+ // Logo text
+ ctx.fillStyle = '#eeeef8';
+ ctx.font = '700 22px Manrope, Inter, sans-serif';
+ ctx.fillText('Stock', 100, 68);
+ ctx.fillStyle = '#a89cff';
+ ctx.fillText('Sight', 148, 68);
+
+ // "PAPER TRADING" label
+ ctx.fillStyle = 'rgba(255,255,255,0.25)';
+ ctx.font = '600 11px Inter, sans-serif';
+ ctx.letterSpacing = '0.12em';
+ ctx.fillText('PAPER TRADING', 100, 84);
+
+ // Big return number
+ const retStr = (isUp ? '+' : '') + totalReturnPct.toFixed(2) + '%';
+ ctx.fillStyle = accentColor;
+ ctx.font = '900 112px Manrope, Inter, sans-serif';
+ ctx.fillText(retStr, 48, 260);
+
+ // Return label
+ ctx.fillStyle = 'rgba(238,238,248,0.45)';
+ ctx.font = '500 18px Inter, sans-serif';
+ ctx.fillText('total return from $10,000 starting capital', 52, 296);
+
+ // Portfolio value
+ ctx.fillStyle = '#eeeef8';
+ ctx.font = '700 32px Manrope, Inter, sans-serif';
+ ctx.fillText('$' + portfolioValue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}), 52, 352);
+ ctx.fillStyle = 'rgba(238,238,248,0.4)';
+ ctx.font = '500 15px Inter, sans-serif';
+ ctx.fillText('portfolio value', 52, 374);
+
+ // Divider
+ ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+ ctx.lineWidth = 1;
+ ctx.beginPath(); ctx.moveTo(48, 400); ctx.lineTo(W - 48, 400); ctx.stroke();
+
+ // Holdings (up to 4)
+ const topHoldings = entries.sort((a, b) => {
+ const va = (typeof a[1] === 'object' ? a[1].shares : a[1]) * ptDailyPrice(a[0]);
+ const vb = (typeof b[1] === 'object' ? b[1].shares : b[1]) * ptDailyPrice(b[0]);
+ return vb - va;
+ }).slice(0, 4);
+
+ if (topHoldings.length > 0) {
+ ctx.fillStyle = 'rgba(238,238,248,0.3)';
+ ctx.font = '600 11px Inter, sans-serif';
+ ctx.fillText('TOP POSITIONS', 52, 436);
+ topHoldings.forEach(([t, h], i) => {
+ const shares = typeof h === 'object' ? h.shares : h;
+ const avgCost = typeof h === 'object' ? h.avgCost : ptDailyPrice(t);
+ const cur = ptDailyPrice(t);
+ const pl = (cur - avgCost) / avgCost * 100;
+ const plColor = pl >= 0 ? '#00c97a' : '#ff3860';
+ const x = 52 + i * 248;
+ ctx.fillStyle = 'rgba(255,255,255,0.06)';
+ roundRect(ctx, x, 448, 228, 72, 10);
+ ctx.fill();
+ ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+ ctx.lineWidth = 1;
+ roundRect(ctx, x, 448, 228, 72, 10);
+ ctx.stroke();
+ ctx.fillStyle = '#a89cff';
+ ctx.font = '800 18px Manrope, Inter, sans-serif';
+ ctx.fillText(t, x + 16, 472);
+ ctx.fillStyle = plColor;
+ ctx.font = '700 14px Manrope, Inter, sans-serif';
+ ctx.fillText((pl >= 0 ? '+' : '') + pl.toFixed(1) + '%', x + 16, 496);
+ ctx.fillStyle = 'rgba(238,238,248,0.3)';
+ ctx.font = '500 12px Inter, sans-serif';
+ ctx.fillText(shares + ' shares', x + 80, 496);
+ });
+ } else {
+ ctx.fillStyle = 'rgba(238,238,248,0.25)';
+ ctx.font = '500 15px Inter, sans-serif';
+ ctx.fillText('No positions yet — just holding $' + pt.cash.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' cash', 52, 460);
+ }
+
+ // Bottom right watermark
+ ctx.fillStyle = 'rgba(238,238,248,0.2)';
+ ctx.font = '500 14px Inter, sans-serif';
+ ctx.textAlign = 'right';
+ ctx.fillText('stocksightai.com', W - 48, H - 32);
+ ctx.fillStyle = 'rgba(238,238,248,0.12)';
+ ctx.font = '500 12px Inter, sans-serif';
+ ctx.fillText('Paper trading · not financial advice', W - 48, H - 14);
+
+ // Download
+ const link = document.createElement('a');
+ link.download = 'stocksight-portfolio.png';
+ link.href = canvas.toDataURL('image/png');
+ link.click();
+ toast('Portfolio card saved! Post it on X or Reddit 🚀', 'success', 4000);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+ ctx.beginPath();
+ ctx.moveTo(x + r, y);
+ ctx.lineTo(x + w - r, y);
+ ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+ ctx.lineTo(x + w, y + h - r);
+ ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+ ctx.lineTo(x + r, y + h);
+ ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+ ctx.lineTo(x, y + r);
+ ctx.quadraticCurveTo(x, y, x + r, y);
+ ctx.closePath();
+}
+
 function renderPaperTradeTab() {
  const mc = document.getElementById('mainContent');
  if (!mc) return;
@@ -9876,6 +10037,9 @@ function renderPaperTradeTab() {
  <div style="display:flex;gap:8px;flex-wrap:wrap">
  <button class="pt-btn" onclick="switchTab('s');setTimeout(()=>toast('Search for a stock and click Paper Trade','info',3000),100)">
  + New Trade
+ </button>
+ <button onclick="sharePtCard()" style="background:linear-gradient(135deg,rgba(108,92,231,.25),rgba(108,92,231,.1));color:var(--accent2);border:1px solid rgba(108,92,231,.35);border-radius:10px;padding:9px 14px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
+ 📤 Share
  </button>
  <button onclick="if(confirm('Reset paper portfolio to $10,000? All trades will be lost.')){savePtPortfolio({cash:10000,holdings:{}});renderPaperTradeTab();toast('Portfolio reset! ','success')}"
  style="background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:9px 14px;font-family:inherit;font-size:.78rem;cursor:pointer;color:var(--text2)">
