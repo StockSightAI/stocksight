@@ -743,6 +743,20 @@ header{margin-bottom:2rem}
 .pt-card{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:1.75rem;max-width:420px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,.4)}
 .pt-btn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(0,180,216,.25),rgba(0,180,216,.1));color:var(--teal);border:1px solid rgba(0,180,216,.35);border-radius:10px;padding:9px 18px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s}
 .pt-btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,180,216,.3)}
+/* Leaderboard */
+.lb-row{display:grid;grid-template-columns:32px 1fr auto auto;align-items:center;gap:.75rem;padding:.7rem 1rem;border-bottom:1px solid var(--border);transition:background .15s}
+.lb-row:last-child{border-bottom:none}
+.lb-row:hover{background:var(--card2)}
+.lb-rank{font-family:'Manrope',sans-serif;font-weight:800;font-size:.82rem;color:var(--text3);text-align:center}
+.lb-rank.top{color:var(--gold)}
+.lb-name{font-size:.82rem;font-weight:600}
+.lb-val{font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:800}
+.lb-ret{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px}
+/* Notification toggle pill */
+.notif-tog{display:inline-flex;width:38px;height:22px;border-radius:11px;background:var(--border2);cursor:pointer;transition:background .2s;flex-shrink:0;position:relative}
+.notif-tog::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s}
+.notif-tog.on{background:var(--green)}
+.notif-tog.on::after{left:19px}
 .pt-stat{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center}
 .pt-stat-val{font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800}
 .pt-stat-lbl{font-size:.6rem;color:var(--text3);letter-spacing:.08em;margin-top:3px}
@@ -1682,6 +1696,20 @@ html{scroll-behavior:smooth}
  <div style="display:flex;align-items:center;gap:10px">
  <div style="font-size:1.1rem;flex-shrink:0"></div>
  <div><div class="sg-label">Paper trading recap</div><div class="sg-desc">Your virtual portfolio performance — how your paper trades did this week</div></div>
+ </div>
+ </div>
+ </div>
+
+ <div class="sg">
+ <div class="sg-lbl">BROWSER NOTIFICATIONS</div>
+ <div class="sg-row" style="justify-content:space-between">
+ <div>
+ <div class="sg-label">Watchlist Price Alerts</div>
+ <div class="sg-desc">Get a browser notification when a stock on your watchlist moves 3%+ in a day</div>
+ </div>
+ <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+ <span id="browser-notif-lbl" style="font-size:.68rem;color:var(--text3)">${localStorage.getItem('ss_browser_notifs')==='1'?'On':'Off'}</span>
+ <div class="notif-tog${localStorage.getItem('ss_browser_notifs')==='1'?' on':''}" id="browser-notif-tog" onclick="toggleBrowserNotifs()"></div>
  </div>
  </div>
  </div>
@@ -3039,6 +3067,7 @@ function bootApp() {
  initTickerTape();
  switchTab('s');
  setTimeout(applyModeLabels, 100);
+ setTimeout(checkWatchlistNotifications, 2000);
 
  const isNewUser = !localStorage.getItem('ss_onboarding_'+(user?.email||''));
  const tutDone = !!localStorage.getItem('ss_tutorial_done_'+(user?.email||''));
@@ -9221,6 +9250,173 @@ function ptDailyPrice(ticker) {
  return parseFloat(price.toFixed(price < 1 ? 6 : price < 10 ? 3 : 2));
 }
 
+/* ════════════════════════════════
+ PAPER TRADING LEADERBOARD
+════════════════════════════════ */
+function lbDisplayName(email) {
+ if (!email) return 'Anonymous';
+ const local = email.split('@')[0];
+ if (local.length <= 3) return local + '***';
+ return local.slice(0, 3) + '***';
+}
+
+async function loadLeaderboard() {
+ const el = document.getElementById('leaderboardList');
+ if (!el) return;
+ try {
+ const { data, error } = await sb.from('pt_leaderboard').select('display_name,value,return_pct,holdings_count,updated_at').order('value', { ascending: false }).limit(15);
+ if (error || !data || !data.length) {
+ el.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:.78rem">No entries yet — make a trade and opt in to be the first!</div>`;
+ return;
+ }
+ const myEmail = user?.email || '';
+ el.innerHTML = data.map((row, i) => {
+ const rank = i + 1;
+ const isMe = row.display_name === lbDisplayName(myEmail);
+ const retColor = row.return_pct >= 0 ? 'var(--green)' : 'var(--red)';
+ const retBg = row.return_pct >= 0 ? 'rgba(0,201,122,.12)' : 'rgba(255,56,96,.1)';
+ const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+ return `<div class="lb-row${isMe ? '" style="background:rgba(245,158,11,.05);border-left:2px solid var(--gold)' : ''}">
+ <div class="lb-rank${rank <= 3 ? ' top' : ''}">${medal}</div>
+ <div class="lb-name" style="${isMe ? 'color:var(--gold)' : ''}">${row.display_name}${isMe ? ' <span style="font-size:.6rem;opacity:.7">(you)</span>' : ''}</div>
+ <div class="lb-val" style="color:${retColor}">$${Number(row.value).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+ <div class="lb-ret" style="color:${retColor};background:${retBg}">${row.return_pct >= 0 ? '+' : ''}${Number(row.return_pct).toFixed(1)}%</div>
+ </div>`;
+ }).join('');
+ } catch(e) {
+ el.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:.78rem">Couldn't load leaderboard.</div>`;
+ }
+}
+
+async function upsertLeaderboard(pt, portfolioValue) {
+ if (!user?.email) return;
+ const optedIn = safeParse('ss_lb_opt_'+user.email, false);
+ if (!optedIn) return;
+ const returnPct = (portfolioValue - 10000) / 10000 * 100;
+ const holdingsCount = Object.keys(pt.holdings || {}).length;
+ try {
+ await sb.from('pt_leaderboard').upsert({
+ email: user.email,
+ display_name: lbDisplayName(user.email),
+ value: parseFloat(portfolioValue.toFixed(2)),
+ return_pct: parseFloat(returnPct.toFixed(2)),
+ holdings_count: holdingsCount,
+ updated_at: new Date().toISOString()
+ }, { onConflict: 'email' });
+ } catch(e) { console.warn('Leaderboard upsert failed', e); }
+}
+
+function toggleLeaderboardOpt() {
+ if (!user?.email) { toast('Sign in to appear on the leaderboard', 'info'); return; }
+ const key = 'ss_lb_opt_'+user.email;
+ const current = safeParse(key, false);
+ const next = !current;
+ localStorage.setItem(key, JSON.stringify(next));
+ const tog = document.getElementById('lb-opt-tog');
+ const lbl = document.getElementById('lb-tog-label');
+ if (tog) tog.className = 'notif-tog' + (next ? ' on' : '');
+ if (lbl) lbl.textContent = next ? 'Showing my rank' : 'Hidden';
+ if (next) {
+ // Immediately upsert current portfolio
+ const pt = getPtPortfolio();
+ let val = pt.cash;
+ Object.entries(pt.holdings).forEach(([t, h]) => { val += (typeof h === 'object' ? h.shares : h) * ptDailyPrice(t); });
+ upsertLeaderboard(pt, val).then(() => loadLeaderboard());
+ toast('You\'re on the leaderboard! ', 'success');
+ } else {
+ // Remove from leaderboard
+ sb.from('pt_leaderboard').delete().eq('email', user.email).then(() => loadLeaderboard());
+ toast('Removed from leaderboard', 'info');
+ }
+}
+
+/* ════════════════════════════════
+ BROWSER PUSH NOTIFICATIONS
+════════════════════════════════ */
+async function requestBrowserNotifPermission() {
+ if (!('Notification' in window)) { toast('Your browser doesn\'t support notifications', 'warn'); return; }
+ const perm = await Notification.requestPermission();
+ if (perm === 'granted') {
+ localStorage.setItem('ss_browser_notifs', '1');
+ updateNotifToggleUI(true);
+ toast('Browser notifications enabled! ', 'success');
+ new Notification('StockSight Alerts Active', { body: 'You\'ll be notified when your watchlist stocks make big moves.' });
+ checkWatchlistNotifications();
+ } else {
+ localStorage.setItem('ss_browser_notifs', '0');
+ updateNotifToggleUI(false);
+ toast('Notification permission denied. Enable in browser settings.', 'warn', 4000);
+ }
+}
+
+function toggleBrowserNotifs() {
+ const enabled = localStorage.getItem('ss_browser_notifs') === '1';
+ if (enabled) {
+ localStorage.setItem('ss_browser_notifs', '0');
+ updateNotifToggleUI(false);
+ toast('Browser notifications off', 'info');
+ } else {
+ if (Notification.permission === 'granted') {
+ localStorage.setItem('ss_browser_notifs', '1');
+ updateNotifToggleUI(true);
+ toast('Browser notifications on ', 'success');
+ checkWatchlistNotifications();
+ } else {
+ requestBrowserNotifPermission();
+ }
+ }
+}
+
+function updateNotifToggleUI(on) {
+ const tog = document.getElementById('browser-notif-tog');
+ const lbl = document.getElementById('browser-notif-lbl');
+ if (tog) tog.className = 'notif-tog' + (on ? ' on' : '');
+ if (lbl) lbl.textContent = on ? 'On' : 'Off';
+}
+
+function checkWatchlistNotifications() {
+ if (localStorage.getItem('ss_browser_notifs') !== '1') return;
+ if (!('Notification' in window) || Notification.permission !== 'granted') return;
+ if (!watchlist?.length) return;
+ const today = new Date().toDateString();
+ const notifiedKey = 'ss_notif_fired_' + today;
+ const alreadyFired = safeParse(notifiedKey, {});
+ watchlist.forEach(ticker => {
+ if (alreadyFired[ticker]) return;
+ const todayPrice = ptDailyPrice(ticker);
+ const yesterday = ptDailyPrice_yesterday(ticker);
+ if (!yesterday || yesterday === 0) return;
+ const changePct = ((todayPrice - yesterday) / yesterday) * 100;
+ if (Math.abs(changePct) >= 3) {
+ const dir = changePct > 0 ? '📈' : '📉';
+ new Notification(`${dir} ${ticker} moved ${changePct > 0 ? '+' : ''}${changePct.toFixed(1)}% today`, {
+ body: `Now at $${todayPrice.toLocaleString()} — check StockSight for the full picture.`,
+ tag: ticker
+ });
+ alreadyFired[ticker] = true;
+ }
+ });
+ try { localStorage.setItem(notifiedKey, JSON.stringify(alreadyFired)); } catch {}
+}
+
+function ptDailyPrice_yesterday(ticker) {
+ const base = PT_BASE_PRICES[ticker] || 100;
+ const daysSinceEpoch = Math.floor(Date.now() / 86400000) - 1;
+ let seed = 0;
+ for (let i = 0; i < ticker.length; i++) seed = (seed * 31 + ticker.charCodeAt(i)) | 0;
+ seed = Math.abs(seed + daysSinceEpoch * 1000003);
+ const vol = (ASSET_DATA[ticker]?.[1] || 30) / 100 / Math.sqrt(252);
+ const drift = (ASSET_DATA[ticker]?.[3] || 10) / 100 / 252;
+ let price = base;
+ for (let d = 60; d > 0; d--) {
+ const daySeed = Math.abs(seed + d * 7919);
+ const z = ((daySeed % 10000) / 5000) - 1;
+ price *= Math.exp(drift - 0.5*vol*vol + vol*z);
+ if (price < 0.0001) price = 0.0001;
+ }
+ return parseFloat(price.toFixed(price < 1 ? 6 : price < 10 ? 3 : 2));
+}
+
 function getPtPortfolio() {
  try { return JSON.parse(localStorage.getItem('ss_pt_'+(user?.email||''))||'{"cash":10000,"holdings":{}}'); }
  catch { return {cash:10000, holdings:{}}; }
@@ -9231,6 +9427,10 @@ function savePtPortfolio(pt) {
  const prefs = safeParse('ss3_p_'+user.email, {});
  sb.from('users').update({ portfolio: { holdings: holdings||[], paper_trade: pt, prefs } }).eq('email', user.email)
  .then(({error}) => { if(error) console.warn('savePT sync failed'); });
+ // Update leaderboard if opted in
+ let portfolioValue = pt.cash;
+ Object.entries(pt.holdings || {}).forEach(([t, h]) => { portfolioValue += (typeof h === 'object' ? h.shares : h) * ptDailyPrice(t); });
+ upsertLeaderboard(pt, portfolioValue);
  }
 }
 
@@ -9839,7 +10039,27 @@ function renderPaperTradeTab() {
  }).join('')}
  </div>
  </div>
+ </div>
+
+ <!-- Community Leaderboard -->
+ <div class="card" style="margin-top:1rem">
+ <div class="card-hdr" style="background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(245,158,11,.02))">
+ <div>
+ <div class="card-hdr-title" style="color:var(--gold)">🏆 Community Leaderboard</div>
+ <div class="card-hdr-sub">Top virtual portfolios · updates on every trade · opt-in only</div>
+ </div>
+ <div style="display:flex;align-items:center;gap:8px">
+ <span style="font-size:.68rem;color:var(--text3)" id="lb-tog-label">${safeParse('ss_lb_opt_'+(user?.email||''), false) ? 'Showing my rank' : 'Hidden'}</span>
+ <div class="notif-tog${safeParse('ss_lb_opt_'+(user?.email||''), false) ? ' on' : ''}" id="lb-opt-tog" onclick="toggleLeaderboardOpt()" title="Show/hide my portfolio on the leaderboard"></div>
+ </div>
+ </div>
+ <div id="leaderboardList" style="padding:.25rem 0">
+ <div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:.78rem">Loading rankings...</div>
+ </div>
  </div>`}`;
+
+ // Load leaderboard async after render
+ setTimeout(loadLeaderboard, 50);
 }
 
 /* ════════════════════════════════
