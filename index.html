@@ -12486,8 +12486,295 @@ function dtCalcSize() {
  ${rr != null && rr < 1 ? `<div style="font-size:.7rem;color:var(--gold);margin-top:.625rem">Your target is closer than your stop. You'd need to win more than half your trades just to break even.</div>` : ''}`;
 }
 
+/* ── Broker CSV import ──────────────────────────────────────────
+ Brokers export executions (individual fills), not round-trip trades, and every
+ broker uses different column names. So: parse the file, guess the columns,
+ let the user correct the guess, then FIFO-match fills into completed trades.
+ Everything happens in the browser — no upload, no credentials, no backend. */
+
+let dtImport = null;
+
+// RFC4180-ish parser: handles quoted fields, escaped quotes, and CRLF
+function dtParseCSV(text) {
+ const rows = []; let row = [], field = '', inQ = false;
+ text = text.replace(/\r\n?/g, '\n');
+ for (let i = 0; i < text.length; i++) {
+ const c = text[i];
+ if (inQ) {
+ if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQ = false; }
+ else field += c;
+ } else if (c === '"') inQ = true;
+ else if (c === ',') { row.push(field); field = ''; }
+ else if (c === '\n') { row.push(field); field = ''; if (row.some(v => v.trim() !== '')) rows.push(row); row = []; }
+ else field += c;
+ }
+ row.push(field);
+ if (row.some(v => v.trim() !== '')) rows.push(row);
+ return rows;
+}
+
+// Order matters within a list: earlier hints win. Avoid words that collide
+// across fields ("activity" would otherwise steal "Activity Date" for side).
+const DT_COL_HINTS = {
+ date:   ['activity date','trade date','run date','settlement date','date/time','date','filled at','executed','settled','time'],
+ symbol: ['symbol','ticker','instrument','security','stock','underlying'],
+ side:   ['trans code','transaction code','buy/sell','side','action','transaction type','activity type','trans','description','type'],
+ qty:    ['quantity','qty','shares','filled qty','units','size'],
+ price:  ['fill price','average price','avg price','executed price','trade price','unit price','price ($)','price']
+};
+
+// Brokers often stack account junk above the real header, so score each of the
+// first few rows and take the one that looks most like a header.
+function dtFindHeader(rows) {
+ let best = 0, bestScore = -1;
+ for (let r = 0; r < Math.min(rows.length, 12); r++) {
+ const cells = rows[r].map(c => c.trim().toLowerCase());
+ let score = 0;
+ Object.values(DT_COL_HINTS).forEach(hints => {
+ if (cells.some(c => hints.some(h => c === h || c.includes(h)))) score++;
+ });
+ if (score > bestScore) { bestScore = score; best = r; }
+ }
+ return { index: best, score: bestScore };
+}
+
+// Two passes so exact header matches claim their column before fuzzy ones do,
+// and a claimed column can't be stolen by a second field.
+function dtGuessCols(headers) {
+ const low = headers.map(h => h.trim().toLowerCase());
+ const keys = ['date', 'symbol', 'side', 'qty', 'price'];
+ const map = { date: null, symbol: null, side: null, qty: null, price: null };
+ const taken = new Set();
+
+ keys.forEach(k => {
+ const i = low.findIndex((h, idx) => !taken.has(idx) && DT_COL_HINTS[k].includes(h));
+ if (i >= 0) { map[k] = i; taken.add(i); }
+ });
+ keys.forEach(k => {
+ if (map[k] != null) return;
+ const i = low.findIndex((h, idx) => !taken.has(idx) && DT_COL_HINTS[k].some(x => h.includes(x)));
+ if (i >= 0) { map[k] = i; taken.add(i); }
+ });
+ return map;
+}
+
+// "$1,234.50", "(45.20)" -> 1234.5, -45.2
+function dtNum(s) {
+ if (s == null) return NaN;
+ let v = String(s).trim().replace(/[$,\s]/g, '');
+ let neg = false;
+ if (/^\(.*\)$/.test(v)) { neg = true; v = v.slice(1, -1); }
+ const n = parseFloat(v);
+ return isFinite(n) ? (neg ? -n : n) : NaN;
+}
+
+function dtParseDate(s) {
+ if (!s) return null;
+ const raw = String(s).trim().split(/\s+as of\s+/i)[0];
+ // A bare YYYY-MM-DD parses as UTC midnight, which lands on the previous day
+ // in any timezone behind UTC. Build it as a local date instead.
+ const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+ if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]);
+ const d = new Date(raw);
+ return isNaN(d.getTime()) ? null : d;
+}
+
+// Normalize the many ways brokers spell a direction
+function dtSide(s) {
+ const v = String(s || '').toLowerCase();
+ if (/sell\s*short|short\s*sell|sell to open/.test(v)) return 'short';
+ if (/buy to cover|cover/.test(v)) return 'cover';
+ if (/\bbuy\b|bought|purchase|\bbot\b/.test(v)) return 'buy';
+ if (/\bsell\b|sold|\bsale\b/.test(v)) return 'sell';
+ return null;
+}
+
+// FIFO-match fills into completed round trips. Opens a long or short depending
+// on which side arrives first, so both directions work without extra config.
+function dtBuildTrades(rows, map) {
+ const fills = [];
+ rows.forEach(r => {
+ const side = dtSide(r[map.side]);
+ const sym = String(r[map.symbol] || '').trim().toUpperCase().split(/\s+/)[0];
+ const qty = Math.abs(dtNum(r[map.qty]));
+ const price = Math.abs(dtNum(r[map.price]));
+ const date = dtParseDate(r[map.date]);
+ if (!side || !sym || !isFinite(qty) || qty <= 0 || !isFinite(price) || price <= 0 || !date) return;
+ fills.push({ side, sym, qty, price, date });
+ });
+ fills.sort((a, b) => a.date - b.date);
+
+ const open = {};          // symbol -> [{dir, qty, price, date}]
+ const trades = [], skipped = [];
+
+ fills.forEach(f => {
+ const lots = open[f.sym] || (open[f.sym] = []);
+ const closesLong = (f.side === 'sell');
+ const closesShort = (f.side === 'buy' || f.side === 'cover');
+ const wantDir = closesLong ? 'long' : closesShort ? 'short' : null;
+
+ let qty = f.qty;
+ while (qty > 0 && lots.length && lots[0].dir === wantDir) {
+ const lot = lots[0];
+ const n = Math.min(qty, lot.qty);
+ const pnl = (lot.dir === 'long' ? f.price - lot.price : lot.price - f.price) * n;
+ const days = Math.max(0, Math.round((f.date - lot.date) / 86400000));
+ trades.push({
+ id: 'imp-' + f.sym + '-' + f.date.getTime() + '-' + trades.length,
+ ticker: f.sym,
+ date: f.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+ dir: lot.dir, shares: n,
+ entry: parseFloat(lot.price.toFixed(4)), exit: parseFloat(f.price.toFixed(4)),
+ pnl: parseFloat(pnl.toFixed(2)), r: null,
+ entryTime: lot.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+ exitTime: f.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+ heldLabel: days === 0 ? 'intraday' : days + 'd',
+ hour: lot.date.getHours(),
+ reason: 'Imported', setup: '', emotion: '', src: 'csv'
+ });
+ lot.qty -= n; qty -= n;
+ if (lot.qty <= 1e-9) lots.shift();
+ }
+ // Anything left over opens a new position in this direction
+ if (qty > 0) {
+ const dir = (f.side === 'buy') ? 'long' : (f.side === 'short' ? 'short' : null);
+ if (dir) lots.push({ dir, qty, price: f.price, date: f.date });
+ else skipped.push(f);
+ }
+ });
+
+ const stillOpen = Object.values(open).reduce((a, l) => a + l.length, 0);
+ return { trades, parsedFills: fills.length, stillOpen, skipped: skipped.length };
+}
+
 const DT_SETUPS = ['Breakout','Pullback','Reversal','Momentum','VWAP bounce','News','Other'];
 const DT_EMOTIONS = ['Calm','Confident','FOMO','Revenge','Hesitant'];
+
+function dtOnFile(input) {
+ const file = input.files && input.files[0];
+ if (!file) return;
+ if (file.size > 8 * 1024 * 1024) { showToast('That file is larger than 8MB', 'warn'); return; }
+ const reader = new FileReader();
+ reader.onload = e => {
+ try {
+ const rows = dtParseCSV(String(e.target.result));
+ if (rows.length < 2) { showToast("That file doesn't look like a CSV", 'warn'); return; }
+ const hdr = dtFindHeader(rows);
+ const headers = rows[hdr.index].map(h => h.trim());
+ const body = rows.slice(hdr.index + 1).filter(r => r.length >= headers.length - 2);
+ dtImport = { fileName: file.name, headers, body, map: dtGuessCols(headers), result: null };
+ dtRecompute();
+ } catch (err) {
+ showToast('Could not read that file', 'warn');
+ }
+ };
+ reader.readAsText(file);
+ input.value = '';
+}
+
+function dtRecompute() {
+ if (!dtImport) return;
+ const m = dtImport.map;
+ dtImport.result = (m.date != null && m.symbol != null && m.side != null && m.qty != null && m.price != null)
+ ? dtBuildTrades(dtImport.body, m)
+ : null;
+ dtRenderImport();
+}
+
+function dtSetMap(key, val) {
+ if (!dtImport) return;
+ dtImport.map[key] = val === '' ? null : +val;
+ dtRecompute();
+}
+
+function dtCancelImport() { dtImport = null; dtRenderImport(); }
+
+function dtDoImport() {
+ if (!dtImport?.result?.trades?.length) return;
+ const j = dtJournal();
+ const seen = new Set(j.map(t => t.id));
+ const fresh = dtImport.result.trades.filter(t => !seen.has(t.id));
+ dtSaveJournal([...fresh, ...j].slice(0, 1000));
+ showToast(`Imported ${fresh.length} trade${fresh.length === 1 ? '' : 's'}`, 'success');
+ dtImport = null;
+ dtRenderImport();
+ dtRenderJournal();
+}
+
+function dtRenderImport() {
+ const el = document.getElementById('dtImportPanel');
+ if (!el) return;
+
+ if (!dtImport) {
+ el.innerHTML = `
+ <div style="padding:1rem">
+ <label style="display:block;border:2px dashed var(--border2);border-radius:14px;padding:1.5rem;text-align:center;cursor:pointer">
+ <input type="file" accept=".csv,text/csv" onchange="dtOnFile(this)" style="display:none">
+ <div style="font-size:1.6rem;margin-bottom:.5rem">📄</div>
+ <div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:4px">Choose your broker's CSV</div>
+ <div style="font-size:.72rem;color:var(--text3)">Your file is read in the browser and never uploaded anywhere</div>
+ </label>
+ <div style="font-size:.68rem;color:var(--text3);margin-top:.875rem;line-height:1.7">
+ <b style="color:var(--text2)">Where to find it:</b>
+ Robinhood → Account → Statements → Reports ·
+ Schwab → Accounts → History → Export ·
+ Fidelity → Activity → Download ·
+ E*TRADE → Transactions → Download ·
+ Webull → Account → Statements
+ </div>
+ </div>`;
+ return;
+ }
+
+ const { headers, map, result, fileName } = dtImport;
+ const sel = (key, label) => `
+ <div>
+ <label class="dt-lbl">${label}</label>
+ <select class="dt-inp" style="font-size:.72rem;padding:7px 8px" onchange="dtSetMap('${key}',this.value)">
+ <option value="">— not set —</option>
+ ${headers.map((h, i) => `<option value="${i}" ${map[key] === i ? 'selected' : ''}>${escapeHTML(h || 'col ' + (i + 1))}</option>`).join('')}
+ </select>
+ </div>`;
+
+ const preview = result && result.trades.length
+ ? `<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:.875rem">
+ ${result.trades.slice(0, 6).map(t => `
+ <div style="display:grid;grid-template-columns:56px 1fr 1fr 80px;gap:8px;padding:.5rem .75rem;border-bottom:1px solid var(--border);font-size:.68rem;align-items:center">
+ <div style="font-weight:700">${escapeHTML(t.ticker)}</div>
+ <div style="color:var(--text3)">${escapeHTML(t.dir)} · ${t.shares} sh · ${escapeHTML(t.heldLabel)}</div>
+ <div style="color:var(--text2)">$${t.entry} → $${t.exit}</div>
+ <div style="text-align:right;font-weight:700;color:${t.pnl >= 0 ? 'var(--green)' : 'var(--red)'}">${t.pnl >= 0 ? '+' : ''}$${t.pnl.toFixed(2)}</div>
+ </div>`).join('')}
+ ${result.trades.length > 6 ? `<div style="padding:.5rem .75rem;font-size:.66rem;color:var(--text3)">+ ${result.trades.length - 6} more</div>` : ''}
+ </div>`
+ : '';
+
+ el.innerHTML = `
+ <div style="padding:1rem">
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem;gap:1rem">
+ <div style="font-size:.75rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(fileName)}</div>
+ <button class="dt-ctrl" style="font-size:.65rem;padding:6px 12px;flex-shrink:0" onclick="dtCancelImport()">Cancel</button>
+ </div>
+
+ <div style="font-size:.66rem;color:var(--text3);margin-bottom:.5rem">We guessed these columns. Fix any that look wrong.</div>
+ <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem;margin-bottom:.875rem">
+ ${sel('date', 'DATE')}${sel('symbol', 'SYMBOL')}${sel('side', 'BUY / SELL')}${sel('qty', 'QUANTITY')}${sel('price', 'PRICE')}
+ </div>
+
+ ${!result
+ ? `<div style="font-size:.72rem;color:var(--gold)">Pick a column for each field above to continue.</div>`
+ : result.trades.length === 0
+ ? `<div style="font-size:.72rem;color:var(--gold);line-height:1.6">Read ${result.parsedFills} usable row${result.parsedFills === 1 ? '' : 's'} but couldn't pair any into completed trades. Check that the buy/sell and price columns are mapped correctly.</div>`
+ : `<div style="display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:.25rem">
+ <div class="dt-stat" style="flex:1;min-width:96px"><div class="dt-stat-v" style="color:var(--accent2)">${result.trades.length}</div><div class="dt-stat-l">ROUND TRIPS</div></div>
+ <div class="dt-stat" style="flex:1;min-width:96px"><div class="dt-stat-v">${result.parsedFills}</div><div class="dt-stat-l">FILLS READ</div></div>
+ <div class="dt-stat" style="flex:1;min-width:96px"><div class="dt-stat-v" style="color:${result.stillOpen ? 'var(--gold)' : 'var(--text)'}">${result.stillOpen}</div><div class="dt-stat-l">STILL OPEN</div></div>
+ </div>
+ ${preview}
+ ${result.stillOpen ? `<div style="font-size:.66rem;color:var(--text3);margin-top:.625rem">${result.stillOpen} position${result.stillOpen === 1 ? '' : 's'} never sold in this file, so ${result.stillOpen === 1 ? 'it has' : 'they have'} no P&amp;L yet and won't be imported.</div>` : ''}
+ <button class="dt-trade-btn" style="width:100%;background:var(--accent);margin-top:.875rem" onclick="dtDoImport()">Add ${result.trades.length} trade${result.trades.length === 1 ? '' : 's'} to journal</button>`}
+ </div>`;
+}
 
 function renderDayTradeTab() {
  const mc = document.getElementById('mainContent');
@@ -12580,6 +12867,16 @@ function renderDayTradeTab() {
  <div style="padding:1rem" id="dtStatsPanel"></div>
  </div>
 
+ <div class="card" style="margin-bottom:1.25rem">
+ <div class="card-hdr">
+ <div>
+ <div class="card-hdr-title">Import Real Trades</div>
+ <div class="card-hdr-sub">Upload your broker's trade history to see your actual numbers</div>
+ </div>
+ </div>
+ <div id="dtImportPanel"></div>
+ </div>
+
  <div class="card">
  <div class="card-hdr">
  <div>
@@ -12593,6 +12890,7 @@ function renderDayTradeTab() {
 
  dtRefresh();
  dtRenderJournal();
+ dtRenderImport();
  dtCalcSize();
 }
 
@@ -12793,7 +13091,7 @@ function dtRenderJournal() {
  </div>
  <div class="dt-hide" style="color:var(--text2)">
  $${t.entry} → $${t.exit}
- <div style="font-size:.55rem;color:var(--text3)">${t.entryTime} · ${t.held}m · ${escapeHTML(t.reason)}</div>
+ <div style="font-size:.55rem;color:var(--text3)">${t.entryTime} · ${escapeHTML(t.heldLabel || (t.held + 'm'))} · ${escapeHTML(t.reason)}</div>
  </div>
  <div style="display:flex;gap:5px">
  <select class="dt-sel" onchange="dtTag('${t.id}','setup',this.value)">
