@@ -2329,13 +2329,23 @@ async function pullUserFromSupabase(email) {
 // trackSearch is defined in the TRENDING ON STOCKSIGHT section below
 // (records locally for badges + inserts into Supabase for community trending)
 
+// One-way hash of a user's email. Votes are keyed by this instead of the raw
+// address, so the publicly-readable votes table never contains personal data.
+// Deterministic (same email always maps to the same id) so a user can still
+// change their own vote. Requires a secure context: https or localhost.
+async function voterId(email) {
+ const data = new TextEncoder().encode('stocksight-vote:' + email.trim().toLowerCase());
+ const buf = await crypto.subtle.digest('SHA-256', data);
+ return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 // Cast or update a community vote for a ticker
 async function castVote(ticker, vote) {
  if (!user?.email) { showToast('Sign in to vote', 'info'); return; }
  try {
  const { error } = await sb.from('votes').upsert(
- { ticker: ticker.toUpperCase(), user_email: user.email, vote },
- { onConflict: 'ticker,user_email' }
+ { ticker: ticker.toUpperCase(), voter_hash: await voterId(user.email), vote },
+ { onConflict: 'ticker,voter_hash' }
  );
  if (error) throw error;
  showToast(`Voted ${vote.toUpperCase()} on ${ticker}`, 'success');
@@ -2361,7 +2371,7 @@ async function renderVoteBar(ticker) {
  // Get user's current vote
  let userVote = null;
  if (user?.email) {
- const { data: uv } = await sb.from('votes').select('vote').eq('ticker', ticker.toUpperCase()).eq('user_email', user.email).maybeSingle();
+ const { data: uv } = await sb.from('votes').select('vote').eq('ticker', ticker.toUpperCase()).eq('voter_hash', await voterId(user.email)).maybeSingle();
  if (uv) userVote = uv.vote;
  }
 
@@ -4072,7 +4082,7 @@ async function renderPoll(ticker) {
  // Get user's current vote
  let mv = null;
  if (user?.email) {
- const { data: uv } = await sb.from('votes').select('vote').eq('ticker', ticker.toUpperCase()).eq('user_email', user.email).maybeSingle();
+ const { data: uv } = await sb.from('votes').select('vote').eq('ticker', ticker.toUpperCase()).eq('voter_hash', await voterId(user.email)).maybeSingle();
  if (uv) mv = uv.vote;
  }
 
