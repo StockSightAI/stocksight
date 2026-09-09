@@ -12455,6 +12455,155 @@ function dtStats(j) {
  };
 }
 
+/* ── Shareable trading report card ──────────────────────────────
+ The hook: most traders can't tell you their expectancy. This puts it on a
+ card they can post. Renders to canvas and downloads as PNG, same approach
+ as sharePtCard(). */
+
+// Extra breakdowns the stats panel doesn't show
+function dtDeepStats(j) {
+ const byHour = {};
+ j.forEach(t => {
+ if (typeof t.hour !== 'number') return;
+ byHour[t.hour] = (byHour[t.hour] || 0) + t.pnl;
+ });
+ const hours = Object.entries(byHour).map(([h, p]) => ({ h: +h, pnl: p }));
+ hours.sort((a, b) => b.pnl - a.pnl);
+
+ const bySetup = {};
+ j.forEach(t => { if (t.setup) bySetup[t.setup] = (bySetup[t.setup] || 0) + t.pnl; });
+ const setups = Object.entries(bySetup).map(([s, p]) => ({ s, pnl: p })).sort((a, b) => b.pnl - a.pnl);
+
+ const hourLabel = h => {
+ const ampm = h >= 12 ? 'PM' : 'AM';
+ const hh = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+ return `${hh}${ampm}`;
+ };
+ return {
+ // Only meaningful once trades are spread across more than one hour
+ best: hours.length > 1 ? hours[0] : null,
+ worst: hours.length > 1 ? hours[hours.length - 1] : null,
+ topSetup: setups.length ? setups[0] : null,
+ hourLabel
+ };
+}
+
+function shareDayCard() {
+ const j = dtJournal();
+ const s = dtStats(j);
+ if (!s) { showToast('Take a few trades first, then your card will have something to say', 'info'); return; }
+
+ const d = dtDeepStats(j);
+ const W = 1080, H = 760;
+ const canvas = document.createElement('canvas');
+ canvas.width = W; canvas.height = H;
+ const ctx = canvas.getContext('2d');
+ if (!ctx) return;
+
+ const GREEN = '#00c97a', RED = '#ff3860', INK = '#eeeef8', MUTE = 'rgba(238,238,248,0.42)';
+ const good = s.expectancy >= 0;
+ const accent = good ? GREEN : RED;
+
+ // Background
+ ctx.fillStyle = '#161618';
+ ctx.fillRect(0, 0, W, H);
+ const glow = ctx.createRadialGradient(W * 0.86, -60, 0, W * 0.86, -60, 620);
+ glow.addColorStop(0, 'rgba(108,92,231,0.20)');
+ glow.addColorStop(1, 'rgba(108,92,231,0)');
+ ctx.fillStyle = glow;
+ ctx.fillRect(0, 0, W, H);
+ ctx.fillStyle = accent;
+ ctx.fillRect(0, 0, W, 4);
+
+ // Logo
+ ctx.fillStyle = 'rgba(108,92,231,0.2)';
+ roundRect(ctx, 48, 44, 42, 42, 12); ctx.fill();
+ ctx.strokeStyle = 'rgba(108,92,231,0.6)'; ctx.lineWidth = 1.5;
+ roundRect(ctx, 48, 44, 42, 42, 12); ctx.stroke();
+ ctx.strokeStyle = '#a89cff'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+ ctx.beginPath();
+ ctx.moveTo(58, 76); ctx.lineTo(64, 66); ctx.lineTo(70, 70); ctx.lineTo(78, 58); ctx.lineTo(82, 62);
+ ctx.stroke();
+ ctx.fillStyle = INK; ctx.font = '700 22px Manrope, Inter, sans-serif';
+ ctx.fillText('Stock', 100, 68);
+ // Measure rather than hardcode the offset, or the two halves overlap
+ ctx.fillStyle = '#a89cff';
+ ctx.fillText('Sight', 100 + ctx.measureText('Stock').width, 68);
+ ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.font = '600 11px Inter, sans-serif';
+ ctx.fillText('TRADING REPORT CARD', 100, 86);
+
+ // Hero: expectancy, the number most traders can't name
+ const exp = (s.expectancy >= 0 ? '+$' : '-$') + Math.abs(s.expectancy).toFixed(2);
+ ctx.fillStyle = accent; ctx.font = '900 116px Manrope, Inter, sans-serif';
+ ctx.fillText(exp, 48, 236);
+ ctx.fillStyle = MUTE; ctx.font = '500 19px Inter, sans-serif';
+ ctx.fillText('expectancy: what one average trade is worth', 52, 274);
+
+ ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1;
+ ctx.beginPath(); ctx.moveTo(48, 314); ctx.lineTo(W - 48, 314); ctx.stroke();
+
+ // Core stat row
+ const box = (x, y, w, h, label, value, color) => {
+ ctx.fillStyle = 'rgba(255,255,255,0.05)';
+ roundRect(ctx, x, y, w, h, 12); ctx.fill();
+ ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1;
+ roundRect(ctx, x, y, w, h, 12); ctx.stroke();
+ ctx.fillStyle = color || INK; ctx.font = '800 30px Manrope, Inter, sans-serif';
+ ctx.fillText(value, x + 18, y + 46);
+ ctx.fillStyle = 'rgba(238,238,248,0.32)'; ctx.font = '600 11px Inter, sans-serif';
+ ctx.fillText(label, x + 18, y + 70);
+ };
+
+ const bw = (W - 96 - 3 * 16) / 4;
+ box(48, 346, bw, 88, 'TRADES', String(s.n));
+ box(48 + (bw + 16), 346, bw, 88, 'WIN RATE', (s.winRate * 100).toFixed(0) + '%', s.winRate >= 0.5 ? GREEN : '#f5b543');
+ box(48 + (bw + 16) * 2, 346, bw, 88, 'PROFIT FACTOR',
+ s.profitFactor === Infinity ? '∞' : s.profitFactor.toFixed(2),
+ s.profitFactor >= 1.5 ? GREEN : s.profitFactor >= 1 ? '#f5b543' : RED);
+ box(48 + (bw + 16) * 3, 346, bw, 88, 'NET P&L',
+ (s.net >= 0 ? '+$' : '-$') + Math.abs(s.net).toFixed(0), s.net >= 0 ? GREEN : RED);
+
+ // Behavioural row — the part traders rarely measure about themselves
+ const bw2 = (W - 96 - 2 * 16) / 3;
+ box(48, 452, bw2, 88, 'AVG R MULTIPLE',
+ s.avgR == null ? '—' : (s.avgR >= 0 ? '+' : '') + s.avgR.toFixed(2) + 'R',
+ s.avgR == null ? MUTE : s.avgR >= 0 ? GREEN : RED);
+ box(48 + (bw2 + 16), 452, bw2, 88, 'BEST HOUR',
+ d.best ? d.hourLabel(d.best.h) : '—', d.best ? GREEN : MUTE);
+ box(48 + (bw2 + 16) * 2, 452, bw2, 88, 'TOUGHEST HOUR',
+ d.worst ? d.hourLabel(d.worst.h) : '—', d.worst ? RED : MUTE);
+
+ // One-line read on the numbers
+ ctx.fillStyle = 'rgba(255,255,255,0.05)';
+ roundRect(ctx, 48, 560, W - 96, 92, 14); ctx.fill();
+ ctx.strokeStyle = `${accent}44`; ctx.lineWidth = 1;
+ roundRect(ctx, 48, 560, W - 96, 92, 14); ctx.stroke();
+
+ const verdict = s.n < 30
+ ? `${s.n} trades is still mostly luck. Come back at 30+.`
+ : good
+ ? `Positive expectancy over ${s.n} trades. That edge is the whole game.`
+ : `Negative expectancy over ${s.n} trades. The size of your losses is the problem.`;
+ ctx.fillStyle = INK; ctx.font = '600 21px Inter, sans-serif';
+ ctx.fillText(verdict, 72, 600);
+ ctx.fillStyle = MUTE; ctx.font = '500 16px Inter, sans-serif';
+ ctx.fillText(d.topSetup ? `Best setup: ${d.topSetup.s}` : 'Tag your setups to see which ones actually pay', 72, 630);
+
+ // Watermark
+ ctx.textAlign = 'right';
+ ctx.fillStyle = 'rgba(238,238,248,0.28)'; ctx.font = '600 16px Inter, sans-serif';
+ ctx.fillText('stocksightai.com', W - 48, H - 44);
+ ctx.fillStyle = 'rgba(238,238,248,0.14)'; ctx.font = '500 13px Inter, sans-serif';
+ ctx.fillText('Free trade journal & day trading simulator', W - 48, H - 22);
+ ctx.textAlign = 'left';
+
+ const link = document.createElement('a');
+ link.download = 'stocksight-report-card.png';
+ link.href = canvas.toDataURL('image/png');
+ link.click();
+ showToast('Report card saved. Post it and tag us.', 'success');
+}
+
 /* ── Position sizer ── */
 function dtCalcSize() {
  const acct = parseFloat(document.getElementById('psAcct')?.value);
@@ -12863,6 +13012,7 @@ function renderDayTradeTab() {
  <div class="card-hdr-title">Your Numbers</div>
  <div class="card-hdr-sub">Across every logged trade — this is what tells you if you have an edge</div>
  </div>
+ <button class="dt-ctrl on" onclick="shareDayCard()" style="flex-shrink:0">Share card</button>
  </div>
  <div style="padding:1rem" id="dtStatsPanel"></div>
  </div>
