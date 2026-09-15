@@ -338,34 +338,24 @@ tr:hover td{background:var(--card2)}
 
 @media(max-width:860px){.prof-layout{grid-template-columns:1fr}.prof-sidebar{position:static}}
 @media(max-width:700px){.tab{font-size:.68rem;padding:7px 3px}.tab-icon{display:none}.two-col,.cmp-row,.add-row{grid-template-columns:1fr}.screen{padding:1.25rem 1rem}}
-@media(max-width:520px){.tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:2px}.tabs::-webkit-scrollbar{display:none}.tab{flex:0 0 auto;font-size:.62rem;padding:7px 8px;min-width:52px}.tab-icon{display:none}.screen{padding:1rem .875rem}}
 @media(max-width:480px){
  /* ── Header ── */
  .hdr-actions{gap:4px}
  .hdr-actions button{padding:5px 8px!important;font-size:.8rem!important}
- /* Hide mode toggle on mobile — accessible via profile */
  #modeBtn{display:none!important}
- /* Hide username text in pill, keep avatar */
  .user-name{display:none}
  .user-pill{padding:4px 8px;gap:4px}
 
- /* ── Welcome bar ── */
- .wb-date,.wb-time{display:none}
+ /* ── Streak badge ── */
  #streakBadge span:last-child{display:none}
- .welcome-bar{padding:10px 14px;margin-bottom:.75rem}
 
- /* ── Search ── */
- .search-row{gap:6px}
+ /* ── Gate ── */
+ .gate-title{font-size:2rem;letter-spacing:-.03em}
+ .gate-sub{font-size:.84rem}
 
- /* ── Quick picks ── */
- .picks{gap:5px;margin-bottom:1rem}
-
- /* ── Grids ── */
- .home-grid,.home-grid-3{grid-template-columns:1fr!important}
- .two-col,.cmp-row,.add-row{grid-template-columns:1fr}
-
- /* ── Screen padding ── */
- #S-app.screen{padding-bottom:5.5rem}
+ /* ── Footer ── */
+ #siteFooter{padding:1.25rem .875rem 1.5rem;gap:8px}
+ #siteFooter p{font-size:.62rem}
 
  /* ── Modal on mobile: slide up from bottom ── */
  .modal-overlay{padding:.5rem;align-items:flex-end}
@@ -855,32 +845,169 @@ body.mode-beginner .main-content { padding: 20px 18px; gap: 0; }
 .referral-card{background:linear-gradient(135deg,rgba(108,92,231,.12),rgba(0,180,216,.08));border:1px solid rgba(108,92,231,.3);border-radius:14px;padding:1.25rem}
 
 #mobileNav{display:none}
+
+/* ══════════════════════════════════════════
+   MOBILE — portrait  ≤768px
+   Apple Stocks-inspired: clean rows, big
+   numbers, bottom tab bar, no side-scroll
+   ══════════════════════════════════════════ */
 @media(max-width:768px){
+ /* Kill the desktop tab strip */
  .tabs{display:none!important}
+
+ /* Screen padding — left/right gutters only, bottom clears tab bar */
+ #S-app.screen,#S-gate.screen{
+  padding:0 0 5.5rem;
+  padding-bottom:max(5.5rem,calc(4.5rem + env(safe-area-inset-bottom)));
+ }
+ .screen{padding-left:0;padding-right:0}
+
+ /* Header: tighter, flush to edges */
+ header{
+  padding:12px 16px 10px;
+  margin-bottom:.5rem;
+ }
+
+ /* Ticker tape full-width */
+ .ticker-tape{margin:0}
+
+ /* Welcome bar: simple, compact */
+ .welcome-bar{
+  border-radius:0;border-left:none;border-right:none;
+  padding:10px 16px;margin-bottom:0;
+ }
+ .wb-date,.wb-time{display:none}
+
+ /* Market status, search hist, search section — guttered */
+ #marketStatusBar,#searchSection,.search-hist{padding:0 16px}
+ #marketStatusBar{margin-bottom:.6rem;margin-top:.6rem}
+
+ /* Cards: full-width, no side radius on edges */
+ .card{border-radius:0;border-left:none;border-right:none;margin-bottom:1px}
+ .card-hdr{padding:14px 16px 10px}
+
+ /* Asset top bar */
+ .asset-top{border-radius:0;border-left:none;border-right:none;padding:1rem 16px;margin-bottom:0}
+ .a-ticker{font-size:2rem}
+
+ /* Grids collapse */
+ .home-grid,.home-grid-3,.two-col,.cmp-row,.add-row,.pred-grid{
+  grid-template-columns:1fr!important;gap:.5rem
+ }
+
+ /* Tables scrollable within their container, not the page */
+ .port-table-wrap,[style*="overflow-x:auto"]{
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  border-radius:0
+ }
+
+ /* Quick picks horizontal scroll, no wrap */
+ .picks{
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;padding:0 16px 2px;margin-bottom:.75rem
+ }
+ .picks::-webkit-scrollbar{display:none}
+
+ /* Search row guttered */
+ .search-row{padding:0 16px;margin-bottom:.75rem}
+
+ /* Section padding inside cards */
+ .screen > .card > *,.screen > div > .card > *{padding-left:16px;padding-right:16px}
+
+ /* Bottom nav bar — Apple Stocks style */
  #mobileNav{
- display:flex;position:fixed;bottom:0;left:0;right:0;z-index:80;
- background:var(--card);border-top:1px solid var(--border2);
- padding:6px 4px 10px;
- padding-bottom:max(10px, env(safe-area-inset-bottom));
- gap:2px;
- box-shadow:0 -4px 24px var(--shadow2);
- backdrop-filter:blur(12px);
+  display:flex;position:fixed;bottom:0;left:0;right:0;z-index:80;
+  background:var(--card);
+  border-top:1px solid var(--border);
+  padding:8px 4px;
+  padding-bottom:max(8px,env(safe-area-inset-bottom));
+  gap:0;
+  box-shadow:0 -1px 0 var(--border);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  backdrop-filter:blur(20px) saturate(180%);
  }
  .mbn-tab{
- flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
- gap:3px;padding:6px 2px;border-radius:10px;border:none;
- background:transparent;color:var(--text3);font-family:inherit;
- font-size:.56rem;font-weight:600;cursor:pointer;transition:all .18s;letter-spacing:-.01em;
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:5px 2px;border-radius:10px;border:none;
+  background:transparent;color:var(--text3);font-family:inherit;
+  font-size:.52rem;font-weight:600;cursor:pointer;
+  transition:color .15s,background .15s,transform .12s;
+  letter-spacing:-.01em;min-width:0
  }
- .mbn-tab:active{transform:scale(.93)}
- .mbn-tab.mbn-on-s{color:var(--accent2);background:rgba(108,92,231,.12)}
- .mbn-tab.mbn-on-i{color:var(--teal);background:rgba(0,180,216,.1)}
- .mbn-tab.mbn-on-c{color:var(--gold);background:rgba(245,158,11,.1)}
- .mbn-tab.mbn-on-w{color:var(--green);background:rgba(0,201,122,.1)}
- .mbn-tab.mbn-on-cmp{color:#a78bfa;background:rgba(168,139,250,.1)}
- .mbn-tab.mbn-on-port{color:#f87171;background:rgba(239,68,68,.1)}
- .mbn-icon{font-size:1.15rem;line-height:1}
-#S-app.screen,#S-gate.screen{padding-bottom:5rem}
+ .mbn-tab:active{transform:scale(.9)}
+ .mbn-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+ .mbn-icon svg{width:20px;height:20px}
+ /* Active tab accent colors */
+ .mbn-tab.mbn-on-s{color:var(--accent2)}
+ .mbn-tab.mbn-on-i{color:var(--teal)}
+ .mbn-tab.mbn-on-c{color:var(--gold)}
+ .mbn-tab.mbn-on-w{color:var(--green)}
+ .mbn-tab.mbn-on-cmp{color:#a78bfa}
+ .mbn-tab.mbn-on-port{color:#f87171}
+ .mbn-tab.mbn-on-screen{color:#34d399}
+ .mbn-tab.mbn-on-pt{color:var(--teal)}
+ .mbn-tab.mbn-on-day{color:var(--accent2)}
+
+ /* Modal: slide up from bottom */
+ .modal-overlay{padding:0;align-items:flex-end}
+ .modal-box{
+  border-radius:20px 20px 0 0;max-height:92vh;
+  padding:1.25rem 1.25rem max(1.5rem,env(safe-area-inset-bottom));
+ }
+
+ /* Gate page */
+ .gate-title{font-size:2.2rem}
+ .gate-sub{font-size:.84rem}
+ .gate-btns{padding:0 16px}
+ .gate-pillars{grid-template-columns:1fr;padding:0 16px}
+
+ /* Poll */
+ .poll-btn{padding:.75rem 1rem}
+
+ /* DT journal */
+ .dt-jrow{grid-template-columns:52px 44px 1fr 66px 46px;font-size:.64rem;gap:6px}
+ .dt-jrow .dt-hide{display:none!important}
+}
+
+/* ══════════════════════════════════════════
+   MOBILE LANDSCAPE  — phone rotated sideways
+   Side nav replaces bottom bar; content uses
+   the extra width with a 2-col layout
+   ══════════════════════════════════════════ */
+@media(max-width:900px) and (orientation:landscape){
+ /* Bottom nav becomes a slim left sidebar */
+ #mobileNav{
+  display:flex!important;
+  flex-direction:column;
+  position:fixed;left:0;top:0;bottom:0;right:auto;width:64px;
+  border-top:none;border-right:1px solid var(--border);
+  padding:max(12px,env(safe-area-inset-top)) 4px max(12px,env(safe-area-inset-bottom));
+  gap:4px;justify-content:center;
+  box-shadow:1px 0 0 var(--border);
+ }
+ .mbn-tab{
+  flex:0 0 auto;padding:8px 4px;border-radius:10px;
+  font-size:.48rem
+ }
+ /* Offset content to clear side nav */
+ #S-app.screen,#S-gate.screen{
+  padding-left:72px!important;
+  padding-right:8px!important;
+  padding-bottom:8px!important;
+ }
+ header{padding:8px 12px 6px}
+ .welcome-bar{padding:8px 12px}
+ /* 2-col layout in landscape for home grid */
+ .home-grid{grid-template-columns:1fr 1fr!important;gap:.75rem}
+ .home-grid-3{grid-template-columns:1fr 1fr!important;gap:.75rem}
+ /* Tighter vertical spacing */
+ .card{margin-bottom:.5rem}
+ .card-hdr{padding:10px 14px 8px}
+ /* Cards get side radius back since we have room */
+ .card{border-radius:var(--r);border:1px solid var(--border)}
+ .asset-top{border-radius:var(--r);border:1px solid var(--border)}
+ /* Screen padding */
+ .search-row,.picks,#marketStatusBar,.search-hist{padding:0 4px}
 }
 
 /* ── OPINION POLL ── */
