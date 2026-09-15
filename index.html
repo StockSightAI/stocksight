@@ -1301,7 +1301,7 @@ html{scroll-behavior:smooth}
  PAPER TRADING MODAL
 ═══════════════════════════════ -->
 <div class="pt-modal" id="ptModal">
- <div class="pt-card">
+ <div class="pt-card" style="position:relative">
  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
  <div>
  <div style="font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800"> Paper Trade</div>
@@ -1360,6 +1360,7 @@ html{scroll-behavior:smooth}
  <div id="ptSharesWrap" style="margin-bottom:.75rem">
  <div style="font-size:.62rem;color:var(--text3);letter-spacing:.08em;font-weight:600;margin-bottom:5px">NUMBER OF SHARES</div>
  <input id="ptShares" type="number" min="0.01" step="0.01" placeholder="e.g. 10"
+ autocomplete="off" autocorrect="off" autocapitalize="off"
  oninput="updatePtTotal()"
  style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:.88rem;outline:none;transition:border-color .2s"
  onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border2)'"/>
@@ -1369,6 +1370,7 @@ html{scroll-behavior:smooth}
  <div id="ptDollarsWrap" style="margin-bottom:.75rem;display:none">
  <div style="font-size:.62rem;color:var(--text3);letter-spacing:.08em;font-weight:600;margin-bottom:5px">DOLLAR AMOUNT ($)</div>
  <input id="ptDollars" type="number" min="1" step="1" placeholder="e.g. 500"
+ autocomplete="off" autocorrect="off" autocapitalize="off"
  oninput="updatePtTotal()"
  style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:.88rem;outline:none;transition:border-color .2s"
  onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border2)'"/>
@@ -1396,6 +1398,14 @@ html{scroll-behavior:smooth}
  Place Paper Trade
  </button>
  <div style="font-size:.62rem;color:var(--text3);text-align:center;margin-top:8px">Virtual money only — no real transactions</div>
+
+ <!-- Success screen (hidden until trade executes) -->
+ <div id="ptSuccess" style="display:none;position:absolute;inset:0;background:var(--card);border-radius:18px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:2rem;text-align:center">
+ <div id="ptSuccessIcon" style="width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0"></div>
+ <div id="ptSuccessTitle" style="font-family:'Manrope',sans-serif;font-size:1.2rem;font-weight:800"></div>
+ <div id="ptSuccessDetail" style="font-size:.8rem;color:var(--text2);line-height:1.6;max-width:280px"></div>
+ <div id="ptSuccessNote" style="font-size:.68rem;color:var(--text3)"></div>
+ </div>
  </div>
 </div>
 
@@ -9666,6 +9676,50 @@ function openPtModal(ticker, name) {
 
 function closePtModal() {
  document.getElementById('ptModal').style.display = 'none';
+ const s = document.getElementById('ptSuccess');
+ if (s) s.style.display = 'none';
+}
+
+function showPtSuccess(type, ticker, shares, total, pl) {
+ const s = document.getElementById('ptSuccess');
+ const icon = document.getElementById('ptSuccessIcon');
+ const title = document.getElementById('ptSuccessTitle');
+ const detail = document.getElementById('ptSuccessDetail');
+ const note = document.getElementById('ptSuccessNote');
+ if (!s || !icon || !title || !detail) return;
+
+ const isQueued = type === 'queued';
+ const isSell = type === 'sell';
+
+ if (isQueued) {
+ icon.style.background = 'rgba(245,158,11,.15)';
+ icon.style.border = '2px solid rgba(245,158,11,.4)';
+ icon.textContent = '⏳';
+ title.style.color = 'var(--gold)';
+ title.textContent = 'Order Queued';
+ detail.textContent = `${shares.toFixed(4)} shares of ${ticker} will execute at the next market open (Mon–Fri 9:30 AM ET).`;
+ note.textContent = 'You can cancel it from the Paper Trading tab.';
+ } else if (isSell) {
+ const isProfit = pl >= 0;
+ icon.style.background = isProfit ? 'rgba(0,201,122,.12)' : 'rgba(255,56,96,.08)';
+ icon.style.border = `2px solid ${isProfit ? 'rgba(0,201,122,.4)' : 'rgba(255,56,96,.3)'}`;
+ icon.textContent = isProfit ? '💰' : '📉';
+ title.style.color = isProfit ? 'var(--green)' : 'var(--red)';
+ title.textContent = isProfit ? 'Sold for a Profit' : 'Sold at a Loss';
+ detail.innerHTML = `Sold ${shares.toFixed(4)} <strong>${ticker}</strong> @ $${ptCurrentPrice.toLocaleString()}<br>Realized P&L: <strong style="color:${isProfit?'var(--green)':'var(--red)'}">${isProfit?'+':''}$${pl.toFixed(2)}</strong>`;
+ note.textContent = `$${total.toFixed(2)} returned to your cash balance.`;
+ } else {
+ icon.style.background = 'rgba(0,201,122,.12)';
+ icon.style.border = '2px solid rgba(0,201,122,.4)';
+ icon.textContent = '✅';
+ title.style.color = 'var(--green)';
+ title.textContent = 'Trade Placed';
+ detail.innerHTML = `Bought ${shares.toFixed(4)} <strong>${ticker}</strong> @ $${ptCurrentPrice.toLocaleString()}<br>Total cost: <strong>$${total.toFixed(2)}</strong>`;
+ note.textContent = 'Your holdings have been updated.';
+ }
+
+ s.style.display = 'flex';
+ setTimeout(() => { closePtModal(); if (tab === 'pt') renderPaperTradeTab(); }, 2200);
 }
 
 function updatePtCoach(ticker, side) {
@@ -9864,9 +9918,7 @@ function executePtTrade() {
  const pending = getPtPendingOrders();
  pending.push(order);
  savePtPendingOrders(pending);
- const sideLabel = ptSide === 'buy' ? 'Buy' : 'Sell';
- toast(` ${sideLabel} order queued for ${ptCurrentTicker} — will execute at next market open (Mon–Fri 9:30 AM ET)`, 'info', 5000);
- closePtModal();
+ showPtSuccess('queued', ptCurrentTicker, shares, total, 0);
  return;
  }
 
@@ -9881,7 +9933,7 @@ function executePtTrade() {
  } else {
  pt.holdings[ptCurrentTicker] = { shares: (typeof existing === 'number' ? existing : 0) + shares, avgCost: ptCurrentPrice };
  }
- toast(` Bought ${shares.toFixed(4)} shares of ${ptCurrentTicker} @ $${ptCurrentPrice.toLocaleString()} · Cost $${total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`, 'success', 3500);
+ showPtSuccess('buy', ptCurrentTicker, shares, total, 0);
  } else {
  const holding = pt.holdings[ptCurrentTicker];
  const ownedShares = holding ? (typeof holding === 'object' ? holding.shares : holding) : 0;
@@ -9893,14 +9945,12 @@ function executePtTrade() {
  const newShares = ownedShares - actualShares;
  if (newShares <= 0.0001) delete pt.holdings[ptCurrentTicker];
  else pt.holdings[ptCurrentTicker] = { shares: newShares, avgCost };
- const plStr = realizedPL >= 0 ? `+$${realizedPL.toFixed(2)}` : `-$${Math.abs(realizedPL).toFixed(2)}`;
- toast(` Sold ${actualShares.toFixed(4)} shares of ${ptCurrentTicker} @ $${ptCurrentPrice.toLocaleString()} · P&L: ${plStr}`, 'success', 3500);
+ showPtSuccess('sell', ptCurrentTicker, actualShares, actualShares * ptCurrentPrice, realizedPL);
  }
  savePtPortfolio(pt);
  clMark('cl_paper');
  checkMilestones();
  refreshChecklist();
- closePtModal();
 }
 
 /* Paper Trading Portfolio tab in Portfolio section */
