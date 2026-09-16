@@ -1059,6 +1059,50 @@ body.mode-beginner .main-content { padding: 20px 18px; gap: 0; }
 
  /* ── SCORE/RING section padding ── */
  .ss-score-ring{margin:0 auto}
+
+ /* ── GATE: header action buttons full width ── */
+ #S-gate header{flex-wrap:wrap;padding:12px 18px 8px;gap:6px}
+ #S-gate header .hdr-actions{flex:1 1 100%;gap:8px}
+ #S-gate header .hdr-actions .btn{flex:1;text-align:center;font-size:.76rem;padding:9px 8px;min-width:0}
+
+ /* ── GATE: gate-btns buttons full width ── */
+ .btn-gate-main,.btn-gate-ghost{width:100%;box-sizing:border-box;text-align:center}
+
+ /* ── HOME: hide heatmap/industries card ── */
+ .card:has(#heatmap-container){display:none!important}
+
+ /* ── HOME: hide trending, sotd full width ── */
+ #trendingCard{display:none!important}
+ .sotd-trending-grid{display:block!important}
+ .sotd-trending-grid #sotdCard{width:100%;margin:0}
+
+ /* ── HOME: hide picks ── */
+ .picks{display:none!important}
+
+ /* ── HOME: search bar + analyze button stacked full width ── */
+ .search-row{flex-direction:column;gap:6px}
+ .search-wrap{width:100%}
+ #goBtn{width:100%;border-radius:10px!important;padding:11px!important}
+
+ /* ── HOME: "What would you like to do today" — one row ── */
+ #wyl-buttons{flex-wrap:nowrap!important}
+ #wyl-buttons button{flex:1;min-width:0;font-size:.68rem!important;padding:8px 4px!important;text-align:center}
+
+ /* ── ASSET: hide price alert section ── */
+ [id^="alertSection_"]{display:none!important}
+
+ /* ── ASSET: hide notes + alert bottom grid ── */
+ #notes-alert-grid{display:none!important}
+
+ /* ── ASSET: poll + expert signals stacked vertically ── */
+ #poll-tech-grid{grid-template-columns:1fr!important}
+
+ /* ── ASSET: hide "You Might Also Like" ── */
+ #similar-stocks-card{display:none!important}
+
+ /* ── GENERAL: prevent horizontal overflow on all cards ── */
+ .card{max-width:100%;overflow-x:hidden}
+ [id^="tv-"]{max-width:100%!important}
 }
 
 /* ══════════════════════════════════════════
@@ -4122,7 +4166,7 @@ function renderHomeSections(t) {
  </div>
  <div id="tv-news" style="height:500px"></div>
  </div>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:stretch;margin-top:1.5rem">
+ <div class="sotd-trending-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:stretch;margin-top:1.5rem">
  <div class="card" id="sotdCard" style="margin:0;overflow:visible;display:flex;flex-direction:column"></div>
  <div class="card" id="trendingCard" style="margin:0;overflow:visible;display:flex;flex-direction:column"></div>
  </div>`;
@@ -4186,7 +4230,7 @@ function renderHomeSections(t) {
 
  <!-- AI Recommendations -->
  <div id="aiRecsContainer" style="margin-top:1rem"></div>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;align-items:stretch">
+ <div class="sotd-trending-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;align-items:stretch">
  <div class="card" id="sotdCard" style="margin:0;overflow:visible;display:flex;flex-direction:column"></div>
  <div class="card" id="trendingCard" style="margin:0;overflow:visible;display:flex;flex-direction:column"></div>
  </div>`;
@@ -5470,7 +5514,7 @@ function renderHome(t) {
  <!-- SIMPLE MODE: Clean, friendly, no clutter -->
  <div style="margin-bottom:1rem;background:linear-gradient(135deg,rgba(108,92,231,.1),rgba(0,180,216,.06));border:1px solid rgba(108,92,231,.2);border-radius:14px;padding:1rem 1.25rem">
  <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;margin-bottom:4px"> What would you like to do today?</div>
- <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:.75rem">
+ <div id="wyl-buttons" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:.75rem">
  <button onclick="document.getElementById('si').focus()" style="background:var(--card);border:2px solid var(--accent);color:var(--accent2);border-radius:10px;padding:8px 16px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer"> Look up a stock</button>
  <button onclick="switchTab('port')" style="background:var(--card);border:2px solid var(--border2);color:var(--text2);border-radius:10px;padding:8px 16px;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer"> Portfolio</button>
  <button onclick="switchTab('pt')" style="background:var(--card);border:2px solid var(--border2);color:var(--text2);border-radius:10px;padding:8px 16px;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer"> Practice trading</button>
@@ -5836,7 +5880,7 @@ function renderAsset(ticker, name, type, overrideSym) {
  <div id="newsCards_${ticker}"></div>
 
  <!-- Poll + Technical Analysis stacked below -->
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:stretch">
+ <div id="poll-tech-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:stretch">
  <!-- #17 Opinion Poll -->
  <div class="card" style="margin-bottom:0;display:flex;flex-direction:column" id="pollCard_${ticker}">
  <div class="card-hdr" style="background:linear-gradient(135deg,rgba(108,92,231,.07),rgba(108,92,231,.02))">
@@ -5888,7 +5932,7 @@ function renderAsset(ticker, name, type, overrideSym) {
  </div>
 
  <!-- ══ BOTTOM CARDS: Notes, Alert, Similar, What-If ══ -->
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.25rem;align-items:stretch">
+ <div id="notes-alert-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.25rem;align-items:stretch">
  <!-- #2 Notes -->
  <div class="card" style="margin:0;display:flex;flex-direction:column">
  <div class="card-hdr">
@@ -5967,7 +6011,7 @@ function renderAsset(ticker, name, type, overrideSym) {
 
  ${getSimilar(ticker).length ? `
  <!-- #12 Similar Stocks -->
- <div class="card" style="margin-top:1rem;margin-bottom:0">
+ <div id="similar-stocks-card" class="card" style="margin-top:1rem;margin-bottom:0">
  <div class="card-hdr">
  <div class="card-hdr-title"> You Might Also Like</div>
  <div class="card-hdr-sub">Similar investments to ${ticker}</div>
