@@ -847,126 +847,215 @@ body.mode-beginner .main-content { padding: 20px 18px; gap: 0; }
 #mobileNav{display:none}
 
 /* ══════════════════════════════════════════
-   MOBILE — portrait  ≤768px
-   Apple Stocks-inspired: clean rows, big
-   numbers, bottom tab bar, no side-scroll
+   MOBILE — Apple Stocks aesthetic  ≤768px
+   • No card borders/backgrounds — pure bg
+   • Full-bleed sections, hairline dividers
+   • Watchlist = flat rows like Apple's list
+   • Big prices, small grey labels
+   • Bottom tab bar: frosted glass
    ══════════════════════════════════════════ */
 @media(max-width:768px){
- /* Kill the desktop tab strip */
+
+ /* ── Kill desktop tab strip ── */
  .tabs{display:none!important}
 
- /* Screen padding — left/right gutters only, bottom clears tab bar */
+ /* ── Root screen: no side padding, bottom clears tab bar ── */
  #S-app.screen,#S-gate.screen{
-  padding:0 0 5.5rem;
+  padding:0;
   padding-bottom:max(5.5rem,calc(4.5rem + env(safe-area-inset-bottom)));
  }
  .screen{padding-left:0;padding-right:0}
 
- /* Header: tighter, flush to edges */
+ /* ── Header ── */
  header{
-  padding:12px 16px 10px;
-  margin-bottom:.5rem;
+  padding:14px 18px 8px;
+  margin-bottom:0;
  }
+ .logo-name{font-size:1.05rem}
 
- /* Ticker tape full-width */
- .ticker-tape{margin:0}
-
- /* Welcome bar: simple, compact */
+ /* ── Welcome bar — flush, minimal ── */
  .welcome-bar{
-  border-radius:0;border-left:none;border-right:none;
-  padding:10px 16px;margin-bottom:0;
+  border-radius:0;border-left:none;border-right:none;border-top:none;
+  padding:8px 18px 10px;margin-bottom:0;
+  background:var(--bg);
+  box-shadow:none;
  }
  .wb-date,.wb-time{display:none}
 
- /* Market status, search hist, search section — guttered */
- #marketStatusBar,#searchSection,.search-hist{padding:0 16px}
- #marketStatusBar{margin-bottom:.6rem;margin-top:.6rem}
+ /* ── Market status + search hist guttered ── */
+ #marketStatusBar{padding:8px 18px 0;margin-bottom:0}
+ .search-hist{padding:6px 18px 0}
 
- /* Cards: full-width, no side radius on edges */
- .card{border-radius:0;border-left:none;border-right:none;margin-bottom:1px}
- .card-hdr{padding:14px 16px 10px}
+ /* ── Search row ── */
+ #searchSection{padding:8px 18px 0}
+ .search-row{margin-bottom:.6rem}
 
- /* Asset top bar */
- .asset-top{border-radius:0;border-left:none;border-right:none;padding:1rem 16px;margin-bottom:0}
- .a-ticker{font-size:2rem}
-
- /* Grids collapse */
- .home-grid,.home-grid-3,.two-col,.cmp-row,.add-row,.pred-grid{
-  grid-template-columns:1fr!important;gap:.5rem
- }
-
- /* Tables scrollable within their container, not the page */
- .port-table-wrap,[style*="overflow-x:auto"]{
-  overflow-x:auto;-webkit-overflow-scrolling:touch;
-  border-radius:0
- }
-
- /* Quick picks horizontal scroll, no wrap */
+ /* ── Quick picks: horizontal scroll strip ── */
  .picks{
   flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;padding:0 16px 2px;margin-bottom:.75rem
+  scrollbar-width:none;padding:2px 18px 6px;margin-bottom:.5rem;gap:6px
  }
  .picks::-webkit-scrollbar{display:none}
+ .pick{flex-shrink:0;font-size:.7rem;padding:5px 13px;border-radius:20px}
 
- /* Search row guttered */
- .search-row{padding:0 16px;margin-bottom:.75rem}
+ /* ── CARDS → borderless sections, Apple-style ──
+    Remove the "box" look. Sections are separated
+    by a hairline border-bottom and background only */
+ .card{
+  background:transparent;
+  border:none;border-radius:0;
+  border-bottom:1px solid var(--border);
+  margin-bottom:0;
+  box-shadow:none;
+ }
+ .card-hdr{
+  padding:18px 18px 6px;
+  font-family:'Manrope',sans-serif;
+  font-size:1.1rem;font-weight:800;letter-spacing:-.02em;
+ }
+ .card-hdr-right{padding-right:18px}
 
- /* Section padding inside cards */
- .screen > .card > *,.screen > div > .card > *{padding-left:16px;padding-right:16px}
+ /* Card body padding */
+ .card > *:not(.card-hdr){padding-left:18px;padding-right:18px}
+ .card > *:last-child{padding-bottom:14px}
 
- /* Bottom nav bar — Apple Stocks style */
+ /* ── WATCHLIST — Apple Stocks row style ── */
+ .wl-grid{
+  display:flex;flex-direction:column;gap:0;
+  padding:0;
+ }
+ .wl-card{
+  background:transparent;
+  border:none;border-radius:0;
+  border-bottom:1px solid var(--border);
+  padding:12px 18px;
+  display:flex;align-items:center;gap:12px;
+  transform:none!important;box-shadow:none!important;
+ }
+ .wl-card:active{background:rgba(255,255,255,.04)}
+ /* Ticker + name: left side */
+ .wl-tick{font-size:1rem;font-weight:800;letter-spacing:-.01em;min-width:52px}
+ .wl-n{
+  flex:1;font-size:.72rem;color:var(--text3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-top:0;
+ }
+ /* Mini chart: center — TradingView iframe hidden on mobile list,
+    just show the row cleanly */
+ .wl-card > div[id^="wl-tv-"]{
+  width:80px;height:36px;margin-top:0;border-radius:4px;
+  flex-shrink:0;overflow:hidden;
+ }
+ /* "View Full Chart" button → pill on the right */
+ .wl-card > .btn-go{
+  width:auto!important;margin-top:0!important;padding:6px 12px!important;
+  font-size:.65rem!important;border-radius:8px!important;flex-shrink:0;
+ }
+ .wl-rm{
+  position:static;top:auto;right:auto;
+  margin-left:auto;flex-shrink:0;
+  width:24px;height:24px;
+ }
+
+ /* ── ASSET detail ── */
+ .asset-top{
+  border-radius:0;border:none;border-bottom:1px solid var(--border);
+  padding:16px 18px 14px;margin-bottom:0;
+ }
+ .a-ticker{font-size:2.2rem;letter-spacing:-.04em}
+ /* Asset tab switcher: scrollable strip */
+ #mainContent > div[style*="display:flex"][style*="gap:3px"]{
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;flex-wrap:nowrap;
+  padding:0 18px;margin-bottom:1rem!important;
+ }
+ #mainContent > div[style*="display:flex"][style*="gap:3px"]::-webkit-scrollbar{display:none}
+ .atab{flex:0 0 auto;font-size:.75rem;padding:9px 14px}
+
+ /* Charts full-width, no side padding */
+ .card [id^="tv-"],.card [id^="chart-"],[id^="tv-"],[id^="chart-"]{
+  border-radius:0!important;
+ }
+
+ /* ── STAT GRIDS inside cards ── */
+ .pred-grid,.home-grid,.home-grid-3,.two-col,.cmp-row,.add-row{
+  grid-template-columns:1fr!important;gap:0
+ }
+ .pred-cell{border-radius:0;border-left:none;border-right:none;border-top:none}
+
+ /* ── TABLES ── */
+ .port-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:0}
+
+ /* ── TYPOGRAPHY — Apple's big-number style ── */
+ .a-price{font-size:2.4rem!important;font-weight:800!important;letter-spacing:-.04em!important;font-variant-numeric:tabular-nums}
+ .a-chg{font-size:1rem!important;font-weight:700!important}
+ /* Section headers match Apple's large bold style */
+ [style*="font-size:.88rem"][style*="font-weight:700"]{
+  font-size:1rem!important;font-weight:800!important;padding:0 18px;
+ }
+
+ /* ── BOTTOM NAV BAR — Apple tab bar ── */
  #mobileNav{
   display:flex;position:fixed;bottom:0;left:0;right:0;z-index:80;
-  background:var(--card);
+  background:rgba(var(--card-rgb,18,18,18),.85);
+  -webkit-backdrop-filter:blur(24px) saturate(200%);
+  backdrop-filter:blur(24px) saturate(200%);
   border-top:1px solid var(--border);
-  padding:8px 4px;
+  padding:8px 0;
   padding-bottom:max(8px,env(safe-area-inset-bottom));
   gap:0;
-  box-shadow:0 -1px 0 var(--border);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
-  backdrop-filter:blur(20px) saturate(180%);
  }
  .mbn-tab{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;padding:5px 2px;border-radius:10px;border:none;
+  gap:3px;padding:5px 2px;border-radius:0;border:none;
   background:transparent;color:var(--text3);font-family:inherit;
-  font-size:.52rem;font-weight:600;cursor:pointer;
-  transition:color .15s,background .15s,transform .12s;
-  letter-spacing:-.01em;min-width:0
+  font-size:.5rem;font-weight:600;cursor:pointer;
+  transition:color .15s,transform .1s;
+  letter-spacing:-.01em;min-width:0;
  }
- .mbn-tab:active{transform:scale(.9)}
- .mbn-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
- .mbn-icon svg{width:20px;height:20px}
- /* Active tab accent colors */
- .mbn-tab.mbn-on-s{color:var(--accent2)}
- .mbn-tab.mbn-on-i{color:var(--teal)}
- .mbn-tab.mbn-on-c{color:var(--gold)}
- .mbn-tab.mbn-on-w{color:var(--green)}
- .mbn-tab.mbn-on-cmp{color:#a78bfa}
+ .mbn-tab:active{transform:scale(.88);opacity:.7}
+ .mbn-icon{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+ .mbn-icon svg{width:22px;height:22px}
+ /* Active colors — each tab has its own accent like Apple */
+ .mbn-tab.mbn-on-s   {color:var(--accent2)}
+ .mbn-tab.mbn-on-w   {color:var(--green)}
  .mbn-tab.mbn-on-port{color:#f87171}
  .mbn-tab.mbn-on-screen{color:#34d399}
- .mbn-tab.mbn-on-pt{color:var(--teal)}
- .mbn-tab.mbn-on-day{color:var(--accent2)}
+ .mbn-tab.mbn-on-cmp {color:#a78bfa}
+ .mbn-tab.mbn-on-pt  {color:var(--teal)}
+ .mbn-tab.mbn-on-day {color:var(--accent2)}
 
- /* Modal: slide up from bottom */
+ /* ── MODAL — slides up from bottom ── */
  .modal-overlay{padding:0;align-items:flex-end}
  .modal-box{
   border-radius:20px 20px 0 0;max-height:92vh;
-  padding:1.25rem 1.25rem max(1.5rem,env(safe-area-inset-bottom));
+  padding:1.25rem 1.25rem max(1.75rem,env(safe-area-inset-bottom));
+ }
+ /* Drag handle on modals */
+ .modal-box::before{
+  content:'';display:block;width:36px;height:4px;
+  background:var(--border2);border-radius:2px;
+  margin:0 auto 1rem;
  }
 
- /* Gate page */
+ /* ── GATE landing page ── */
  .gate-title{font-size:2.2rem}
  .gate-sub{font-size:.84rem}
- .gate-btns{padding:0 16px}
- .gate-pillars{grid-template-columns:1fr;padding:0 16px}
+ .gate-btns,.gate-pillars{padding:0 18px}
+ .gate-pillars{grid-template-columns:1fr}
 
- /* Poll */
+ /* ── POLL ── */
  .poll-btn{padding:.75rem 1rem}
 
- /* DT journal */
+ /* ── DT JOURNAL ── */
  .dt-jrow{grid-template-columns:52px 44px 1fr 66px 46px;font-size:.64rem;gap:6px}
  .dt-jrow .dt-hide{display:none!important}
+
+ /* ── TICKER TAPE — full width, no margin ── */
+ .ticker-tape{margin:0}
+
+ /* ── SCORE/RING section padding ── */
+ .ss-score-ring{margin:0 auto}
 }
 
 /* ══════════════════════════════════════════
