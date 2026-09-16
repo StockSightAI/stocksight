@@ -1100,6 +1100,17 @@ body.mode-beginner .main-content { padding: 20px 18px; gap: 0; }
  /* ── ASSET: hide "You Might Also Like" ── */
  #similar-stocks-card{display:none!important}
 
+ /* ── SCREENER: compact filter dropdowns, 2 per row ── */
+ #scr-filter-row{gap:6px!important}
+ #scr-filter-row select{flex:1 1 calc(50% - 3px);min-width:0;padding:6px 6px!important;font-size:.68rem!important;border-radius:6px!important}
+ #scr-filter-row #scr-count{flex:1 1 100%;text-align:right}
+
+ /* ── PAPER TRADE: compact stats boxes ── */
+ .pt-stat{padding:.5rem .4rem!important;border-radius:8px!important}
+ .pt-stat-val{font-size:.78rem!important}
+ .pt-stat-lbl{font-size:.46rem!important;letter-spacing:.03em!important;margin-top:2px!important}
+ #pt-stats-row{gap:.4rem!important;margin-bottom:.75rem!important}
+
  /* ── MARKET FILTER: Stocks / Indexes / Crypto full width ── */
  #marketFilter{flex-wrap:nowrap!important;padding:0 18px;gap:8px}
  .mf-pill{flex:1;text-align:center;border-radius:10px!important;padding:9px 4px!important;font-size:.76rem!important}
@@ -10670,7 +10681,7 @@ function renderPaperTradeTab() {
  </div>` : ''}
 
  <!-- Stats row -->
- <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
+ <div id="pt-stats-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
  <div class="pt-stat">
  <div class="pt-stat-val">$${portfolioValue.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
  <div class="pt-stat-lbl">TOTAL VALUE</div>
@@ -13616,7 +13627,7 @@ function renderScreener() {
  </div>
 
  <!-- Classic Filters -->
- <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
+ <div id="scr-filter-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
  <select id="scr-sector" onchange="clearNarrative();applyScreener()" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:.78rem;outline:none">
  <option value="all">All Sectors</option>
  ${sectors.map(s => `<option value="${s}">${s}</option>`).join('')}
