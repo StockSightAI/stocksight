@@ -8968,37 +8968,37 @@ const TUTORIAL_STEPS = [
  title: 'Search for a Stock',
  desc: 'Type any company name or ticker here — like "Apple" or "AAPL". The live search finds any stock, index, or crypto in the world.',
  target: '#si',
- action: { prompt: 'Type something in the search bar above ↑', doneText: 'Great — search works!', detect: 'search-input' },
+ action: { prompt: 'Type something in the search bar ↑', doneText: 'Great — search works!', detect: 'search-input' },
  },
  {
  title: 'Switch Market Types',
  desc: 'These pills switch the homepage between Stocks, Indexes (S&P 500, NASDAQ...) and Crypto. The charts and movers update instantly.',
- target: '#marketFilter',
- action: { prompt: 'Click Indexes or Crypto above ↑', doneText: 'Nice — the homepage just updated!', detect: 'market-filter' },
+ target: '#marketFilter', showMarketFilter: true,
+ action: { prompt: 'Click Indexes or Crypto ↑', doneText: 'Nice — the homepage just updated!', detect: 'market-filter' },
  },
  {
  title: 'Your Watchlist ',
  desc: 'Save stocks you\'re keeping an eye on. When viewing any stock, hit the Save button to add it here for quick access.',
- target: '#tab-w',
- action: { prompt: 'Click the Watchlist tab above ↑', doneText: 'This is where your saved stocks live.', detect: 'tab-click-w' },
+ target: '#tab-w', mobileTarget: '#mbn-w',
+ action: { prompt: 'Click the Watchlist tab ↑', doneText: 'This is where your saved stocks live.', detect: 'tab-click-w' },
  },
  {
  title: 'Compare Stocks ',
  desc: 'Put two stocks side by side to compare their price history, performance, and AI analysis. Great for deciding between two options.',
- target: '#tab-cmp',
- action: { prompt: 'Click the Compare tab above ↑', doneText: 'Try typing two tickers to compare them!', detect: 'tab-click-cmp' },
+ target: '#tab-cmp', mobileTarget: '#mbn-cmp',
+ action: { prompt: 'Click the Compare tab ↑', doneText: 'Try typing two tickers to compare them!', detect: 'tab-click-cmp' },
  },
  {
  title: 'Stock Screener ',
  desc: 'Not sure what to invest in? Filter hundreds of stocks by sector, risk level, and growth rate to find ones that match your strategy.',
- target: '#tab-screen',
- action: { prompt: 'Click the Screener tab above ↑', doneText: 'Try setting a filter!', detect: 'tab-click-screen' },
+ target: '#tab-screen', mobileTarget: '#mbn-screen',
+ action: { prompt: 'Click the Screener tab ↑', doneText: 'Try setting a filter!', detect: 'tab-click-screen' },
  },
  {
  title: 'Your Portfolio ',
  desc: 'Add your real holdings to track P&L, see a pie chart breakdown, and get an AI portfolio summary. All stored privately in your browser.',
- target: '#tab-port',
- action: { prompt: 'Click the Portfolio tab above ↑', doneText: 'Add a holding to track your investments!', detect: 'tab-click-port' },
+ target: '#tab-port', mobileTarget: '#mbn-port',
+ action: { prompt: 'Click the Portfolio tab ↑', doneText: 'Add a holding to track your investments!', detect: 'tab-click-port' },
  },
  {
  title: 'Your Profile ',
@@ -9008,7 +9008,7 @@ const TUTORIAL_STEPS = [
  },
  {
  title: 'You\'re all set! ',
- desc: 'Tour complete! Search for a stock you\'re interested in and hit "Invest Now" when you\'re ready. Good luck!',
+ desc: 'Tour complete! Search for a stock you\'re interested in and start exploring. Good luck!',
  target: null, action: null,
  },
 ];
@@ -9057,6 +9057,12 @@ function renderTutStep() {
  const doneTxt= document.getElementById('tutDoneText');
  if (!card) return;
 
+ // Hide market filter if previous step showed it and this step doesn't need it
+ if (!step.showMarketFilter) {
+ const mf = document.getElementById('marketFilter');
+ if (mf && mf.style.display === 'flex') mf.style.display = 'none';
+ }
+
  // Remove elevation from previous target
  restoreTutElevated();
  cleanTutListeners();
@@ -9086,9 +9092,20 @@ function renderTutStep() {
  if (skipBtn) skipBtn.style.display = 'none';
  }
 
+ // Show marketFilter for the step that needs it
+ if (step.showMarketFilter) {
+ const mf = document.getElementById('marketFilter');
+ if (mf) mf.style.display = 'flex';
+ }
+
  if (step.target) {
- const el = document.querySelector(step.target);
- if (el) {
+ // Try primary target; fall back to mobileTarget if primary is not visible
+ let el = document.querySelector(step.target);
+ const isVisible = el => el && el.offsetParent !== null && el.getBoundingClientRect().width > 0;
+ if (!isVisible(el) && step.mobileTarget) {
+ el = document.querySelector(step.mobileTarget);
+ }
+ if (el && isVisible(el)) {
  // Elevate target above the blocker so it's clickable
  el.classList.add('tut-target-active');
  tutElevated = el;
@@ -9103,6 +9120,12 @@ function renderTutStep() {
  const cardTop = spaceBelow > 200 ? r.bottom + 14 : r.top - 240;
  const cardLeft = Math.min(Math.max(r.left, 12), window.innerWidth - 316);
  card.style.cssText = `top:${cardTop}px;left:${cardLeft}px;bottom:auto;transform:none`;
+ } else {
+ // Target not visible — center the card
+ spot.style.cssText = 'display:none';
+ spot.classList.remove('pulse');
+ arrow.style.display = 'none';
+ card.style.cssText = 'top:50%;left:50%;transform:translate(-50%,-50%)';
  }
  } else {
  spot.style.cssText = 'display:none';
@@ -9154,7 +9177,7 @@ function attachTutAction(detect) {
  if (detect === 'profile-click') {
  const el = document.getElementById('appHdrActions');
  if (el) {
- const fn = e => { if(e.target.closest('[onclick*="profile"]')||e.target.closest('.user-pill')) markDone(); };
+ const fn = () => markDone();
  el.addEventListener('click', fn);
  tutListeners.push({el, type:'click', fn});
  }
