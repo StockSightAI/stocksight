@@ -1121,6 +1121,13 @@ body.mode-beginner .main-content { padding: 20px 18px; gap: 0; }
  /* ── GENERAL: prevent horizontal overflow on all cards ── */
  .card{max-width:100%;overflow-x:hidden}
  [id^="tv-"]{max-width:100%!important}
+
+ /* ── ASSET: 4-col stat grid → 2×2 ── */
+ #asset-context-stats{grid-template-columns:repeat(2,1fr)!important}
+ #asset-context-stats>div:nth-child(2){border-right:none!important}
+
+ /* ── GATE MODAL: feature list compact ── */
+ #signupNudge [style*="grid-template-columns:1fr 1fr"] div{font-size:.62rem!important}
 }
 
 /* ══════════════════════════════════════════
@@ -5832,7 +5839,7 @@ function renderAsset(ticker, name, type, overrideSym) {
  </div>
  <div id="tv-quote" style="min-height:90px"></div>
  <!-- Context stats below the widget -->
- <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--border)">
+ <div id="asset-context-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--border)">
  ${[
  ['', isSimple?'Type':'Asset Class', {s:'Stock (Equity)',i:'Market Index',c:'Cryptocurrency'}[type]||typeLabel],
  ['', isSimple?'Risk Level':'Volatility', d ? (d[1]>=70?'Very High (~'+d[1]+'%/yr)':d[1]>=45?'High (~'+d[1]+'%/yr)':d[1]>=25?'Moderate (~'+d[1]+'%/yr)':'Lower (~'+d[1]+'%/yr)') : 'See AI Analysis'],
