@@ -1128,6 +1128,18 @@ body.mode-beginner .main-content { padding: 20px 18px; gap: 0; }
 
  /* ── GATE MODAL: feature list compact ── */
  #signupNudge [style*="grid-template-columns:1fr 1fr"] div{font-size:.62rem!important}
+
+ /* ── SCREENER: quick-filter example chips smaller ── */
+ #scr-narrative~div button{font-size:.6rem!important;padding:3px 9px!important}
+
+ /* ── PAPER TRADE: stat boxes 3-column, more compact ── */
+ #pt-stats-row{grid-template-columns:repeat(3,1fr)!important;gap:.3rem!important;margin-bottom:.5rem!important}
+ .pt-stat{padding:.4rem .3rem!important;border-radius:7px!important}
+ .pt-stat-val{font-size:.72rem!important}
+ .pt-stat-lbl{font-size:.42rem!important;letter-spacing:.02em!important;margin-top:1px!important}
+
+ /* ── MOBILE NAV: flush to bottom, no extra gap ── */
+ #mobileNav{padding-bottom:8px!important}
 }
 
 /* ══════════════════════════════════════════
@@ -9008,6 +9020,18 @@ const TUTORIAL_STEPS = [
  action: { prompt: 'Click the Portfolio tab ↑', doneText: 'Add a holding to track your investments!', detect: 'tab-click-port' },
  },
  {
+ title: 'Paper Trading ',
+ desc: 'Practice investing with $10,000 of virtual money — no real cash at risk. Buy and sell stocks at live prices to build your confidence before going real.',
+ target: '#tab-pt', mobileTarget: '#mbn-pt',
+ action: { prompt: 'Click the Paper Trade tab ↑', doneText: 'Try placing a practice trade!', detect: 'tab-click-pt' },
+ },
+ {
+ title: 'Day Trade Simulator ⚡',
+ desc: 'Simulate fast-paced intraday trading with $25,000 in virtual cash. Watch live minute-by-minute price bars and buy/sell to close your position before the bell.',
+ target: '#tab-day', mobileTarget: '#mbn-day',
+ action: { prompt: 'Click the Day Trade tab ↑', doneText: 'Watch the price bars tick in real time!', detect: 'tab-click-day' },
+ },
+ {
  title: 'Your Profile ',
  desc: 'Access your profile from the top-right button. Change your theme, set your preferred broker, manage your holdings, and update account settings.',
  target: '#appHdrActions',
@@ -9180,6 +9204,12 @@ function attachTutAction(detect) {
  }
  if (detect === 'tab-click-port') {
  ['tab-port','mbn-port'].forEach(id => { const el=document.getElementById(id); if(el){const fn=()=>markDone();el.addEventListener('click',fn);tutListeners.push({el,type:'click',fn});} });
+ }
+ if (detect === 'tab-click-pt') {
+ ['tab-pt','mbn-pt'].forEach(id => { const el=document.getElementById(id); if(el){const fn=()=>markDone();el.addEventListener('click',fn);tutListeners.push({el,type:'click',fn});} });
+ }
+ if (detect === 'tab-click-day') {
+ ['tab-day','mbn-day'].forEach(id => { const el=document.getElementById(id); if(el){const fn=()=>markDone();el.addEventListener('click',fn);tutListeners.push({el,type:'click',fn});} });
  }
  if (detect === 'profile-click') {
  const el = document.getElementById('appHdrActions');
@@ -10592,6 +10622,20 @@ function renderRiskLab(pt, entries) {
 function renderPaperTradeTab() {
  const mc = document.getElementById('mainContent');
  if (!mc) return;
+
+ // Re-sync from Supabase on first open so cross-device data is fresh
+ if (user?.email && !renderPaperTradeTab._syncing) {
+  renderPaperTradeTab._syncing = true;
+  sb.from('users').select('portfolio').eq('email', user.email).single()
+   .then(({data}) => {
+    const sbPt = data?.portfolio?.paper_trade;
+    if (sbPt) {
+     try { localStorage.setItem('ss_pt_'+user.email, JSON.stringify(sbPt)); } catch {}
+     renderPaperTradeTab._syncing = false;
+     renderPaperTradeTab();
+    } else { renderPaperTradeTab._syncing = false; }
+   }).catch(()=>{ renderPaperTradeTab._syncing = false; });
+ }
 
  // Auto-execute any pending orders if the market just opened
  const didProcess = processPendingOrders();
