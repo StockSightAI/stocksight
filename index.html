@@ -3335,6 +3335,7 @@ window.addEventListener('DOMContentLoaded', async () => {
  if (sess) {
  user = sess;
  await loadUserData();
+ setTimeout(captureWlLoginSnapshot, 300);
  bootApp();
  } else {
  applyTheme(false);
@@ -7857,6 +7858,33 @@ async function toggleWL(ticker, name, type) {
  if (btn) btn.textContent = watchlist.some(w=>w.ticker===ticker) ? ' Saved' : '+ Watchlist';
 }
 
+function captureWlLoginSnapshot() {
+ if (!user?.email || !watchlist.length) return;
+ const key = 'ss_wl_snapshot_' + user.email;
+ const existing = JSON.parse(localStorage.getItem(key)||'{}');
+ const snap = {};
+ watchlist.forEach(w => { snap[w.ticker] = ptDailyPrice(w.ticker); });
+ // If no existing snapshot, save one and return (first login = baseline)
+ if (!Object.keys(existing).length) {
+ try { localStorage.setItem(key, JSON.stringify(snap)); } catch {}
+ return;
+ }
+ // Store previous snapshot for delta display, then update
+ try { localStorage.setItem('ss_wl_prev_snapshot_'+user.email, JSON.stringify(existing)); } catch {}
+ try { localStorage.setItem(key, JSON.stringify(snap)); } catch {}
+}
+
+function getWlLoginDelta(ticker) {
+ if (!user?.email) return null;
+ const prev = JSON.parse(localStorage.getItem('ss_wl_prev_snapshot_'+user.email)||'{}');
+ if (!prev[ticker]) return null;
+ const current = ptDailyPrice(ticker);
+ const old = prev[ticker];
+ if (!old) return null;
+ const pct = ((current - old) / old * 100);
+ return pct;
+}
+
 function renderWatchlist() {
  const mc = document.getElementById('mainContent');
  if (!watchlist.length) {
@@ -7880,6 +7908,7 @@ function renderWatchlist() {
  <button class="wl-rm" onclick="event.stopPropagation();rmWL(${i})" title="Remove"></button>
  <div class="wl-tick" style="color:${textByType[w.type]||'var(--accent2)'}">${w.ticker}</div>
  <div class="wl-n">${w.name}</div>
+ ${(()=>{const d=getWlLoginDelta(w.ticker);if(d===null)return'';const up=d>=0;return `<div style="font-size:.62rem;color:${up?'var(--green)':'var(--red)'};margin-top:3px;display:flex;align-items:center;gap:2px"><span>${up?'▲':'▼'}</span><span>${up?'+':''}${d.toFixed(2)}% since login</span></div>`;})()}
  <!-- Live mini chart -->
  <div id="wl-tv-${i}" style="height:120px;margin-top:8px;border-radius:6px;overflow:hidden"></div>
  <button class="btn-go ${['bg-s','bg-i','bg-c'][['s','i','c'].indexOf(w.type)]||'bg-s'}"
@@ -8812,7 +8841,7 @@ async function doLogin(){
  closeModal();
  setTimeout(()=>{
  bootApp();
- loadUserData().then(()=>{ syncUserToSupabase(u); });
+ loadUserData().then(()=>{ syncUserToSupabase(u); setTimeout(captureWlLoginSnapshot, 200); });
  }, 300);
 }
 
@@ -9921,6 +9950,8 @@ function processPendingOrders() {
  pt.holdings[o.ticker] = { shares: (typeof existing === 'number' ? existing : 0) + o.shares, avgCost: execPrice };
  }
  const refundNote = refund > 0 ? ` · $${refund.toFixed(2)} refunded` : '';
+ if (!pt.trade_log) pt.trade_log = [];
+ pt.trade_log.push({date: new Date().toISOString(), ticker: o.ticker, side: 'BUY', shares: o.shares, price: execPrice, total: o.shares * execPrice});
  toast(` Pending BUY filled: ${o.shares.toFixed(4)} ${o.ticker} @ $${execPrice.toLocaleString()}${refundNote}`, 'success', 4500);
  }
  } else {
@@ -9938,6 +9969,8 @@ function processPendingOrders() {
  else pt.holdings[o.ticker] = { shares: newShares, avgCost };
  const pl = (execPrice - avgCost) * execShares;
  const plStr = pl >= 0 ? `+$${pl.toFixed(2)}` : `-$${Math.abs(pl).toFixed(2)}`;
+ if (!pt.trade_log) pt.trade_log = [];
+ pt.trade_log.push({date: new Date().toISOString(), ticker: o.ticker, side: 'SELL', shares: execShares, price: execPrice, total: execShares * execPrice, pl});
  toast(` Pending SELL filled: ${execShares.toFixed(4)} ${o.ticker} @ $${execPrice.toLocaleString()} · P&L: ${plStr}`, 'success', 4500);
  }
  }
@@ -10269,6 +10302,8 @@ function executePtTrade() {
  } else {
  pt.holdings[ptCurrentTicker] = { shares: (typeof existing === 'number' ? existing : 0) + shares, avgCost: ptCurrentPrice };
  }
+ if (!pt.trade_log) pt.trade_log = [];
+ pt.trade_log.push({date: new Date().toISOString(), ticker: ptCurrentTicker, side: 'BUY', shares, price: ptCurrentPrice, total});
  showPtSuccess('buy', ptCurrentTicker, shares, total, 0);
  } else {
  const holding = pt.holdings[ptCurrentTicker];
@@ -10281,6 +10316,8 @@ function executePtTrade() {
  const newShares = ownedShares - actualShares;
  if (newShares <= 0.0001) delete pt.holdings[ptCurrentTicker];
  else pt.holdings[ptCurrentTicker] = { shares: newShares, avgCost };
+ if (!pt.trade_log) pt.trade_log = [];
+ pt.trade_log.push({date: new Date().toISOString(), ticker: ptCurrentTicker, side: 'SELL', shares: actualShares, price: ptCurrentPrice, total: actualShares * ptCurrentPrice, pl: realizedPL});
  showPtSuccess('sell', ptCurrentTicker, actualShares, actualShares * ptCurrentPrice, realizedPL);
  }
  savePtPortfolio(pt);
@@ -10704,6 +10741,10 @@ function renderPaperTradeTab() {
  style="background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:9px 14px;font-family:inherit;font-size:.78rem;cursor:pointer;color:var(--text2)">
  ↺ Reset
  </button>
+ ${user ? `<button onclick="toast('Syncing...','info',1500);renderPaperTradeTab._synced=false;renderPaperTradeTab._syncing=false;renderPaperTradeTab();setTimeout(()=>toast('Synced!','success',2000),1600)"
+ style="background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:9px 14px;font-family:inherit;font-size:.78rem;cursor:pointer;color:var(--teal)">
+ ↻ Sync
+ </button>` : ''}
  </div>
  </div>
 
@@ -10869,6 +10910,60 @@ function renderPaperTradeTab() {
  <!-- Risk Lab -->
  ${renderRiskLab(pt, entries)}
 
+ <!-- Portfolio Insight (AI Rebalancing) -->
+ <div class="card" style="margin-top:1rem;border-color:rgba(168,85,247,.25)">
+ <div class="card-hdr" style="background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(168,85,247,.02))">
+ <div class="card-hdr-title" style="color:var(--green)">🧠 Portfolio Insight</div>
+ <div class="card-hdr-sub">AI-powered concentration analysis &amp; rebalancing suggestion</div>
+ </div>
+ <div style="padding:1rem;display:flex;flex-direction:column;gap:.75rem">
+ <button onclick="showPtInsight()" style="background:linear-gradient(135deg,rgba(168,85,247,.3),rgba(168,85,247,.12));color:#a855f7;border:1px solid rgba(168,85,247,.4);border-radius:10px;padding:10px 20px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;align-self:flex-start">Get AI Insight</button>
+ <div id="pt-insight-result" style="font-size:.82rem;color:var(--text2);line-height:1.65;display:none"></div>
+ </div>
+ </div>
+
+ <!-- Trade History -->
+ ${(()=>{
+ const log = (pt.trade_log||[]).slice().reverse();
+ if (!log.length) return '';
+ return `<div class="card" style="margin-top:1rem">
+ <div class="card-hdr">
+ <div class="card-hdr-title">📋 Trade History</div>
+ <div class="card-hdr-sub">${log.length} trade${log.length!==1?'s':''} · newest first</div>
+ </div>
+ <div style="overflow-x:auto;padding:0 .5rem .5rem">
+ <table style="width:100%;border-collapse:collapse;font-size:.78rem;min-width:520px">
+ <thead><tr style="font-size:.62rem;color:var(--text3);letter-spacing:.08em">
+ <th style="text-align:left;padding:.625rem .5rem;border-bottom:1px solid var(--border)">DATE</th>
+ <th style="text-align:left;padding:.625rem .5rem;border-bottom:1px solid var(--border)">TICKER</th>
+ <th style="text-align:center;padding:.625rem .5rem;border-bottom:1px solid var(--border)">SIDE</th>
+ <th style="text-align:right;padding:.625rem .5rem;border-bottom:1px solid var(--border)">SHARES</th>
+ <th style="text-align:right;padding:.625rem .5rem;border-bottom:1px solid var(--border)">PRICE</th>
+ <th style="text-align:right;padding:.625rem .5rem;border-bottom:1px solid var(--border)">TOTAL</th>
+ <th style="text-align:right;padding:.625rem .5rem;border-bottom:1px solid var(--border)">P&amp;L</th>
+ </tr></thead>
+ <tbody>
+ ${log.map(e=>{
+ const d=new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+ const sideColor=e.side==='BUY'?'var(--green)':'var(--red)';
+ const sideBg=e.side==='BUY'?'rgba(0,201,122,.12)':'rgba(255,56,96,.1)';
+ const plCell=e.side==='BUY'?'<span style="color:var(--text3)">—</span>':`<span style="color:${e.pl>=0?'var(--green)':'var(--red)'};font-weight:600">${e.pl>=0?'+':''}$${Math.abs(e.pl).toFixed(2)}</span>`;
+ return `<tr style="border-bottom:1px solid var(--border)">
+ <td style="padding:.5rem .5rem;color:var(--text3);font-size:.7rem;white-space:nowrap">${d}</td>
+ <td style="padding:.5rem .5rem;font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2)">${e.ticker}</td>
+ <td style="padding:.5rem .5rem;text-align:center"><span style="background:${sideBg};color:${sideColor};border-radius:5px;padding:2px 8px;font-size:.65rem;font-weight:800">${e.side}</span></td>
+ <td style="padding:.5rem .5rem;text-align:right">${(+e.shares).toFixed(4)}</td>
+ <td style="padding:.5rem .5rem;text-align:right">$${(+e.price).toLocaleString()}</td>
+ <td style="padding:.5rem .5rem;text-align:right;font-weight:600">$${(+e.total).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+ <td style="padding:.5rem .5rem;text-align:right">${plCell}</td>
+ </tr>`;
+ }).join('')}
+ </tbody>
+ </table>
+ </div>
+ </div>`;
+ })()}
+
  <!-- Community Leaderboard (always visible) -->
  <div class="card" style="margin-top:1rem">
  <div class="card-hdr" style="background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(245,158,11,.02))">
@@ -10888,6 +10983,41 @@ function renderPaperTradeTab() {
 
  // Load leaderboard async after render
  setTimeout(loadLeaderboard, 50);
+}
+
+function showPtInsight() {
+ const el = document.getElementById('pt-insight-result');
+ if (!el) return;
+ const pt = getPtPortfolio();
+ const entries = Object.entries(pt.holdings);
+ if (!entries.length) { el.style.display='block'; el.textContent='No holdings yet. Place some trades first to get a rebalancing suggestion.'; return; }
+ const SECTOR_MAP = {
+ AAPL:'Tech',MSFT:'Tech',GOOGL:'Tech',META:'Tech',NVDA:'Tech',AMZN:'Tech',
+ AMD:'Tech',INTC:'Tech',CRM:'Tech',ADBE:'Tech',TSLA:'Tech',NFLX:'Tech',
+ JPM:'Finance',GS:'Finance',BAC:'Finance',WFC:'Finance',MS:'Finance',V:'Finance',MA:'Finance',
+ XOM:'Energy',CVX:'Energy',COP:'Energy',BP:'Energy',
+ JNJ:'Healthcare',PFE:'Healthcare',MRK:'Healthcare',ABBV:'Healthcare',UNH:'Healthcare',
+ WMT:'Consumer',COST:'Consumer',MCD:'Consumer',KO:'Consumer',PG:'Consumer',
+ BTC:'Crypto',ETH:'Crypto',SOL:'Crypto',BNB:'Crypto',DOGE:'Crypto',
+ };
+ const sectorTotals = {};
+ let totalVal = 0;
+ entries.forEach(([t, h]) => {
+ const shares = typeof h === 'object' ? h.shares : h;
+ const val = shares * ptDailyPrice(t);
+ const sector = SECTOR_MAP[t] || ASSET_DATA[t]?.[2] || 'Other';
+ sectorTotals[sector] = (sectorTotals[sector] || 0) + val;
+ totalVal += val;
+ });
+ if (!totalVal) { el.style.display='block'; el.textContent='Add some holdings to see an insight.'; return; }
+ const sorted = Object.entries(sectorTotals).sort((a,b)=>b[1]-a[1]);
+ const topSector = sorted[0][0];
+ const topPct = (sorted[0][1]/totalVal*100).toFixed(0);
+ const allSectors = ['Tech','Finance','Energy','Healthcare','Consumer','Crypto','Other'];
+ const missing = allSectors.filter(s => !sectorTotals[s]);
+ const suggest = missing.length ? missing[0] : sorted[sorted.length-1][0];
+ el.style.display = 'block';
+ el.innerHTML = `<strong style="color:var(--accent2)">Your portfolio is ${topPct}% in ${topSector}.</strong> ${topPct > 40 ? `That's a high concentration — consider diversifying into <strong style="color:var(--green)">${suggest}</strong> to reduce sector risk.` : `Good diversification overall! Adding exposure to <strong style="color:var(--green)">${suggest}</strong> could further reduce concentration risk.`}`;
 }
 
 /* ════════════════════════════════
@@ -13690,6 +13820,16 @@ function renderScreener() {
  </div>
  </div>
 
+ <!-- Saved Presets -->
+ <div id="scr-presets-row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:.875rem">
+ <span style="font-size:.72rem;color:var(--text3);font-weight:600;letter-spacing:.06em;white-space:nowrap">SAVED:</span>
+ <div id="scr-preset-pills" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
+ <div style="display:flex;gap:6px;align-items:center;margin-left:auto">
+ <input id="scr-preset-name" type="text" placeholder="Preset name…" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;color:var(--text);font-family:inherit;font-size:.75rem;outline:none;width:120px" />
+ <button onclick="saveScreenerPreset()" style="background:linear-gradient(135deg,rgba(168,85,247,.3),rgba(168,85,247,.12));color:#a855f7;border:1px solid rgba(168,85,247,.4);border-radius:8px;padding:6px 12px;font-family:inherit;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap">Save</button>
+ </div>
+ </div>
+
  <!-- Classic Filters -->
  <div id="scr-filter-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
  <select id="scr-sector" onchange="clearNarrative();applyScreener()" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:.78rem;outline:none">
@@ -13723,6 +13863,52 @@ function renderScreener() {
  </div>
  <div id="scr-results"></div>`;
  applyScreener();
+ renderScreenerPresets();
+}
+
+function renderScreenerPresets() {
+ const container = document.getElementById('scr-preset-pills');
+ if (!container) return;
+ const presets = JSON.parse(localStorage.getItem('ss_scr_presets')||'[]');
+ if (!presets.length) { container.innerHTML = '<span style="font-size:.72rem;color:var(--text3);font-style:italic">None saved yet</span>'; return; }
+ container.innerHTML = presets.map((p,i) => `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.35);border-radius:20px;padding:4px 10px 4px 12px;font-size:.72rem;color:#a855f7;font-weight:600;cursor:pointer" onclick="loadScreenerPreset(${i})" title="Click to apply">${p.name}<button onclick="event.stopPropagation();deleteScreenerPreset(${i})" style="background:none;border:none;color:rgba(168,85,247,.7);cursor:pointer;font-size:.7rem;padding:0;line-height:1;margin-left:2px">✕</button></span>`).join('');
+}
+function saveScreenerPreset() {
+ const name = (document.getElementById('scr-preset-name')?.value||'').trim();
+ if (!name) { toast('Enter a preset name first','info',2000); return; }
+ const presets = JSON.parse(localStorage.getItem('ss_scr_presets')||'[]');
+ if (presets.length >= 5) { toast('Max 5 presets — delete one first','info',2500); return; }
+ const filters = {
+ sector: document.getElementById('scr-sector')?.value||'all',
+ risk: document.getElementById('scr-risk')?.value||'all',
+ growth: document.getElementById('scr-growth')?.value||'0',
+ rsi: document.getElementById('scr-rsi')?.value||'all',
+ verdict: document.getElementById('scr-verdict')?.value||'all',
+ };
+ presets.push({name, filters});
+ localStorage.setItem('ss_scr_presets', JSON.stringify(presets));
+ if (document.getElementById('scr-preset-name')) document.getElementById('scr-preset-name').value = '';
+ renderScreenerPresets();
+ toast(`Preset "${name}" saved!`,'success',2000);
+}
+function loadScreenerPreset(i) {
+ const presets = JSON.parse(localStorage.getItem('ss_scr_presets')||'[]');
+ const p = presets[i]; if (!p) return;
+ const f = p.filters;
+ if (document.getElementById('scr-sector')) document.getElementById('scr-sector').value = f.sector||'all';
+ if (document.getElementById('scr-risk')) document.getElementById('scr-risk').value = f.risk||'all';
+ if (document.getElementById('scr-growth')) document.getElementById('scr-growth').value = f.growth||'0';
+ if (document.getElementById('scr-rsi')) document.getElementById('scr-rsi').value = f.rsi||'all';
+ if (document.getElementById('scr-verdict')) document.getElementById('scr-verdict').value = f.verdict||'all';
+ clearNarrative();
+ applyScreener();
+ toast(`Preset "${p.name}" applied`,'success',1800);
+}
+function deleteScreenerPreset(i) {
+ const presets = JSON.parse(localStorage.getItem('ss_scr_presets')||'[]');
+ presets.splice(i, 1);
+ localStorage.setItem('ss_scr_presets', JSON.stringify(presets));
+ renderScreenerPresets();
 }
 
 function clearNarrative() {
