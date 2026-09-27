@@ -1969,16 +1969,11 @@ html{scroll-behavior:smooth}
  <div class="sg-label">Weekly Market Digest</div>
  <div class="sg-desc">Every Monday — portfolio P&amp;L, top movers, Fear &amp; Greed shift, AI stock picks</div>
  </div>
- <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%">
- <input id="notif-email" type="email" value="" placeholder="your@email.com"
- style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 13px;color:var(--text);font-family:inherit;font-size:.8rem;outline:none;flex:1;min-width:180px;transition:border-color .2s"
- onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border2)'"/>
- <button onclick="subscribeNotif()" style="background:linear-gradient(135deg,#007a7a,var(--teal));color:#fff;border:none;border-radius:8px;padding:9px 18px;font-family:inherit;font-weight:700;font-size:.8rem;cursor:pointer;white-space:nowrap">
- Subscribe 
+ <button id="notif-btn" onclick="subscribeNotif()" style="background:linear-gradient(135deg,#007a7a,var(--teal));color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:inherit;font-weight:700;font-size:.8rem;cursor:pointer;white-space:nowrap">
+ Subscribe
  </button>
- </div>
  <div id="notif-ok" style="display:none;font-size:.72rem;color:var(--green)"> Subscribed! You'll receive your first digest next Monday.</div>
- <div id="notif-err" style="display:none;font-size:.72rem;color:var(--red)">Please enter a valid email address.</div>
+ <div id="notif-err" style="display:none;font-size:.72rem;color:var(--red)">Please log in to subscribe.</div>
  </div>
  </div>
 
@@ -4301,13 +4296,11 @@ async function subscribeDigest() {
 }
 
 async function subscribeNotif() {
- const inp = document.getElementById('notif-email');
  const ok = document.getElementById('notif-ok');
  const err = document.getElementById('notif-err');
- if(!inp) return;
  if(ok) ok.style.display='none';
  if(err) err.style.display='none';
- const email = inp.value.trim() || user?.email || '';
+ const email = user?.email || '';
  if(!validEmail(email)) { if(err) err.style.display='block'; return; }
  // Save to Supabase
  try {
