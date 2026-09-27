@@ -3538,6 +3538,8 @@ async function logout() {
  searchHistory = [];
  watchlist = [];
  holdings = [];
+ renderPaperTradeTab._synced = false;
+ renderPaperTradeTab._syncing = false;
  document.getElementById('mobileNav').style.display = 'none';
  // Go to gate screen
  show('gate');
@@ -3692,7 +3694,7 @@ function showSearchHistory() {
  sdrop.innerHTML = `
  <div style="padding:.5rem .75rem .25rem;font-size:.6rem;color:var(--text3);letter-spacing:.06em;font-weight:600;display:flex;align-items:center;justify-content:space-between">
  <span>RECENT SEARCHES</span>
- <button onclick="searchHistory=[];saveHistory();document.getElementById('sdrop').style.display='none';renderSearchHistory()" 
+ <button onclick="searchHistory=[];saveSearchHistory();document.getElementById('sdrop').style.display='none';renderSearchHistory()"
  style="background:none;border:none;font-size:.6rem;color:var(--text3);cursor:pointer;font-family:inherit;padding:0">Clear</button>
  </div>
  ${searchHistory.slice(0,8).map(h => {
@@ -10608,17 +10610,18 @@ function renderPaperTradeTab() {
  if (!mc) return;
 
  // Re-sync from Supabase on first open so cross-device data is fresh
- if (user?.email && !renderPaperTradeTab._syncing) {
+ if (user?.email && !renderPaperTradeTab._synced && !renderPaperTradeTab._syncing) {
   renderPaperTradeTab._syncing = true;
   sb.from('users').select('portfolio').eq('email', user.email).single()
    .then(({data}) => {
     const sbPt = data?.portfolio?.paper_trade;
+    renderPaperTradeTab._syncing = false;
+    renderPaperTradeTab._synced = true;
     if (sbPt) {
      try { localStorage.setItem('ss_pt_'+user.email, JSON.stringify(sbPt)); } catch {}
-     renderPaperTradeTab._syncing = false;
      renderPaperTradeTab();
-    } else { renderPaperTradeTab._syncing = false; }
-   }).catch(()=>{ renderPaperTradeTab._syncing = false; });
+    }
+   }).catch(()=>{ renderPaperTradeTab._syncing = false; renderPaperTradeTab._synced = true; });
  }
 
  // Auto-execute any pending orders if the market just opened
