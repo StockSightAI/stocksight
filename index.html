@@ -90,17 +90,6 @@ body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-h
 .atab{padding:13px 12px;font-size:.82rem}
 /* Gap between the asset tab switcher and the content below it */
 #mainContent > div[style*="display:flex"][style*="gap:3px"]{margin-bottom:2rem}
-/* Space out every direct card child in the current/history/predict views */
-#aview-current > .card,
-#aview-history > .card,
-#aview-predict > .card{margin-bottom:2rem}
-/* The two-col AI/Poll grid */
-#aview-current > div[style*="grid-template-columns:1fr 1fr"]{gap:1.75rem;margin-bottom:2rem}
-/* Bottom notes + alert grid */
-#aview-current + div,
-[style*="grid-template-columns:1fr 1fr"][style*="margin-top:1.25rem"]{gap:1.75rem;margin-top:2rem!important}
-/* News feed card at bottom */
-.news-card-inner{height:380px}
 
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;gap:12px;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none}
@@ -658,9 +647,6 @@ header{margin-bottom:2rem}
 .pie-legend-label{color:var(--text2);flex:1}
 .pie-legend-pct{color:var(--text);font-weight:700;font-family:'Geist',sans-serif}
 
-/* ── NEWS FEED CARD ── */
-.news-card-inner{height:380px}
-
 /* ── ONBOARDING QUESTIONNAIRE ── */
 #onboardingOverlay{position:fixed;inset:0;z-index:9500;display:none;align-items:center;justify-content:center;background:var(--bg);overflow-y:auto}
 .ob-wrap{width:100%;max-width:560px;padding:2rem 1.5rem;margin:auto}
@@ -849,7 +835,6 @@ body.mode-beginner .main-content { padding: 20px 18px; gap: 0; }
 .empty-state-btn{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:10px;padding:9px 20px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .18s}
 .empty-state-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--glow)}
 /* ── REFERRAL ── */
-.referral-card{background:linear-gradient(135deg,rgba(108,92,231,.12),rgba(0,180,216,.08));border:1px solid rgba(108,92,231,.3);border-radius:14px;padding:1.25rem}
 
 #mobileNav{display:none}
 
@@ -861,288 +846,6 @@ body.mode-beginner .main-content { padding: 20px 18px; gap: 0; }
    • Big prices, small grey labels
    • Bottom tab bar: frosted glass
    ══════════════════════════════════════════ */
-@media(max-width:768px){
-
- /* ── Kill desktop tab strip ── */
- .tabs{display:none!important}
-
- /* ── Root screen: no side padding, bottom clears tab bar ── */
- #S-app.screen,#S-gate.screen{
-  padding:0;
-  padding-bottom:max(5.5rem,calc(4.5rem + env(safe-area-inset-bottom)));
- }
- .screen{padding-left:0;padding-right:0}
-
- /* ── Header ── */
- header{
-  padding:14px 18px 8px;
-  margin-bottom:0;
- }
- .logo-name{font-size:1.05rem}
-
- /* ── Welcome bar — flush, minimal ── */
- .welcome-bar{
-  border-radius:0;border-left:none;border-right:none;border-top:none;
-  padding:8px 18px 10px;margin-bottom:0;
-  background:var(--bg);
-  box-shadow:none;
- }
- .wb-date,.wb-time{display:none}
-
- /* ── Market status + search hist guttered ── */
- #marketStatusBar{padding:8px 18px 0;margin-bottom:0}
- .search-hist{padding:6px 18px 0}
-
- /* ── Search row ── */
- #searchSection{padding:8px 18px 0}
- .search-row{margin-bottom:.6rem}
-
- /* ── Quick picks: horizontal scroll strip ── */
- .picks{
-  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;padding:2px 18px 6px;margin-bottom:.5rem;gap:6px
- }
- .picks::-webkit-scrollbar{display:none}
- .pick{flex-shrink:0;font-size:.7rem;padding:5px 13px;border-radius:20px}
-
- /* ── CARDS → borderless sections, Apple-style ──
-    Remove the "box" look. Sections are separated
-    by a hairline border-bottom and background only */
- .card{
-  background:transparent;
-  border:none;border-radius:0;
-  border-bottom:1px solid var(--border);
-  margin-bottom:0;
-  box-shadow:none;
- }
- .card-hdr{
-  padding:18px 18px 6px;
-  font-family:'Geist',sans-serif;
-  font-size:1.1rem;font-weight:800;letter-spacing:-.02em;
- }
- .card-hdr-right{padding-right:18px}
-
- /* Card body padding */
- .card > *:not(.card-hdr){padding-left:18px;padding-right:18px}
- .card > *:last-child{padding-bottom:14px}
-
- /* ── WATCHLIST — Apple Stocks row style ── */
- .wl-grid{
-  display:flex;flex-direction:column;gap:0;
-  padding:0;
- }
- .wl-card{
-  background:transparent;
-  border:none;border-radius:0;
-  border-bottom:1px solid var(--border);
-  padding:12px 18px;
-  display:flex;align-items:center;gap:12px;
-  transform:none!important;box-shadow:none!important;
- }
- .wl-card:active{background:rgba(255,255,255,.04)}
- /* Ticker + name: left side */
- .wl-tick{font-size:1rem;font-weight:800;letter-spacing:-.01em;min-width:52px}
- .wl-n{
-  flex:1;font-size:.72rem;color:var(--text3);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  margin-top:0;
- }
- /* Mini chart: center — TradingView iframe hidden on mobile list,
-    just show the row cleanly */
- .wl-card > div[id^="wl-tv-"]{
-  width:80px;height:36px;margin-top:0;border-radius:4px;
-  flex-shrink:0;overflow:hidden;
- }
- /* "View Full Chart" button → pill on the right */
- .wl-card > .btn-go{
-  width:auto!important;margin-top:0!important;padding:6px 12px!important;
-  font-size:.65rem!important;border-radius:8px!important;flex-shrink:0;
- }
- .wl-rm{
-  position:static;top:auto;right:auto;
-  margin-left:auto;flex-shrink:0;
-  width:24px;height:24px;
- }
-
- /* ── ASSET detail ── */
- .asset-top{
-  border-radius:0;border:none;border-bottom:1px solid var(--border);
-  padding:16px 18px 14px;margin-bottom:0;
- }
- .a-ticker{font-size:2.2rem;letter-spacing:-.04em}
- /* Asset tab switcher: scrollable strip */
- #mainContent > div[style*="display:flex"][style*="gap:3px"]{
-  overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;flex-wrap:nowrap;
-  padding:0 18px;margin-bottom:1rem!important;
- }
- #mainContent > div[style*="display:flex"][style*="gap:3px"]::-webkit-scrollbar{display:none}
- .atab{flex:0 0 auto;font-size:.75rem;padding:9px 14px}
-
- /* Charts full-width, no side padding */
- .card [id^="tv-"],.card [id^="chart-"],[id^="tv-"],[id^="chart-"]{
-  border-radius:0!important;
- }
-
- /* ── STAT GRIDS inside cards ── */
- .pred-grid,.home-grid,.home-grid-3,.two-col,.cmp-row,.add-row{
-  grid-template-columns:1fr!important;gap:0
- }
- .pred-cell{border-radius:0;border-left:none;border-right:none;border-top:none}
-
- /* ── TABLES ── */
- .port-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:0}
-
- /* ── TYPOGRAPHY — Apple's big-number style ── */
- .a-price{font-size:2.4rem!important;font-weight:800!important;letter-spacing:-.04em!important;font-variant-numeric:tabular-nums}
- .a-chg{font-size:1rem!important;font-weight:700!important}
- /* Section headers match Apple's large bold style */
- [style*="font-size:.88rem"][style*="font-weight:700"]{
-  font-size:1rem!important;font-weight:800!important;padding:0 18px;
- }
-
- /* ── BOTTOM NAV BAR — Apple tab bar ── */
- #mobileNav{
-  display:flex;position:fixed;bottom:0;left:0;right:0;z-index:80;
-  background:rgba(var(--card-rgb,18,18,18),.85);
-  -webkit-backdrop-filter:blur(24px) saturate(200%);
-  backdrop-filter:blur(24px) saturate(200%);
-  border-top:1px solid var(--border);
-  padding:8px 0;
-  padding-bottom:max(8px,env(safe-area-inset-bottom));
-  gap:0;
- }
- .mbn-tab{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;padding:5px 2px;border-radius:0;border:none;
-  background:transparent;color:var(--text3);font-family:inherit;
-  font-size:.5rem;font-weight:600;cursor:pointer;
-  transition:color .15s,transform .1s;
-  letter-spacing:-.01em;min-width:0;
- }
- .mbn-tab:active{transform:scale(.88);opacity:.7}
- .mbn-icon{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
- .mbn-icon svg{width:22px;height:22px}
- /* Active colors — each tab has its own accent like Apple */
- .mbn-tab.mbn-on-s   {color:var(--accent2)}
- .mbn-tab.mbn-on-w   {color:var(--green)}
- .mbn-tab.mbn-on-port{color:#f87171}
- .mbn-tab.mbn-on-screen{color:var(--green)}
- .mbn-tab.mbn-on-cmp {color:#a78bfa}
- .mbn-tab.mbn-on-pt  {color:var(--teal)}
- .mbn-tab.mbn-on-day {color:var(--accent2)}
-
- /* ── MODAL — slides up from bottom ── */
- .modal-overlay{padding:0;align-items:flex-end}
- .modal-box{
-  border-radius:20px 20px 0 0;max-height:92vh;
-  padding:1.25rem 1.25rem max(1.75rem,env(safe-area-inset-bottom));
- }
- /* Drag handle on modals */
- .modal-box::before{
-  content:'';display:block;width:36px;height:4px;
-  background:var(--border2);border-radius:2px;
-  margin:0 auto 1rem;
- }
-
- /* ── GATE landing page ── */
- .gate-title{font-size:2.2rem}
- .gate-sub{font-size:.84rem}
- .gate-btns,.gate-pillars{padding:0 18px}
- .gate-pillars{grid-template-columns:1fr}
-
- /* ── POLL ── */
- .poll-btn{padding:.75rem 1rem}
-
- /* ── DT JOURNAL ── */
- .dt-jrow{grid-template-columns:52px 44px 1fr 66px 46px;font-size:.64rem;gap:6px}
- .dt-jrow .dt-hide{display:none!important}
-
- /* ── TICKER TAPE — full width, no margin ── */
- .ticker-tape{margin:0}
-
- /* ── SCORE/RING section padding ── */
- .ss-score-ring{margin:0 auto}
-
- /* ── GATE: header action buttons full width ── */
- #S-gate header{flex-wrap:wrap;padding:12px 18px 8px;gap:6px}
- #S-gate header .hdr-actions{flex:1 1 100%;gap:8px}
- #S-gate header .hdr-actions .btn{flex:1;text-align:center;font-size:.76rem;padding:9px 8px;min-width:0}
-
- /* ── GATE: gate-btns buttons full width ── */
- .btn-gate-main,.btn-gate-ghost{width:100%;box-sizing:border-box;text-align:center}
-
- /* ── HOME: hide heatmap/industries card ── */
- .card:has(#heatmap-container){display:none!important}
-
- /* ── HOME: hide trending, sotd full width ── */
- #trendingCard{display:none!important}
- .sotd-trending-grid{display:block!important}
- .sotd-trending-grid #sotdCard{width:100%;margin:0}
-
- /* ── HOME: hide picks ── */
- .picks{display:none!important}
-
- /* ── HOME: search bar + analyze button stacked full width ── */
- .search-row{flex-direction:column;gap:6px}
- .search-wrap{width:100%}
- #goBtn{width:100%;border-radius:10px!important;padding:11px!important}
-
- /* ── HOME: "What would you like to do today" — one row ── */
- #wyl-buttons{flex-wrap:nowrap!important}
- #wyl-buttons button{flex:1;min-width:0;font-size:.68rem!important;padding:8px 4px!important;text-align:center}
-
- /* ── ASSET: hide price alert section ── */
- [id^="alertSection_"]{display:none!important}
-
- /* ── ASSET: hide notes + alert bottom grid ── */
- #notes-alert-grid{display:none!important}
-
- /* ── ASSET: poll + expert signals stacked vertically ── */
- #poll-tech-grid{grid-template-columns:1fr!important}
-
- /* ── ASSET: hide "You Might Also Like" ── */
- #similar-stocks-card{display:none!important}
-
- /* ── SCREENER: compact filter dropdowns, 2 per row ── */
- #scr-filter-row{gap:6px!important}
- #scr-filter-row select{flex:1 1 calc(50% - 3px);min-width:0;padding:6px 6px!important;font-size:.68rem!important;border-radius:6px!important}
- #scr-filter-row #scr-count{flex:1 1 100%;text-align:right}
-
- /* ── PAPER TRADE: compact stats boxes ── */
- .pt-stat{padding:.5rem .4rem!important;border-radius:8px!important}
- .pt-stat-val{font-size:.78rem!important}
- .pt-stat-lbl{font-size:.46rem!important;letter-spacing:.03em!important;margin-top:2px!important}
- #pt-stats-row{gap:.4rem!important;margin-bottom:.75rem!important}
-
- /* ── MARKET FILTER: Stocks / Indexes / Crypto full width ── */
- #marketFilter{flex-wrap:nowrap!important;padding:0 18px;gap:8px}
- .mf-pill{flex:1;text-align:center;border-radius:10px!important;padding:9px 4px!important;font-size:.76rem!important}
-
- /* ── GENERAL: prevent horizontal overflow on all cards ── */
- .card{max-width:100%;overflow-x:hidden}
- [id^="tv-"]{max-width:100%!important}
-
- /* ── ASSET: 4-col stat grid → 2×2 ── */
- #asset-context-stats{grid-template-columns:repeat(2,1fr)!important}
- #asset-context-stats>div:nth-child(2){border-right:none!important}
-
- /* ── GATE MODAL: feature list compact ── */
- #signupNudge [style*="grid-template-columns:1fr 1fr"] div{font-size:.62rem!important}
-
- /* ── SCREENER: quick-filter example chips smaller ── */
- #scr-narrative~div button{font-size:.6rem!important;padding:3px 9px!important}
-
- /* ── PAPER TRADE: stat boxes 3-column, more compact ── */
- #pt-stats-row{grid-template-columns:repeat(3,1fr)!important;gap:.3rem!important;margin-bottom:.5rem!important}
- .pt-stat{padding:.4rem .3rem!important;border-radius:7px!important}
- .pt-stat-val{font-size:.72rem!important}
- .pt-stat-lbl{font-size:.42rem!important;letter-spacing:.02em!important;margin-top:1px!important}
-
- /* ── MOBILE NAV: flush to bottom, no extra gap ── */
- #mobileNav{padding-bottom:8px!important}
-}
-
 /* ══════════════════════════════════════════
    MOBILE LANDSCAPE  — phone rotated sideways
    Side nav replaces bottom bar; content uses
@@ -1801,6 +1504,7 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 
 /* Rail: paper trading positions, collapse control */
 .rail-h-actions{display:flex;align-items:center;gap:6px}
+.rail-legal{display:none;font-size:.74rem;line-height:1.5;color:var(--text3);text-align:center;padding:4px 8px 12px}
 .rail-collapse,.tb-rail{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;border:1px solid var(--border2);background:var(--card);color:var(--text2);cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease}
 .rail-collapse:hover,.tb-rail:hover{background:var(--card2);color:var(--text);border-color:var(--border3)}
 .tb-rail{display:none;width:36px;height:36px;border-radius:10px}
@@ -1831,7 +1535,7 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 }
 
 /* Learning: level ring, lessons, quiz, hub, XP */
-.learn-level{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.learn-level{display:flex;flex-direction:row!important;justify-content:flex-start!important;align-items:center;gap:12px;background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
 .lv-ring{--p:0;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--border) 0)}
 .lv-ring b{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--bg);font-size:.95rem;font-weight:700}
 .lv-ring-lg{width:72px;height:72px}.lv-ring-lg b{width:58px;height:58px;font-size:1.4rem;background:var(--card)}
@@ -1874,7 +1578,7 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 .pni svg{width:17px;height:17px;flex:none}.pni:hover{background:var(--card2);color:var(--text)}.pni.on{background:var(--glow2);color:var(--accent2);font-weight:600;border:0}
 .btn-so{margin-top:auto}
 .set-main{padding:28px 36px 48px;max-width:1080px;width:100%}
-.psec-title{display:block;border:0;margin-bottom:20px;padding:0}.psec-title h1{font-size:1.6rem;font-weight:700;letter-spacing:-.03em}.psec-title p{color:var(--text2);margin-top:4px;font-size:.92rem}
+.psec-title{display:block;border:0;margin-bottom:20px;padding:0}.psec-title h1{font-size:1.6rem;font-weight:700;letter-spacing:-.03em}.psec-title p{color:var(--text2);margin-top:4px;font-size:.92rem;font-weight:400;letter-spacing:0}
 .set-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:16px;align-items:start}
 .sg{border-radius:14px;margin-bottom:16px}.sg-lbl{font-size:.92rem;letter-spacing:-.01em;color:var(--text);background:none;padding:14px 18px 6px;border:0;font-weight:650;text-transform:none}
 .sg-row{padding:12px 18px}.sg-row:last-child{border-bottom:0}.sg-stack{flex-direction:column;align-items:flex-start}
@@ -1886,12 +1590,14 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 .set-btn-wide{width:100%;margin-top:12px}.set-btn-row{display:flex;gap:8px;margin-top:10px}
 .set-link{background:none;border:0;padding:0;font:600 .86rem 'Geist',sans-serif;color:var(--accent2);cursor:pointer}
 .set-input{width:100%;height:40px;padding:0 12px;border:1px solid var(--border2);border-radius:10px;background:var(--card);font:inherit;font-size:.9rem;color:var(--text);outline:none}.set-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow2)}
+#ph-t::placeholder{text-transform:none}
 .set-pw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
 .set-field-lbl{display:block;font-size:.78rem;color:var(--text2);font-weight:550;margin:10px 0 6px}
 .set-msg{font-size:.82rem}.set-msg.ok{color:var(--green)}.set-msg.err{color:var(--red)}
 .set-danger-box{padding:14px;border-radius:12px;background:var(--red2)}
 .set-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.set-seg{display:flex;gap:4px;padding:3px;border-radius:10px;background:var(--card2);margin-bottom:4px}.set-seg button{flex:1;padding:8px;border-radius:8px;font:600 .82rem 'Geist',sans-serif;cursor:pointer}
+.set-seg{display:flex;gap:4px;padding:3px;border-radius:10px;background:var(--card2);margin-bottom:4px}.set-seg button{flex:1;padding:8px;border:0;border-radius:8px;background:none;font:600 .82rem 'Geist',sans-serif;color:var(--text2);cursor:pointer}
+.set-seg button.on{background:var(--card);color:var(--accent2);box-shadow:0 1px 3px var(--shadow2)}
 .set-preview{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--card2);font-size:.84rem}
 .set-hold{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 .set-includes{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:6px 18px 16px}.set-includes div{display:flex;flex-direction:column;padding:10px 12px;border-radius:10px;background:var(--card2)}.set-includes b{font-size:.84rem}.set-includes span{font-size:.76rem;color:var(--text3)}
@@ -1901,11 +1607,54 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 .tog.on-a,.tog.on-g{background:var(--card);color:var(--accent2);border:0;box-shadow:0 1px 3px var(--shadow2)}
 .set-swatches .tog{display:inline-flex;align-items:center;gap:6px}.set-swatches i{width:10px;height:10px;border-radius:50%}
 .set-stats:empty{display:none}
+.set-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.set-stat{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:14px 16px;border:1px solid var(--border);border-radius:14px;background:var(--card);font:inherit;color:var(--text);text-align:left;cursor:pointer;box-shadow:0 1px 2px var(--shadow2);transition:border-color .15s ease}
+.set-stat:hover:not([disabled]){border-color:var(--border3)}
+.set-stat[disabled]{cursor:default}
+.set-stat span{font-size:.76rem;color:var(--text3)}
+.set-stat b{font-size:1.4rem;font-weight:700;letter-spacing:-.03em}
+.set-stat small{font-size:.76rem;color:var(--text2)}
+.ach-hero{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.ach-sum{display:flex;align-items:center;gap:16px;padding:16px 18px;border:1px solid var(--border);border-radius:14px;background:var(--card)}
+.ach-sum h3{font-size:1.05rem;font-weight:700;letter-spacing:-.02em}
+.ach-sum p{font-size:.84rem;color:var(--text2);margin-top:3px}
+.ach-next{padding:16px 18px;border-radius:14px;background:var(--glow2);margin-bottom:18px}
+.ach-next h4,.ach-group h4{font-size:.92rem;font-weight:650}
+.ach-next > div{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.ach-next-item{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--card)}
+.ach-next-item b{display:block;font-size:.84rem}
+.ach-next-item small{font-size:.74rem;color:var(--text3);line-height:1.35}
+.ach-group{margin-bottom:18px}
+.ach-group header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.ach-group header span{font-size:.8rem;color:var(--text3)}
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ach-badge{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 12px;border:1px solid var(--border);border-radius:14px;background:var(--card);text-align:center}
+.ach-badge b{font-size:.84rem;font-weight:650}
+.ach-badge small{font-size:.72rem;color:var(--text3);line-height:1.35}
+.ach-ico{width:44px;height:44px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:1.3rem;background:var(--card2);margin-bottom:4px}
+.ach-badge.earned{border-color:color-mix(in srgb,var(--accent) 35%,transparent);background:linear-gradient(180deg,var(--glow2),var(--card) 60%)}
+.ach-badge.earned .ach-ico{background:var(--card);box-shadow:0 0 0 2px var(--accent)}
+.ach-badge.locked{opacity:.55}
+.ach-badge.locked .ach-ico{filter:grayscale(1)}
+.ach-badge.secret{border-style:dashed}
+.ach-badge.secret .ach-ico{font-weight:700;color:var(--text3)}
+@media(max-width:900px){.set-stats,.ach-hero{grid-template-columns:1fr 1fr}.ach-next > div{grid-template-columns:1fr}}
 @media(max-width:900px){
- .set-shell{display:block}.set-side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border)}
- .prof-nav{flex-direction:row;overflow-x:auto}.pni{width:auto;white-space:nowrap}
+ .set-shell{display:block}.set-side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px 12px;padding:14px 16px 12px}
+ .set-logo{display:none}
+ .set-back{grid-row:1;grid-column:1;justify-self:start}
+ .btn-so{grid-row:1;grid-column:2;width:auto;margin:0;padding:9px 14px;font-size:.8rem;border-radius:10px}
+ .set-user,.prof-nav{grid-column:1/-1}.set-user{padding:4px 2px}
+ .prof-nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}.prof-nav::-webkit-scrollbar{display:none}.pni{width:auto;white-space:nowrap;flex:none}
+ body:not([data-screen="app"]) #mobileNav{display:none!important}
  .set-main{padding:20px 16px 40px}.set-grid,.set-hold,.set-pw,.set-includes{grid-template-columns:1fr}
 }
+
+/* Paper trade header buttons */
+.pt-head button{background:var(--card)!important;border:1px solid var(--border2)!important;color:var(--text)!important;border-radius:10px!important;padding:8px 14px!important;font:600 .82rem 'Geist',sans-serif!important;box-shadow:none!important;transform:none!important}
+.pt-head button:hover{background:var(--card2)!important}
+.pt-head .pt-btn{background:var(--accent)!important;border-color:var(--accent)!important;color:#fff!important}
+.pt-head .pt-btn:hover{background:var(--accent3)!important}
 
 /* Top-bar tooltips open downward and stay on screen */
 .ss-top [data-tip]::after{bottom:auto;top:calc(100% + 8px);z-index:9000}
@@ -2048,7 +1797,7 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  #mainContent[data-view="pt"] > .pt-status{display:none!important}
  #mainContent[data-view="pt"] > .pt-head{grid-column:1;grid-row:1;margin:0!important;align-self:center}
  #mainContent[data-view="pt"] > #pt-stats-row{grid-column:2;grid-row:1;margin:0!important;gap:8px!important}
- #mainContent[data-view="pt"] .pt-stat{padding:10px 8px}
+ #mainContent[data-view="pt"] .pt-stat{padding:10px 8px;display:flex;flex-direction:column;justify-content:center}
  #mainContent[data-view="pt"] .pt-stat-val{font-size:.98rem}
  #mainContent[data-view="pt"] > .pt-pos{grid-column:1;grid-row:2;margin:0!important;min-height:0;overflow:auto}
  #mainContent[data-view="pt"] > .ss-tabs{grid-column:2;grid-row:2}
@@ -2150,6 +1899,93 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  #marketFilter{top:18px}
  .dash-lesson{padding:8px 12px}
  .ss-content{padding:14px 22px 16px}
+}
+
+/* ══════════════════════════════════════════
+   PHONE: same design as desktop, stacked into one column
+   ══════════════════════════════════════════ */
+@media(max-width:768px){
+ .tabs{display:none!important}
+ #S-app.screen{padding:0 0 calc(78px + env(safe-area-inset-bottom))!important}
+ header.ss-top{padding:12px 16px 10px;gap:10px;background:var(--bg)}
+ .ss-top .logo-icon{width:32px;height:32px}
+ .ss-top .hdr-actions{gap:6px}
+ .ss-top .user-name{display:none}
+ .ss-top .user-pill{padding:3px 8px 3px 3px}
+ .ss-content{padding:6px 16px 20px!important;max-width:none}
+ .welcome-bar,#marketStatusBar,.search-hist,.picks,#tickerTape{display:none!important}
+ #marketFilter{position:static!important;gap:6px;margin:0 0 14px!important;flex-wrap:nowrap!important}
+ .mf-pill{flex:1;text-align:center;padding:9px 4px;font-size:.84rem}
+
+ .card,.card.ss-tabs,.asset-head{border:1px solid var(--border)!important;border-radius:14px!important;background:var(--card);box-shadow:0 1px 2px var(--shadow2);margin:0 0 14px!important}
+ .card-hdr{padding:13px 16px}
+ .card-hdr-title{font-size:.95rem}
+ .two-col,.cmp-row,.add-row,.pred-grid,.home-grid,.home-grid-3,#poll-tech-grid{grid-template-columns:1fr!important}
+ .port-table-wrap,.pt-pos,#scr-results > .card,#cmpOut .cmp-stats{overflow-x:auto;-webkit-overflow-scrolling:touch}
+ table{font-size:.82rem}
+
+ .dash-head{padding:2px 0 0!important;margin:0 0 14px!important}
+ .dash-head h1{font-size:1.45rem}
+ .dash-tiles,.dash-pop,.dash-sec-h,.dash-learn,#customizePanel{margin-left:0!important;margin-right:0!important}
+ .dash-tiles{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+ .dash-tile,.dash-card{height:118px}
+ .dash-stage .dash-chart{height:330px}
+ .dash-stage [id^="tv-ov-"]{min-height:380px}
+ .dash-pop{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+ .dash-sec-h{margin-top:4px}
+ .dash-learn{grid-template-columns:1fr;gap:8px}
+ .ss-tabs-bar{padding:4px 8px 0}
+ .ss-tab{padding:11px 10px 10px;font-size:.84rem}
+
+ .ss-shell:has(#mainContent[data-view="home"]) .ss-rail{display:flex!important;flex-direction:column;position:static;width:auto;height:auto;overflow:visible;border:0;background:none;padding:0 16px 8px;transform:none!important;opacity:1!important;pointer-events:auto!important}
+ .ss-rail .rail-sec{background:var(--card);border:1px solid var(--border)!important;border-radius:14px;padding:14px 16px!important;margin:0 0 14px!important}
+ .ss-rail .rail-collapse{display:none}
+ .ss-rail #railWlTv{min-height:300px}
+ .ss-shell:has(#mainContent[data-view="home"]) #siteFooter{display:none!important}
+ .rail-legal{display:block!important}
+
+ .asset-head{padding:16px!important;gap:12px}
+ .ah-title .a-ticker{font-size:1.6rem}
+ .ah-ai{display:grid;grid-template-columns:repeat(3,1fr)}
+ .ah-stat{min-width:0}
+ .ah-actions{display:grid;grid-template-columns:1fr 1fr}
+ .asset-stage .ss-fill{height:400px}
+
+ #mainContent[data-view="pt"] > .pt-status{display:none!important}
+ .pt-head{margin-bottom:14px!important}
+ .pt-actions{display:grid!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);width:100%}
+ .pt-head .pt-actions button{padding:9px 4px!important;font-size:.76rem!important;white-space:nowrap}
+ .pt-pos-table th:nth-child(3),.pt-pos-table td:nth-child(3),.pt-pos-table th:nth-child(4),.pt-pos-table td:nth-child(4),.pt-pos-table th:nth-child(6),.pt-pos-table td:nth-child(6){display:none}
+ .pt-pos-table th,.pt-pos-table td{padding-left:.35rem!important;padding-right:.35rem!important}
+ #pt-stats-row{grid-template-columns:1fr 1fr!important;gap:8px!important;margin-bottom:14px!important}
+ .pt-stat{padding:12px 10px!important;border-radius:12px!important}
+ .pt-stat-val{font-size:1rem!important}
+ .pt-stat-lbl{font-size:.62rem!important}
+ #dtGrid{grid-template-columns:1fr!important}
+ .dt-jrow{grid-template-columns:52px 44px 1fr 66px 46px;font-size:.66rem;gap:6px}
+ .dt-jrow .dt-hide{display:none!important}
+ #scr-filter-row{gap:6px!important}
+ #scr-filter-row select{flex:1 1 calc(50% - 3px);min-width:0}
+ #scr-filter-row #scr-count{flex:1 1 100%;text-align:right}
+ .wl-grid{grid-template-columns:1fr 1fr!important;gap:10px}
+ .wl-card > [id^="wl-tv-"]{height:110px!important}
+
+ #mobileNav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:80;gap:0;padding:6px 4px max(8px,env(safe-area-inset-bottom));background:rgba(var(--card-rgb),.92);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border-top:1px solid var(--border)}
+ .mbn-tab{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border:0;border-radius:10px;background:none!important;color:var(--text3);font:600 .58rem 'Geist',sans-serif;cursor:pointer}
+ .mbn-icon{display:flex}
+ .mbn-icon svg{width:21px;height:21px}
+ .mbn-tab[class*="mbn-on-"]{color:var(--accent2)!important}
+ .mbn-tab:active{transform:scale(.92)}
+
+ .modal-overlay{padding:0;align-items:flex-end}
+ .modal-box{border-radius:20px 20px 0 0;max-height:92vh;padding:1.25rem 1.25rem max(1.5rem,env(safe-area-inset-bottom))}
+ .modal-box::before{content:'';display:block;width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1rem}
+ .lesson-box{max-width:none}
+
+ #S-gate header{flex-wrap:wrap;gap:8px}
+ #S-gate header .hdr-actions{flex:1 1 100%;gap:8px}
+ #S-gate header .hdr-actions .btn{flex:1;text-align:center;padding:10px 8px}
+ .btn-gate-main,.btn-gate-ghost{width:100%;text-align:center}
 }
 </style>
 </head>
@@ -3998,6 +3834,11 @@ function show(name) {
 }
 
 function bootApp() {
+ // Carry lesson XP earned as a guest over to the account
+ try {
+  const g = localStorage.getItem('ss_learn_guest');
+  if (g && !localStorage.getItem('ss_learn_' + user.email)) { localStorage.setItem('ss_learn_' + user.email, g); localStorage.removeItem('ss_learn_guest'); }
+ } catch {}
  // Clear the gate-page preview animation interval (fires when user logs in)
  if (window._gatePreviewInterval) { clearInterval(window._gatePreviewInterval); window._gatePreviewInterval = null; }
  const displayName = escapeHTML(nameDisplay==='full' ? user.name : user.name.split(' ')[0]);
@@ -4555,7 +4396,8 @@ function renderFearGreed(containerId) {
 
  // DPI-aware sizing — taller canvas so labels below the arc never overlap
  const dpr = Math.min(window.devicePixelRatio||1, 2);
- const W_css = Math.min(280, canvas.parentElement.clientWidth - 24);
+ // Hidden tab panels measure 0 wide; fall back to a normal size (CSS scales it to fit)
+ const W_css = Math.max(160, Math.min(280, (canvas.parentElement.clientWidth || 284) - 24));
  const H_css = Math.round(W_css * 0.80); // taller ratio — plenty of room for labels
  canvas.width = Math.round(W_css * dpr);
  canvas.height = Math.round(H_css * dpr);
@@ -6281,7 +6123,7 @@ function learnRowHTML() {
  return `
  <button type="button" class="dash-learn-intro learn-level" onclick="openLearnHub()" aria-label="Open all lessons">
   <span class="lv-ring" style="--p:${lv.pct.toFixed(0)}"><b>${lv.n}</b></span>
-  <span class="lv-txt"><span class="lv-name">Learn &amp; grow</span><span class="lv-sub">Level ${lv.n} ${lv.name}, ${s.xp} XP</span></span>
+  <span class="lv-txt"><span class="lv-name">Learn &amp; grow</span><span class="lv-sub">${lv.name} · ${s.xp} XP</span></span>
  </button>
  ${show.map(i => {
   const l = DASH_LESSONS[i];
@@ -8691,6 +8533,11 @@ function renderWatchlist() {
  }, 80);
 }
 
+function lookupTicker(ticker) {
+ const found = TICKERS.find(e => e.t === ticker);
+ goAsset(ticker, found?.k || 's');
+}
+
 function goAsset(ticker, type) {
  switchTab(type||'s', true);
  const siEl = document.getElementById('si');
@@ -9064,7 +8911,8 @@ function loadProfilePage() {
  document.getElementById('profUE').textContent = user.email;
  document.getElementById('ov-n').textContent = user.name;
  document.getElementById('ov-e').textContent = user.email;
- document.getElementById('ov-s').textContent = new Date(user.createdAt).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+ const joined = new Date(user.createdAt);
+ document.getElementById('ov-s').textContent = isNaN(joined) ? 'Not available' : joined.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
  // Portfolio summary counts
  const pos = document.getElementById('ov-positions');
  const cost = document.getElementById('ov-cost');
@@ -9084,8 +8932,11 @@ function loadProfilePage() {
  if(dI) dI.textContent=dashPick.i||'SPX';
  if(dC) dC.textContent=dashPick.c||'BTC';
  renderHoldingsList();
+ checkAndAwardBadges(true);
  renderBadges('badgesContainer');
- checkAndAwardBadges();
+ renderProfileStats();
+ updateNotifToggleUI(localStorage.getItem('ss_browser_notifs') === '1');
+ setHoldInputMode(typeof holdInputMode === 'string' ? holdInputMode : 'shares');
  renderAvatarPicker('avatarPickerContainer');
  checkMilestones();
  loadQuizResult();
@@ -9238,13 +9089,11 @@ function setHoldInputMode(mode) {
  if (mode === 'shares') {
  sharesWrap.style.display = 'grid';
  amountWrap.style.display = 'none';
- sharesBtn.style.cssText += ';border-color:rgba(108,92,231,.5);background:rgba(108,92,231,.12);color:var(--accent2)';
- amountBtn.style.cssText += ';border-color:var(--border);background:var(--card2);color:var(--text2)';
+ sharesBtn.classList.add('on'); amountBtn.classList.remove('on');
  } else {
  sharesWrap.style.display = 'none';
  amountWrap.style.display = 'block';
- amountBtn.style.cssText += ';border-color:rgba(108,92,231,.5);background:rgba(108,92,231,.12);color:var(--accent2)';
- sharesBtn.style.cssText += ';border-color:var(--border);background:var(--card2);color:var(--text2)';
+ amountBtn.classList.add('on'); sharesBtn.classList.remove('on');
  }
  updateHoldingPreview();
 }
@@ -11498,7 +11347,7 @@ function renderPaperTradeTab() {
  <div style="font-family:'Geist',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.02em"> Paper Trading</div>
  <div style="font-size:.8rem;color:var(--text2);margin-top:4px">Practice investing with $10,000 of virtual money — no real risk</div>
  </div>
- <div style="display:flex;gap:8px;flex-wrap:wrap">
+ <div class="pt-actions" style="display:flex;gap:8px;flex-wrap:wrap">
  <button class="pt-btn" onclick="switchTab('s');setTimeout(()=>toast('Search for a stock and click Paper Trade','info',3000),100)">
  + New Trade
  </button>
@@ -11591,7 +11440,7 @@ function renderPaperTradeTab() {
  <div class="card-hdr-sub">${entries.length} position${entries.length!==1?'s':''} · click to trade</div>
  </div>
  <div style="padding:0 .5rem .5rem">
- <table style="width:100%;border-collapse:collapse">
+ <table class="pt-pos-table" style="width:100%;border-collapse:collapse">
  <thead>
  <tr style="font-size:.62rem;color:var(--text3);letter-spacing:.08em">
  <th style="text-align:left;padding:.75rem .5rem;border-bottom:1px solid var(--border)">TICKER</th>
@@ -11616,7 +11465,7 @@ function renderPaperTradeTab() {
  const plColor = pl >= 0 ? 'var(--green)' : 'var(--red)';
  return `<tr style="border-bottom:1px solid var(--border);transition:background .15s" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background='transparent'">
  <td style="padding:.875rem .5rem">
- <div style="cursor:pointer" onclick="goAsset('${t}','s')">
+ <div style="cursor:pointer" onclick="goAsset('${t}','${found.k || 's'}')">
  <div style="font-family:'Geist',sans-serif;font-weight:800;color:var(--accent2)">${t}</div>
  <div style="font-size:.65rem;color:var(--text3)">${found.n}</div>
  </div>
@@ -12178,6 +12027,10 @@ const BADGES = [
  { id:'early_bird', icon:'🌅', name:'Early Bird', desc:'Used StockSight before 8am', check: () => new Date().getHours() < 8 },
  { id:'night_trader', icon:'🦉', name:'Night Trader', desc:'Used StockSight after midnight', check: () => new Date().getHours() < 4 },
  { id:'weekend_warrior', icon:'📅', name:'Weekend Warrior', desc:'Checked stocks on the weekend', check: () => [0,6].includes(new Date().getDay()) },
+ { id:'lesson_first', icon:'📘', name:'Student', desc:'Finished your first lesson', check: () => Object.values(getLearn().lessons).some(l => l.read) },
+ { id:'quiz_ace', icon:'🎯', name:'Sharp Shooter', desc:'Got every answer right on a lesson quiz', check: () => Object.values(getLearn().lessons).some(l => l.best === 3) },
+ { id:'level_3', icon:'⭐', name:'Rising Analyst', desc:'Reached learning Level 3', check: () => learnLevel(getLearn().xp).n >= 3 },
+ { id:'lessons_all', icon:'🏅', name:'Scholar', desc:'Finished every lesson and quiz', check: () => DASH_LESSONS.every((_, i) => lessonDone(i)) },
  { id:'checklist_done', icon:'✅', name:'Ready to Go', desc:'Completed the getting started checklist', check: () => isChecklistComplete() },
  // ── SECRET ──
  { id:'secret_1', icon:'🎰', name:'Lucky Dip', desc:'You found it! Searched for a stock that doesn\'t exist — curiosity rewarded.',
@@ -12210,55 +12063,71 @@ function checkAndAwardBadges(silent=false) {
  localStorage.setItem('ss_badges_'+(user?.email||''), JSON.stringify([...earned]));
  if (!silent) {
  newlyEarned.forEach((b, i) => {
- setTimeout(() => toast(`🏅 Badge unlocked: ${b.icon} ${b.name} — ${b.desc}`, 'star', 4000), i * 1300);
+ setTimeout(() => toast(`Badge unlocked: ${b.icon} ${b.name}. ${b.desc}`, 'star', 4000), i * 1300);
  });
  }
  }
  return [...earned];
 }
 
+const BADGE_GROUPS = [
+ ['Getting started', ['first_login','first_search','first_watch','first_holding','first_paper','first_vote','onboarded','tutorial_done','broker_set','checklist_done']],
+ ['Learning', ['lesson_first','quiz_ace','level_3','lessons_all']],
+ ['Streaks', ['streak_3','streak_7','streak_14','streak_30','streak_100']],
+ ['Research', ['five_searches','twenty_searches','fifty_searches','crypto_search','index_search','screener_used','compare_used','prediction_used']],
+ ['Portfolio and trading', ['five_watchlist','ten_watchlist','five_holdings','ten_holdings','paper_profit','paper_big','paper_five_pos','custom_home']],
+ ['Community', ['five_votes','ten_votes','digest_sub']],
+ ['Just for fun', ['dark_mode','after_hours','early_bird','night_trader','weekend_warrior','secret_1','secret_2']],
+];
+
 function renderBadges(containerId) {
  const el = document.getElementById(containerId);
  if (!el) return;
  const earned = new Set(checkAndAwardBadges(true));
+ const visible = BADGES.filter(b => !b.secret || earned.has(b.id));
  const earnedCount = BADGES.filter(b => earned.has(b.id)).length;
+ const pct = Math.round(earnedCount / BADGES.length * 100);
+ const next = BADGES.filter(b => !b.secret && !earned.has(b.id)).slice(0, 3);
+ const s = getLearn();
+ const lv = learnLevel(s.xp);
+ const byId = Object.fromEntries(BADGES.map(b => [b.id, b]));
+ const card = b => {
+  const isEarned = earned.has(b.id);
+  if (b.secret && !isEarned) return `<div class="ach-badge secret" title="A secret badge. Keep exploring."><span class="ach-ico">?</span><b>Secret</b><small>Discover it yourself</small></div>`;
+  return `<div class="ach-badge ${isEarned ? 'earned' : 'locked'}" title="${escapeHTML(b.desc)}"><span class="ach-ico">${b.icon}</span><b>${b.name}</b><small>${b.desc}</small></div>`;
+ };
  el.innerHTML = `
- <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
- <div style="font-size:.75rem;color:var(--text2)">${earnedCount} of ${BADGES.length} badges earned</div>
- <div style="height:6px;width:160px;background:var(--border);border-radius:3px;overflow:hidden">
- <div style="height:100%;width:${(earnedCount/BADGES.length*100).toFixed(0)}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px"></div>
+ <div class="ach-hero">
+  <div class="ach-sum">
+   <span class="lv-ring lv-ring-lg" style="--p:${pct}"><b>${earnedCount}</b></span>
+   <div><h3>${earnedCount} of ${BADGES.length} badges</h3><p>${pct}% collected. ${visible.length < BADGES.length ? 'Some are secret.' : ''}</p></div>
+  </div>
+  <div class="ach-sum">
+   <span class="lv-ring lv-ring-lg" style="--p:${lv.pct.toFixed(0)}"><b>${lv.n}</b></span>
+   <div><h3>Level ${lv.n}: ${lv.name}</h3><p>${s.xp} learning XP. <button type="button" class="set-link" onclick="show('app');setTimeout(openLearnHub,200)">Open lessons</button></p></div>
+  </div>
  </div>
- </div>
- <div class="badge-grid">
- ${BADGES.map(b => {
- const isEarned = earned.has(b.id);
- const isSecret = b.secret && !isEarned;
- if (isSecret) {
- return `<div class="badge locked" style="border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.04)" title="This is a secret achievement — discover it yourself!">
- <div class="badge-icon"></div>
- <div class="badge-name" style="color:var(--text3)">???</div>
- <div class="badge-desc" style="color:var(--text3)">Secret achievement</div>
- </div>`;
- }
- return `<div class="badge ${isEarned?'earned':'locked'}" ${isEarned && b.secret ? 'style="border-color:var(--gold);background:rgba(245,158,11,.1);box-shadow:0 0 12px rgba(245,158,11,.25)"' : ''} title="${b.desc}">
- ${isEarned && b.secret ? '<div class="badge-new" style="background:var(--gold)">SECRET</div>' : ''}
- <div class="badge-icon">${b.icon}</div>
- <div class="badge-name">${b.name}</div>
- <div class="badge-desc">${b.desc}</div>
- </div>`;
- }).join('')}
- </div>`;
+ ${next.length ? `<div class="ach-next"><h4>Up next</h4><div>${next.map(b => `<div class="ach-next-item"><span class="ach-ico">${b.icon}</span><span><b>${b.name}</b><small>${b.desc}</small></span></div>`).join('')}</div></div>` : ''}
+ ${BADGE_GROUPS.map(([title, ids]) => {
+  const list = ids.map(id => byId[id]).filter(Boolean);
+  const got = list.filter(b => earned.has(b.id)).length;
+  return `<section class="ach-group"><header><h4>${title}</h4><span>${got}/${list.length}</span></header><div class="ach-grid">${list.map(card).join('')}</div></section>`;
+ }).join('')}`;
 }
 
-/* ════════════════════════════════
- REFERRAL SYSTEM
-════════════════════════════════ */
-function getReferralCode() {
- if (!user) return null;
- // Generate a deterministic code from user email
- let hash = 0;
- for (const c of user.email) hash = ((hash << 5) - hash + c.charCodeAt(0)) | 0;
- return 'SS' + Math.abs(hash).toString(36).toUpperCase().slice(0, 6);
+function renderProfileStats() {
+ const el = document.getElementById('ovStats');
+ if (!el || !user) return;
+ const lv = learnLevel(getLearn().xp);
+ const earned = getEarnedBadges().length;
+ const streak = (safeParse('ss_streak_' + user.email, {}).streak) || 0;
+ const value = ptAccountValue();
+ el.innerHTML = [
+  ['Learning level', `${lv.n}`, lv.name, "showP('rewards')"],
+  ['Badges', `${earned}/${BADGES.length}`, 'Achievements', "showP('rewards')"],
+  ['Day streak', `${streak}`, streak === 1 ? 'day' : 'days', ''],
+  ['Paper account', railMoney(value), `${value >= 10000 ? '+' : ''}${((value - 10000) / 100).toFixed(1)}% all time`, "show('app');switchTab('pt')"],
+ ].map(([label, val, sub, act]) => `<button type="button" class="set-stat" ${act ? `onclick="${act}"` : 'disabled'}><span>${label}</span><b>${val}</b><small>${sub}</small></button>`).join('');
 }
 
 // ── Investor Profile Quiz ─────────────────────────────────────────────────
@@ -12746,67 +12615,6 @@ function renderStocksForYou() {
   </div>`;
 }
 
-function renderReferralSection(containerId) {
- const el = document.getElementById(containerId);
- if (!el || !user) return;
- const code = getReferralCode();
- const referred = safeParse('ss_referred_by_'+(user?.email||''), []);
- const referralCount = referred.length;
-
- el.innerHTML = `
- <div class="referral-card">
- <div style="display:flex;align-items:center;gap:10px;margin-bottom:.875rem">
- <div style="font-size:1.4rem"></div>
- <div>
- <div style="font-family:'Geist',sans-serif;font-size:.9rem;font-weight:800">Invite Friends</div>
- <div style="font-size:.68rem;color:var(--text2);margin-top:1px">Share your code — both of you unlock a special badge</div>
- </div>
- </div>
- <div style="display:flex;gap:8px;align-items:center;margin-bottom:.875rem">
- <div style="flex:1;background:var(--card);border:1px solid rgba(108,92,231,.3);border-radius:8px;padding:9px 12px;font-family:monospace;font-size:.95rem;font-weight:700;color:var(--accent2);letter-spacing:.1em">${code}</div>
- <button onclick="copyReferralCode('${code}')" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:8px;padding:9px 14px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer">Copy</button>
- </div>
- <div style="display:flex;align-items:center;gap:8px">
- <div style="background:rgba(108,92,231,.1);border:1px solid rgba(108,92,231,.2);border-radius:8px;padding:6px 12px;font-size:.75rem;color:var(--accent2)">
- ${referralCount} friend${referralCount!==1?'s':''} invited
- </div>
- ${referralCount >= 1 ? '<div style="font-size:.68rem;color:var(--green)"> Earned: Connector badge</div>' : '<div style="font-size:.65rem;color:var(--text3)">Invite 1 friend to earn the Connector badge</div>'}
- </div>
- <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
- <div style="font-size:.62rem;color:var(--text3);margin-bottom:5px">Have a friend's code?</div>
- <div style="display:flex;gap:6px">
- <input id="referralInput" type="text" placeholder="Enter code e.g. SSAB1234" maxlength="8"
- style="flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;color:var(--text);font-family:monospace;font-size:.82rem;outline:none"
- onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"
- onkeydown="if(event.key==='Enter')redeemReferral()"/>
- <button onclick="redeemReferral()" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;font-family:inherit;font-size:.75rem;cursor:pointer;color:var(--text2)">Redeem</button>
- </div>
- <div id="referralMsg" style="font-size:.68rem;margin-top:5px;display:none"></div>
- </div>
- </div>`;
-}
-
-function copyReferralCode(code) {
- navigator.clipboard?.writeText(code).then(() => toast('Referral code copied! Share it with a friend ', 'success', 3000))
- .catch(() => { document.getElementById('referralInput') && (document.getElementById('referralInput').value = code); });
-}
-
-function redeemReferral() {
- const inp = document.getElementById('referralInput');
- const msg = document.getElementById('referralMsg');
- if (!inp || !user) return;
- const code = inp.value.trim().toUpperCase();
- if (!code || code.length < 6) { showMsg(msg, 'Enter a valid referral code.', 'var(--red)'); return; }
- if (code === getReferralCode()) { showMsg(msg, "You can't use your own code!", 'var(--red)'); return; }
- const alreadyUsed = localStorage.getItem('ss_referral_used_'+(user?.email||''));
- if (alreadyUsed) { showMsg(msg, 'You\'ve already redeemed a code.', 'var(--gold)'); return; }
- // Save it
- localStorage.setItem('ss_referral_used_'+(user?.email||''), code);
- showMsg(msg, ` Code redeemed! You both earn the Connector badge.`, 'var(--green)');
- launchConfetti();
- checkAndAwardBadges();
- renderReferralSection('referralSection');
-}
 
 function showMsg(el, txt, color) {
  if (!el) return;
@@ -15210,7 +15018,8 @@ function renderRail() {
   <section class="rail-sec">
    <div class="rail-h"><h3>Market news</h3></div>
    <div id="railNews" class="rail-news"></div>
-  </section>`;
+  </section>
+  <p class="rail-legal">StockSight is for information only and is not financial advice. Always do your own research before investing.</p>`;
   el.dataset.ready = '1';
  }
  renderRailPortfolio();
