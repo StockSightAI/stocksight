@@ -1495,6 +1495,47 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 [data-theme="dark"] .tbm-open .tbm-label{color:#4ade80}
 [data-theme="dark"] .tbm-pre .tbm-label{color:#fbbf24}
 
+/* ── Section tabs (secondary cards share one tabbed card) ── */
+.card.ss-tabs{padding:0;overflow:visible;margin-top:28px;margin-bottom:24px}
+.ss-tabs-bar{display:flex;gap:2px;padding:6px 14px 0;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.ss-tabs-bar::-webkit-scrollbar{display:none}
+.ss-tab{flex:none;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 12px 11px;font:550 .86rem 'Geist',sans-serif;color:var(--text3);cursor:pointer;white-space:nowrap;transition:color .15s ease,border-color .15s ease}
+.ss-tab:hover{color:var(--text)}
+.ss-tab.on{color:var(--text);border-bottom-color:var(--accent)}
+.ss-tabs-body{position:relative}
+.ss-panel:not(.on){position:absolute;left:0;right:0;top:0;height:0;overflow:hidden;visibility:hidden;pointer-events:none}
+.ss-panel{animation:ssPanelIn .22s var(--ease-out)}
+@keyframes ssPanelIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.ss-panel > .card,.ss-panel > [id]:not(#portLiveCharts) > .card:only-child{border:0!important;box-shadow:none!important;border-radius:0!important;margin:0!important;background:transparent!important}
+.ss-panel > .card > .card-hdr .card-hdr-title,.ss-panel > [id]:not(#portLiveCharts) > .card:only-child > .card-hdr .card-hdr-title{display:none}
+.ss-panel > .card > .card-hdr,.ss-panel > [id] > .card:only-child > .card-hdr{border-bottom:0;padding-bottom:4px}
+.ss-panel > [id]{margin:0!important}
+@media(max-width:768px){
+ /* Older phone rules hid these cards to shorten the page; inside tabs they cost no height */
+ .card.ss-tabs,.card.ss-tabs:has(#heatmap-container),.ss-panel .card:has(#heatmap-container),.ss-panel #similar-stocks-card,.ss-panel [id^="alertSection_"],.ss-panel #notes-alert-grid{display:block!important}
+ .ss-panel #trendingCard{display:flex!important}
+ .card.ss-tabs{margin:12px 0 0;border-radius:0}
+}
+.ss-panel .card-hdr-sub:only-child{margin-top:0}
+
+/* Day trade: chart and order ticket side by side */
+.dt-split{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(270px,1fr);gap:16px;align-items:start;margin-bottom:16px}
+.dt-split > .card{margin:0!important}
+#dtGrid:has(> :only-child){grid-template-columns:1fr!important}
+@media(max-width:1180px){.dt-split{grid-template-columns:1fr}}
+
+/* Screener pager */
+.scr-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--border);font-size:.82rem;color:var(--text3)}
+.scr-pager div{display:flex;gap:8px}
+.dash-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+/* Footer lives in the sidebar on desktop */
+.ss-side-links{display:flex;flex-wrap:wrap;gap:4px 12px;padding:10px 12px 0;border-top:1px solid var(--border);margin-top:6px}
+.ss-side-links button,.ss-side-links a{background:none;border:none;padding:0;font:500 .74rem 'Geist',sans-serif;color:var(--text3);cursor:pointer;text-decoration:none}
+.ss-side-links button:hover,.ss-side-links a:hover{color:var(--text)}
+.ss-side-legal{font-size:.68rem;line-height:1.45;color:var(--text3);padding:8px 12px 0}
+@media(min-width:769px){#siteFooter{display:none!important}}
+
 /* ── Markets dashboard ── */
 .ss-content{position:relative}
 #marketFilter{position:absolute;top:30px;right:32px;margin:0!important;z-index:2}
@@ -1517,7 +1558,7 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 .dash-chart-card{position:relative}
 .dash-chart-title{font-size:.82rem;font-weight:600;color:var(--text3)}
 .dash-chart-actions{display:flex;gap:8px}
-.dash-chart{height:430px;padding:0 6px 6px}
+.dash-chart{height:390px;padding:0 6px 6px}
 .dash-btn{height:32px;padding:0 13px;border-radius:9px;border:1px solid var(--border2);background:var(--card);color:var(--text2);font:550 .8rem 'Geist',sans-serif;cursor:pointer;transition:background .15s ease,color .15s ease,transform .15s var(--ease-out)}
 .dash-btn:hover{background:var(--card2);color:var(--text)}
 .dash-btn:active{transform:scale(.97)}
@@ -1740,6 +1781,14 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  <svg class="ss-ico-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
  <span class="ss-theme-light">Light mode</span><span class="ss-theme-dark">Dark mode</span>
  </button>
+ <nav class="ss-side-links" aria-label="About StockSight">
+ <button type="button" onclick="openAboutCreator()">About</button>
+ <button type="button" onclick="openPrivacyPolicy()">Privacy</button>
+ <button type="button" onclick="openTerms()">Terms</button>
+ <button type="button" onclick="openFeedback()">Feedback</button>
+ <a href="https://mail.google.com/mail/?view=cm&to=stocksightai@gmail.com&su=StockSight%20Inquiry" target="_blank" rel="noopener noreferrer">Contact</a>
+ </nav>
+ <p class="ss-side-legal">© 2026 StockSight. For information only, not financial advice. Always do your own research before investing.</p>
  </aside>
 
  <div class="ss-main">
@@ -8630,43 +8679,9 @@ function renderPortfolio() {
  </div>
  </div>
 
- <!-- Portfolio Pie Chart -->
- <div class="card" style="margin-bottom:1.25rem">
- <div class="card-hdr">
- <div class="card-hdr-title"> Portfolio Allocation</div>
- <div class="card-hdr-sub">Cost basis breakdown by holding</div>
- </div>
- <div class="pie-wrap">
- <canvas id="portfolioPie" width="160" height="160" style="width:160px;height:160px;flex-shrink:0"></canvas>
- <div class="pie-legend" id="pieLegend"></div>
- </div>
- </div>
-
- <!-- P&L Line Chart -->
- <div class="card" style="margin-bottom:1.5rem">
- <div class="card-hdr">
- <div class="card-hdr-title"> Portfolio Growth</div>
- <div class="card-hdr-sub">Estimated value over the past 12 months</div>
- </div>
- <div style="padding:.5rem 1rem 1rem" id="plChartContainer"></div>
- </div>
-
- <!-- Rebalancing -->
- <div id="rebalancingContainer" style="margin-bottom:1rem"></div>
-
- <!-- What-if -->
- <div id="whatIfContainer" style="margin-bottom:1rem"></div>
-
- <!-- Export button -->
- <div style="display:flex;justify-content:flex-end;margin-bottom:1.5rem">
- <button onclick="exportPortfolioCSV()" style="background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:8px 16px;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:6px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
- Export as CSV
- </button>
- </div>
-
  <!-- Holdings table with P&L -->
  <div class="port-table-wrap" style="margin-bottom:1.25rem">
- <div class="port-table-hdr">Your Holdings <span style="font-size:.67rem;color:var(--text3);font-weight:400">${holdings.length} position${holdings.length!==1?'s':''}</span></div>
+ <div class="port-table-hdr" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span>Your Holdings <span style="font-size:.67rem;color:var(--text3);font-weight:400">${holdings.length} position${holdings.length!==1?'s':''}</span></span><button class="dash-btn" onclick="exportPortfolioCSV()">Export CSV</button></div>
  <div style="overflow-x:auto">
  <table>
  <thead><tr><th>ASSET</th><th>EXCHANGE</th><th>SHARES</th><th>BUY PRICE</th><th>EST. NOW</th><th>COST BASIS</th><th>P&L (EST.)</th><th></th></tr></thead>
@@ -8700,9 +8715,37 @@ function renderPortfolio() {
  </div>
  </div>
 
+ <!-- Portfolio Pie Chart -->
+ <div class="card" style="margin-bottom:1.25rem">
+ <div class="card-hdr">
+ <div class="card-hdr-title"> Portfolio Allocation</div>
+ <div class="card-hdr-sub">Cost basis breakdown by holding</div>
+ </div>
+ <div class="pie-wrap">
+ <canvas id="portfolioPie" width="160" height="160" style="width:160px;height:160px;flex-shrink:0"></canvas>
+ <div class="pie-legend" id="pieLegend"></div>
+ </div>
+ </div>
+
+ <!-- P&L Line Chart -->
+ <div class="card" style="margin-bottom:1.5rem">
+ <div class="card-hdr">
+ <div class="card-hdr-title"> Portfolio Growth</div>
+ <div class="card-hdr-sub">Estimated value over the past 12 months</div>
+ </div>
+ <div style="padding:.5rem 1rem 1rem" id="plChartContainer"></div>
+ </div>
+
+ <!-- Rebalancing -->
+ <div id="rebalancingContainer" style="margin-bottom:1rem"></div>
+
+ <!-- What-if -->
+ <div id="whatIfContainer" style="margin-bottom:1rem"></div>
+
+
+
  <!-- Live charts grid -->
- <div style="font-family:'Geist',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:.75rem;color:var(--text2)">Live Charts</div>
- <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1rem">
+ <div id="portLiveCharts" style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1rem">
  ${holdings.map((_,i)=>`<div class="card" style="margin:0">
  <div class="card-hdr"><div class="card-hdr-title" id="pct-${i}"></div></div>
  <div id="pc-${i}" style="height:280px"></div>
@@ -8710,6 +8753,13 @@ function renderPortfolio() {
  </div>`;
 
  staggerCards(mc);
+ ssTabify('port', [
+  { el: document.getElementById('portfolioPie')?.closest('.card'), label: 'Allocation', order: 0 },
+  { el: document.getElementById('plChartContainer')?.closest('.card'), label: 'Growth', order: 1 },
+  { el: document.getElementById('rebalancingContainer'), label: 'Rebalance', order: 2 },
+  { el: document.getElementById('whatIfContainer'), label: 'What if', order: 3 },
+  { el: document.getElementById('portLiveCharts'), label: 'Live charts', order: 4 },
+ ]);
 
  setTimeout(() => {
  // Count-up animation for total invested
@@ -14424,7 +14474,13 @@ function runNarrativeSearch() {
  applyNarrativeResults(rule);
 }
 
-function renderScreenerTable(filtered, el) {
+function renderScreenerTable(filtered, el, page = 0) {
+ const SCR_PAGE = 10;
+ renderScreenerTable._last = { filtered, el };
+ const pages = Math.max(1, Math.ceil(filtered.length / SCR_PAGE));
+ page = Math.min(Math.max(0, page), pages - 1);
+ renderScreenerTable._page = page;
+ const shown = filtered.slice(page * SCR_PAGE, page * SCR_PAGE + SCR_PAGE);
  if (!filtered.length) {
  el.innerHTML = `<div class="empty-state">
  <div class="empty-state-art" style="font-size:2.5rem"></div>
@@ -14444,7 +14500,7 @@ function renderScreenerTable(filtered, el) {
  <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">GROWTH</th>
  <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">AI</th>
  </tr></thead>
- <tbody>${filtered.map(s => {
+ <tbody>${shown.map(s => {
  const rsi = s.rsi || scrSimRSI(s.t);
  const rsiColor = rsi < 35 ? 'var(--green)' : rsi > 65 ? 'var(--red)' : 'var(--text2)';
  const rsiLabel = rsi < 35 ? `${rsi} ↓` : rsi > 65 ? `${rsi} ↑` : `${rsi}`;
@@ -14461,7 +14517,19 @@ function renderScreenerTable(filtered, el) {
  </tr>`;
  }).join('')}</tbody>
  </table>
+ ${pages > 1 ? `<div class="scr-pager">
+ <span>${page * SCR_PAGE + 1}-${Math.min(filtered.length, (page + 1) * SCR_PAGE)} of ${filtered.length}</span>
+ <div>
+ <button type="button" class="dash-btn" onclick="scrPage(-1)" ${page === 0 ? 'disabled' : ''}>Previous</button>
+ <button type="button" class="dash-btn" onclick="scrPage(1)" ${page >= pages - 1 ? 'disabled' : ''}>Next</button>
+ </div>
+ </div>` : ''}
  </div>`;
+}
+
+function scrPage(delta) {
+ const last = renderScreenerTable._last;
+ if (last) renderScreenerTable(last.filtered, last.el, (renderScreenerTable._page || 0) + delta);
 }
 
 function scrSimRSI(ticker) {
@@ -14658,6 +14726,141 @@ function renderNewsCards(containerId, ticker, name) {
  </div>`;
  el.appendChild(section);
 }
+
+/* ════════════════════════════════
+ SECTION TABS: fold secondary cards into one tabbed card to cut scrolling
+════════════════════════════════ */
+function ssTabSelect(wrap, i, save) {
+ const tabs = wrap.querySelectorAll(':scope > .ss-tabs-bar > .ss-tab');
+ const panels = wrap.querySelectorAll(':scope > .ss-tabs-body > .ss-panel');
+ tabs.forEach((b, j) => { b.classList.toggle('on', j === i); b.setAttribute('aria-selected', j === i); });
+ panels.forEach((p, j) => p.classList.toggle('on', j === i));
+ if (save && tabs[i]) { try { localStorage.setItem('ss_tab_' + wrap.dataset.ssGroup, tabs[i].textContent); } catch {} }
+ window.dispatchEvent(new Event('resize'));
+}
+
+// items: [{el, label, order}]; creates the tab card (after `anchor` if given) or adds to an existing one
+function ssTabify(key, items, anchor) {
+ items = items.filter(it => it.el && it.el.isConnected && !it.el.closest('.ss-tabs'));
+ let wrap = document.querySelector(`.ss-tabs[data-ss-group="${key}"]`);
+ if (!items.length || (!wrap && items.length < 2)) return wrap;
+ if (!wrap) {
+  wrap = document.createElement('section');
+  wrap.className = 'card ss-tabs';
+  wrap.dataset.ssGroup = key;
+  wrap.innerHTML = '<div class="ss-tabs-bar" role="tablist"></div><div class="ss-tabs-body"></div>';
+  if (anchor && anchor.isConnected) anchor.after(wrap); else items[0].el.before(wrap);
+ }
+ const bar = wrap.querySelector(':scope > .ss-tabs-bar');
+ const body = wrap.querySelector(':scope > .ss-tabs-body');
+ items.forEach((it, n) => {
+  const order = it.order ?? n;
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'ss-tab'; btn.setAttribute('role', 'tab');
+  btn.textContent = it.label; btn.dataset.order = order;
+  const panel = document.createElement('div');
+  panel.className = 'ss-panel'; panel.setAttribute('role', 'tabpanel');
+  const oldParent = it.el.parentElement;
+  panel.appendChild(it.el);
+  const before = [...bar.children].findIndex(b => Number(b.dataset.order) > order);
+  if (before < 0) { bar.appendChild(btn); body.appendChild(panel); }
+  else { bar.insertBefore(btn, bar.children[before]); body.insertBefore(panel, body.children[before]); }
+  if (oldParent && !oldParent.id && !oldParent.children.length && !oldParent.textContent.trim()) oldParent.remove();
+ });
+ [...bar.children].forEach((b, j) => { b.onclick = () => ssTabSelect(wrap, j, true); });
+ let saved = null; try { saved = localStorage.getItem('ss_tab_' + key); } catch {}
+ const labels = [...bar.children].map(b => b.textContent);
+ const cur = [...bar.children].findIndex(b => b.classList.contains('on'));
+ ssTabSelect(wrap, cur >= 0 ? labels.indexOf(bar.children[cur].textContent) : Math.max(0, labels.indexOf(saved)), false);
+ return wrap;
+}
+
+const SS_TAB_ROOTS = ['mainContent', 'aview-current', 'homeSections'];
+const SS_TAB_GROUPS = [
+ { key: 'home', when: mc => mc.querySelector('.dash-head'), anchor: mc => mc.querySelector('.dash-learn'), items: [
+  [mc => mc.querySelector('#obChecklistWrap .ob-check-card') && mc.querySelector('#obChecklistWrap'), 'Getting started'],
+  [/Top movers/i, 'Top movers'], [/Daily Market Brief|happening in markets|going on today/i, 'Daily brief'],
+  [/^Fear & Greed|scared or greedy|scared or excited/i, 'Fear & greed'], [/Sector Heatmap|industries|types of businesses/i, 'Sectors'],
+  [/News Feed|market news|in the news/i, 'News'], [/Upcoming Earnings/i, 'Earnings'], [/Economic Calendar/i, 'Economy'],
+  [/Crypto Fear/i, 'Crypto mood'], [/Recommended for You/i, 'For you'], [/Stock of the Day/i, 'Stock of the day'], [/Trending on/i, 'Trending'],
+ ] },
+ { key: 'asset', when: mc => mc.querySelector('#aview-current'), anchor: () => ssFindCard(/Should You Buy/i), items: [
+  [/Ask StockSight AI/i, 'Ask AI'], [/Analyst Price Targets/i, 'Analyst targets'], [/Latest Earnings/i, 'Earnings'],
+  [/^Latest News\s*[—-]/i, 'News'], [/^Latest News$/i, 'Headlines'], [/What Do Users Think/i, 'Community'], [/Expert Signals/i, 'Signals'],
+  [/^My Notes/i, 'Notes'], [/^Price Alerts?$/i, 'Alerts'], [/^Price Alert\s*[—-]/i, 'New alert'], [/Dig Deeper/i, 'Learn more'], [/You Might Also Like/i, 'Similar'],
+ ] },
+ { key: 'pt', when: () => ssFindCard(/^Open Positions/i), anchor: () => ssFindCard(/^Open Positions/i), items: [
+  [/^Allocation/i, 'Allocation'], [/Risk Lab/i, 'Risk lab'], [/Portfolio Insight/i, 'Insight'], [/Trade History/i, 'History'], [/Leaderboard/i, 'Leaderboard'],
+ ] },
+ { key: 'day', when: () => ssFindCard(/Order Ticket/i), anchor: mc => mc.querySelector('.dt-split'),
+  arrange: () => {
+   const sim = ssFindCard(/Day Trade Simulator/i), ticket = ssFindCard(/Order Ticket/i);
+   if (!sim || !ticket || sim.parentElement.classList.contains('dt-split')) return;
+   const row = document.createElement('div');
+   row.className = 'dt-split';
+   sim.before(row);
+   row.append(sim, ticket);
+  },
+  items: [
+  [/Position Sizer/i, 'Position sizer'], [/Your Numbers/i, 'Your numbers'], [/Trade Journal/i, 'Journal'], [/Import Real Trades/i, 'Import trades'],
+ ] },
+];
+
+function ssCardTitle(card) {
+ return (card.querySelector(':scope > .card-hdr .card-hdr-title')?.textContent || '').replace(/[^\w&$.,'?!—\- ]/g, '').trim();
+}
+
+function ssFindCard(re) {
+ const mc = document.getElementById('mainContent');
+ return [...mc.querySelectorAll('.card')].find(c =>
+  !c.closest('.ss-tabs') && !c.parentElement.closest('.card') && c.style.display !== 'none' && re.test(ssCardTitle(c)));
+}
+
+function ssPanelFor(card) {
+ const p = card.parentElement;
+ return p && p.id && !SS_TAB_ROOTS.includes(p.id) && p.children.length === 1 ? p : card;
+}
+
+function ssApplyTabGroups() {
+ const mc = document.getElementById('mainContent');
+ if (!mc) return;
+ const ob = mc.querySelector('.ss-panel > #obChecklistWrap');
+ if (ob && !ob.querySelector('.ob-check-card')) {
+  const panel = ob.parentElement, wrap = panel.closest('.ss-tabs');
+  const i = [...panel.parentElement.children].indexOf(panel);
+  wrap.querySelectorAll(':scope > .ss-tabs-bar > .ss-tab')[i]?.remove();
+  wrap.after(ob);
+  panel.remove();
+  wrap.querySelectorAll(':scope > .ss-tabs-bar > .ss-tab').forEach((t, j) => { t.onclick = () => ssTabSelect(wrap, j, true); });
+  ssTabSelect(wrap, 0, false);
+ }
+ SS_TAB_GROUPS.forEach(g => {
+  if (!g.when(mc)) return;
+  g.arrange?.(mc);
+  const items = g.items.map(([find, label], order) => {
+   if (typeof find === 'function') { const el = find(mc); return el ? { el, label, order } : null; }
+   const card = ssFindCard(find);
+   return card ? { el: ssPanelFor(card), label, order } : null;
+  }).filter(Boolean);
+  ssTabify(g.key, items, g.anchor(mc));
+ });
+}
+
+(() => {
+ const mc = document.getElementById('mainContent');
+ if (!mc) return;
+ let queued = false;
+ const obs = new MutationObserver(() => {
+  if (queued) return;
+  queued = true;
+  setTimeout(() => {
+   queued = false;
+   obs.disconnect();
+   try { ssApplyTabGroups(); } finally { obs.observe(mc, { childList: true, subtree: true }); }
+  }, 60);
+ });
+ obs.observe(mc, { childList: true, subtree: true });
+})();
 
 /* ════════════════════════════════
  RIGHT RAIL — practice portfolio, watchlist quotes, market news
