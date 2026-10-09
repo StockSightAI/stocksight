@@ -1799,6 +1799,189 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  .dash-learn{grid-template-columns:1fr}
 }
 
+/* Rail: paper trading positions, collapse control */
+.rail-h-actions{display:flex;align-items:center;gap:6px}
+.rail-collapse,.tb-rail{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;border:1px solid var(--border2);background:var(--card);color:var(--text2);cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease}
+.rail-collapse:hover,.tb-rail:hover{background:var(--card2);color:var(--text);border-color:var(--border3)}
+.tb-rail{display:none;width:36px;height:36px;border-radius:10px}
+.tb-rail[aria-pressed="false"]{color:var(--accent2);border-color:color-mix(in srgb,var(--accent) 40%,transparent);background:var(--glow2)}
+.rail-pos{display:flex;flex-direction:column;margin-top:14px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.rail-pos-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto auto;grid-template-areas:"dot tk val pl" "dot sh val pl";column-gap:10px;align-items:center;padding:8px 12px;border:0;border-bottom:1px solid var(--border);background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;transition:background .15s ease}
+.rail-pos-row:last-child{border-bottom:0}
+.rail-pos-row:hover{background:var(--card2)}
+.rail-pos-row i{grid-area:dot;width:8px;height:8px;border-radius:2px}
+.rail-pos-row i.d1{background:var(--d1)}.rail-pos-row i.d2{background:var(--d2)}.rail-pos-row i.d3{background:var(--d3)}.rail-pos-row i.d4{background:var(--d4)}
+.rail-pos-row b{grid-area:tk;font-size:.84rem;font-weight:650}
+.rail-pos-row .rp-sh{grid-area:sh;font-size:.7rem;color:var(--text3)}
+.rail-pos-row .rp-val{grid-area:val;font-size:.82rem;font-weight:600;text-align:right}
+.rail-pos-row > span:last-child{grid-area:pl;font-size:.76rem;font-weight:600;text-align:right;min-width:48px}
+.rail-pos-row .up{color:var(--green)}.rail-pos-row .dn{color:var(--red)}
+.rail-pos-more{border:0;border-top:1px solid var(--border);background:none;padding:8px;font:600 .76rem 'Geist',sans-serif;color:var(--accent2);cursor:pointer}
+.rail-empty{margin-top:12px;padding:14px;border:1px dashed var(--border2);border-radius:12px}
+.rail-empty p{font-size:.82rem;color:var(--text2);line-height:1.5}
+.rail-empty .rail-cta{margin-top:10px}
+.rail-stats-2{grid-template-columns:1fr 1fr}
+.rail-stats-2 div{border-bottom:0!important}
+@media(min-width:1280px){
+ .ss-shell{transition:grid-template-columns .45s var(--ease-out)}
+ .ss-rail{width:324px;transition:transform .45s var(--ease-out),opacity .35s ease}
+ .ss-shell.rail-collapsed{grid-template-columns:236px minmax(0,1fr) 0px;overflow:hidden}
+ .ss-shell.rail-collapsed .ss-rail{transform:translateX(100%);opacity:0;pointer-events:none}
+ .ss-shell:has(#mainContent[data-view="home"]) .tb-rail{display:inline-flex}
+}
+
+/* Learning: level ring, lessons, quiz, hub, XP */
+.learn-level{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.lv-ring{--p:0;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--border) 0)}
+.lv-ring b{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--bg);font-size:.95rem;font-weight:700}
+.lv-ring-lg{width:72px;height:72px}.lv-ring-lg b{width:58px;height:58px;font-size:1.4rem;background:var(--card)}
+.lv-txt{display:flex;flex-direction:column;gap:2px}.lv-name{font-weight:650;font-size:.98rem}.lv-sub{font-size:.76rem;color:var(--text3)}
+.dash-lesson.is-done{opacity:.8}.dash-lesson.is-done .dash-lesson-ico{color:var(--green)}
+.lesson-head{display:flex;gap:14px;align-items:center;margin-bottom:14px}.lesson-head .lesson-title{margin:0}
+.lesson-steps{display:flex;gap:6px;margin-bottom:16px}.lesson-steps i{flex:1;height:4px;border-radius:2px;background:var(--border)}.lesson-steps i.on{background:var(--accent)}
+.lesson-card{font-size:1.02rem!important;line-height:1.7!important;color:var(--text)!important;min-height:130px;animation:ssPanelIn .25s ease}
+.lesson-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px}.lesson-nav .lesson-cta{width:auto;margin:0;padding:11px 22px}
+.quiz-q{font-size:.76rem;color:var(--text3);margin-bottom:6px}.quiz-text{font-size:1.05rem!important;font-weight:600;color:var(--text)!important}
+.quiz-opts{display:flex;flex-direction:column;gap:8px}
+.quiz-opt{text-align:left;padding:12px 14px;border:1px solid var(--border2);border-radius:11px;background:var(--card);font:500 .92rem 'Geist',sans-serif;color:var(--text);cursor:pointer;transition:border-color .15s,background .15s,transform .15s}
+.quiz-opt:hover:not([disabled]){border-color:var(--accent);background:var(--glow2)}.quiz-opt:active:not([disabled]){transform:scale(.99)}
+.quiz-opt.right{border-color:var(--green);background:var(--green2)}.quiz-opt.wrong{border-color:var(--red);background:var(--red2)}.quiz-opt.dim{opacity:.55}
+.quiz-why{margin-top:12px;font-size:.88rem!important;padding:10px 12px;border-radius:10px;background:var(--card2)}
+.quiz-result{text-align:center;padding:10px 0}.quiz-score b{display:block;font-size:2.6rem;font-weight:750;letter-spacing:-.04em}.quiz-score span{color:var(--text2)}.quiz-score.perfect b{color:var(--accent2)}
+.quiz-earned{margin:10px 0 16px;color:var(--text2);font-size:.9rem}
+.hub-bar{height:8px;border-radius:4px;background:var(--border);overflow:hidden;margin-top:8px}.hub-bar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.hub-lvline{text-align:left;font-size:.84rem;color:var(--text2)}
+.hub-box{max-width:600px}.hub-top{display:flex;gap:16px;align-items:center;margin-bottom:16px}.hub-lv{flex:1}.hub-lv h2{font-size:1.3rem;font-weight:700}.hub-lv p{color:var(--text2);font-size:.86rem}
+.hub-stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:12px;margin-bottom:14px}.hub-stats div{padding:10px 12px;display:flex;flex-direction:column}.hub-stats div+div{border-left:1px solid var(--border)}.hub-stats b{font-size:1.05rem}.hub-stats span{font-size:.72rem;color:var(--text3)}
+.hub-list{display:flex;flex-direction:column;gap:8px}
+.hub-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--lbd);background:var(--lbg);border-radius:12px;font:inherit;color:var(--text);text-align:left;cursor:pointer}
+.hub-item-txt{flex:1;display:flex;flex-direction:column}.hub-item-txt span{font-size:.76rem;color:var(--text3)}.hub-xp{font-size:.78rem;font-weight:650;color:var(--accent2)}
+.hub-tour{margin-top:14px;width:100%;display:flex;justify-content:space-between;padding:12px 14px;border:1px dashed var(--border3);border-radius:12px;background:none;font:600 .9rem 'Geist',sans-serif;color:var(--text);cursor:pointer}.hub-tour span{color:var(--accent2)}
+.xp-pop{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:10000;padding:8px 16px;border-radius:999px;background:var(--accent);color:#fff;font:700 .95rem 'Geist',sans-serif;pointer-events:none;animation:xpPop 1.3s var(--ease-out) forwards}
+@keyframes xpPop{0%{opacity:0;transform:translate(-50%,10px) scale(.9)}20%{opacity:1;transform:translate(-50%,0) scale(1.05)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px)}}
+.tut-xp{margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--glow2);color:var(--accent2);font-weight:650}.tut-xp.got{background:var(--green2);color:var(--green)}
+.tut-prog{height:5px;border-radius:3px;background:var(--border);overflow:hidden;width:100%}.tut-prog i{display:block;height:100%;background:var(--accent);transition:width .3s}
+
+/* Settings screen */
+#S-profile.screen{padding:0;max-width:none}
+.set-shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+.set-side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:12px;padding:20px 14px;background:var(--card);border-right:1px solid var(--border);overflow-y:auto}
+.set-back{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border2);border-radius:10px;background:var(--card);font:550 .84rem 'Geist',sans-serif;color:var(--text2);cursor:pointer}
+.set-user{position:relative;display:flex;align-items:center;gap:10px;padding:10px 4px}.set-user .prof-av{margin:0;width:44px;height:44px;font-size:1.1rem;background:var(--glow2);border:0}
+.set-avatar-pop{position:absolute;top:60px;left:0;z-index:50;width:220px;padding:12px;background:var(--card);border:1px solid var(--border2);border-radius:14px;box-shadow:0 18px 40px var(--shadow)}.set-avatar-pop-title{font-size:.78rem;color:var(--text3);margin-bottom:8px}#avatarPopupGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.prof-nav{display:flex;flex-direction:column;gap:2px;padding:0}
+.pni{display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:none;font:500 .9rem 'Geist',sans-serif;color:var(--text2);cursor:pointer;text-align:left}
+.pni svg{width:17px;height:17px;flex:none}.pni:hover{background:var(--card2);color:var(--text)}.pni.on{background:var(--glow2);color:var(--accent2);font-weight:600;border:0}
+.btn-so{margin-top:auto}
+.set-main{padding:28px 36px 48px;max-width:1080px;width:100%}
+.psec-title{display:block;border:0;margin-bottom:20px;padding:0}.psec-title h1{font-size:1.6rem;font-weight:700;letter-spacing:-.03em}.psec-title p{color:var(--text2);margin-top:4px;font-size:.92rem}
+.set-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:16px;align-items:start}
+.sg{border-radius:14px;margin-bottom:16px}.sg-lbl{font-size:.92rem;letter-spacing:-.01em;color:var(--text);background:none;padding:14px 18px 6px;border:0;font-weight:650;text-transform:none}
+.sg-row{padding:12px 18px}.sg-row:last-child{border-bottom:0}.sg-stack{flex-direction:column;align-items:flex-start}
+.sg-label{font-size:.9rem;font-weight:550}.sg-desc{font-size:.8rem}.sg-val{font-weight:650;color:var(--accent2)}.sg-pad{padding:12px 18px}
+.set-big{font-size:1.15rem;font-weight:700}.set-para{line-height:1.55;margin:6px 0 10px}
+.set-btn{padding:9px 16px;border:1px solid var(--border2);border-radius:10px;background:var(--card);font:600 .84rem 'Geist',sans-serif;color:var(--text);cursor:pointer}
+.set-btn-main{background:var(--accent);border-color:var(--accent);color:#fff}.set-btn-main:hover{background:var(--accent3)}
+.set-btn-danger{color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,transparent)}.set-btn-danger-solid{background:var(--red);border-color:var(--red);color:#fff}.set-btn-danger-solid:disabled{opacity:.5}
+.set-btn-wide{width:100%;margin-top:12px}.set-btn-row{display:flex;gap:8px;margin-top:10px}
+.set-link{background:none;border:0;padding:0;font:600 .86rem 'Geist',sans-serif;color:var(--accent2);cursor:pointer}
+.set-input{width:100%;height:40px;padding:0 12px;border:1px solid var(--border2);border-radius:10px;background:var(--card);font:inherit;font-size:.9rem;color:var(--text);outline:none}.set-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow2)}
+.set-pw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.set-field-lbl{display:block;font-size:.78rem;color:var(--text2);font-weight:550;margin:10px 0 6px}
+.set-msg{font-size:.82rem}.set-msg.ok{color:var(--green)}.set-msg.err{color:var(--red)}
+.set-danger-box{padding:14px;border-radius:12px;background:var(--red2)}
+.set-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.set-seg{display:flex;gap:4px;padding:3px;border-radius:10px;background:var(--card2);margin-bottom:4px}.set-seg button{flex:1;padding:8px;border-radius:8px;font:600 .82rem 'Geist',sans-serif;cursor:pointer}
+.set-preview{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--card2);font-size:.84rem}
+.set-hold{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.set-includes{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:6px 18px 16px}.set-includes div{display:flex;flex-direction:column;padding:10px 12px;border-radius:10px;background:var(--card2)}.set-includes b{font-size:.84rem}.set-includes span{font-size:.76rem;color:var(--text3)}
+.set-toggle-wrap,.set-inline{display:flex;align-items:center;gap:8px}.set-pick{color:var(--accent2)}
+.tog-row{flex-wrap:wrap;gap:4px;padding:3px;border-radius:10px;background:var(--card2)}
+.tog{border:0;border-radius:8px;padding:7px 12px;font:550 .82rem 'Geist',sans-serif;color:var(--text2)}
+.tog.on-a,.tog.on-g{background:var(--card);color:var(--accent2);border:0;box-shadow:0 1px 3px var(--shadow2)}
+.set-swatches .tog{display:inline-flex;align-items:center;gap:6px}.set-swatches i{width:10px;height:10px;border-radius:50%}
+.set-stats:empty{display:none}
+@media(max-width:900px){
+ .set-shell{display:block}.set-side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border)}
+ .prof-nav{flex-direction:row;overflow-x:auto}.pni{width:auto;white-space:nowrap}
+ .set-main{padding:20px 16px 40px}.set-grid,.set-hold,.set-pw,.set-includes{grid-template-columns:1fr}
+}
+
+/* Top-bar tooltips open downward and stay on screen */
+.ss-top [data-tip]::after{bottom:auto;top:calc(100% + 8px);z-index:9000}
+.ss-top-right [data-tip]::after{left:auto;right:0;transform:none}
+
+/* Empty states fill their area */
+.empty-state-art{width:64px;height:64px;border-radius:18px;margin-bottom:1.1rem;font-size:0;filter:none;background:var(--glow2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='22 7 13.5 15.5 8.5 10.5 2 17'/%3E%3Cpolyline points='16 7 22 7 22 13'/%3E%3C/svg%3E") center/30px no-repeat}
+.empty-state-title{font-size:1.15rem;font-weight:700;letter-spacing:-.02em}
+.empty-state-sub{font-size:.9rem;max-width:380px}
+.empty-state-btn{background:var(--accent);border-radius:11px;padding:11px 22px;font-size:.88rem;font-weight:600}
+.empty-state-btn:hover{background:var(--accent3)}
+#mainContent:has(> .card:only-child > .empty-state){display:flex;flex-direction:column}
+#mainContent > .card:only-child:has(> .empty-state){flex:1;display:flex;margin:0}
+#mainContent > .card:only-child > .empty-state{flex:1;min-height:420px}
+
+/* Markets stage: every panel fills the box */
+.dash-stage .ss-panel > .card{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.dash-stage .ss-panel > .card > :last-child{flex:1;min-height:0}
+.dash-stage .ss-panel.multi{align-content:stretch;grid-auto-rows:100%}
+.dash-stage .ss-panel > #obChecklistWrap{height:100%}
+.dash-stage .ob-check-card{height:100%;display:flex;flex-direction:column;border:0;border-radius:0;margin:0;padding:1rem 1.25rem}
+.dash-stage .ob-check-card::before{display:none}
+.dash-stage .ob-check-item{flex:1;min-height:34px}
+.dash-stage #fg-container{display:flex;align-items:center;justify-content:center}
+.dash-stage .ss-panel.multi > .card:first-child > :last-child{display:flex;flex-direction:column;justify-content:center;font-size:.95rem!important;line-height:1.75!important;padding:1.25rem 1.5rem!important}
+.dash-stage #heatmap-container{padding:0}
+.dash-stage .heatmap-grid{height:100%;grid-auto-rows:1fr;padding:12px 14px 14px;gap:6px}
+.dash-stage .hm-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.dash-stage .hm-name{font-size:.74rem}
+.dash-stage .hm-pct{font-size:.95rem}
+.dash-stage #trendingCard [id$="_inner"]{display:flex;flex-direction:column;justify-content:space-between;padding:.5rem 1rem!important}
+.dash-stage #trendingCard [onclick]{flex:1}
+.dash-stage #sotdCard > div{justify-content:space-between}
+
+/* Stock page AI analysis card */
+.asset-side{container-type:inline-size}
+.ai-card{display:flex;flex-direction:column;gap:16px}
+.ai-verdict{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ai-kicker{display:block;font-size:.74rem;color:var(--text3);margin-bottom:4px}
+.ai-verdict b{font-size:1.25rem;font-weight:700;letter-spacing:-.025em;line-height:1.2}
+.ai-score{flex:none;text-align:right}
+.ai-score b{font-size:1.05rem}
+.ai-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden}
+.ai-bar i{display:block;height:100%;border-radius:3px;transition:width 1s var(--ease-out)}
+.ai-cases{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ai-case{padding:14px 16px;border-radius:12px;border:1px solid var(--border)}
+.ai-case h4,.ai-moat h4{font-size:.78rem;font-weight:650;margin-bottom:6px;letter-spacing:-.005em}
+.ai-case p,.ai-moat p{font-size:.86rem;line-height:1.6;color:var(--text2)}
+.ai-bull{background:var(--green2);border-color:color-mix(in srgb,var(--green) 25%,transparent)}
+.ai-bull h4{color:var(--green)}
+.ai-bear{background:var(--red2);border-color:color-mix(in srgb,var(--red) 22%,transparent)}
+.ai-bear h4{color:var(--red)}
+.ai-note{font-size:.84rem;line-height:1.6;color:var(--text2);padding:12px 14px;border-radius:12px;background:var(--glow2)}
+.ai-metrics{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.ai-metrics div{padding:10px 12px;display:flex;flex-direction:column;gap:3px;border-right:1px solid var(--border)}
+.ai-metrics div:last-child{border-right:0}
+.ai-metrics span{font-size:.7rem;color:var(--text3)}
+.ai-metrics b{font-size:.88rem;font-weight:650}
+.ai-moat{padding:14px 16px;border-radius:12px;background:var(--card2)}
+.ai-how summary{cursor:pointer;font-size:.82rem;font-weight:600;color:var(--accent2);list-style:none}
+.ai-how summary::-webkit-details-marker{display:none}
+.ai-how summary::before{content:'+ '}
+.ai-how[open] summary::before{content:'- '}
+.ai-how-body{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.ai-how-row div{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:4px}
+.ai-how-row i{display:block;height:5px;border-radius:3px;background:var(--border);overflow:hidden}
+.ai-how-row i em{display:block;height:100%;border-radius:3px}
+.ai-how-row small{display:block;font-size:.72rem;color:var(--text3);margin-top:3px}
+.ai-foot{font-size:.74rem;color:var(--text3);line-height:1.5}
+@container (max-width:520px){
+ .ai-cases{grid-template-columns:1fr}
+ .ai-metrics{grid-template-columns:1fr 1fr}
+ .ai-metrics div:nth-child(2){border-right:0}
+ .ai-metrics div:nth-child(-n+2){border-bottom:1px solid var(--border)}
+}
+
 /* Sidebar fits shorter windows */
 @media(max-height:900px){.ss-side-card img{display:none}}
 @media(max-height:800px){
@@ -1917,7 +2100,7 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  /* Watchlist */
  #mainContent[data-view="w"]{display:grid;grid-template-rows:auto minmax(0,1fr);gap:12px}
  #mainContent[data-view="w"] > div:first-child{margin:0!important}
- #mainContent[data-view="w"] .wl-grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));grid-auto-rows:minmax(190px,1fr);align-content:stretch;height:100%}
+ #mainContent[data-view="w"] .wl-grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));grid-auto-rows:minmax(200px,calc(50% - 6px));align-content:start;height:100%}
  #mainContent[data-view="w"] .wl-card{display:flex;flex-direction:column;min-height:0}
  #mainContent[data-view="w"] .wl-card > [id^="wl-tv-"]{flex:1;height:auto!important;min-height:80px}
  .td-tick{color:var(--accent2)}
@@ -1943,7 +2126,7 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 
 /* Right rail fills its column without scrolling (desktop, Markets only) */
 @media(min-width:1280px) and (min-height:620px){
- .ss-shell:not(:has(#mainContent[data-view="home"])){grid-template-columns:236px minmax(0,1fr)}
+ .ss-shell:not(:has(#mainContent[data-view="home"])){grid-template-columns:236px minmax(0,1fr) 0px}
  .ss-shell:not(:has(#mainContent[data-view="home"])) .ss-rail{display:none}
  .ss-rail{display:flex;flex-direction:column;overflow:hidden;padding:18px 20px 20px}
  .ss-rail > .rail-sec{margin-bottom:14px;padding-bottom:14px}
@@ -2100,6 +2283,7 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  <span style="font-size:.65rem;color:var(--gold);font-weight:600">day streak</span>
  </div>
  <div class="tb-market" id="tbMarket" aria-live="off"></div>
+ <button type="button" class="tb-rail" id="railToggle" onclick="toggleRail()" aria-label="Toggle portfolio panel" data-tip="Hide portfolio panel"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="15" y1="4" x2="15" y2="20"/></svg></button>
  <div class="hdr-actions" id="appHdrActions"></div>
  </div>
  </header>
@@ -2484,538 +2668,288 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  PROFILE SCREEN
 ═══════════════════════════════ -->
 <div id="S-profile" class="screen" style="display:none">
- <header>
- <div class="logo" onclick="show('app')">
- <div class="logo-icon"><img src="/stocksight-logo-96.png" alt="StockSight" width="96" height="96"></div>
- <div class="logo-name">Stock<span>Sight</span></div>
- </div>
- <div class="hdr-actions">
- <button class="btn btn-outline" onclick="show('app')">← Dashboard</button>
- </div>
- </header>
- <div class="prof-layout">
- <div class="prof-sidebar">
- <div class="prof-user">
- <div class="prof-av" id="profAv" onclick="toggleAvatarPopup()" title="Click to change avatar" style="cursor:pointer;position:relative;transition:all .2s" onmouseover="this.style.opacity='.75';this.style.boxShadow='0 0 0 3px var(--accent)'" onmouseout="this.style.opacity='1';this.style.boxShadow=''"></div>
- <div id="avatarPopup" style="display:none;position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 8px);z-index:500;background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:.75rem;box-shadow:0 12px 40px rgba(0,0,0,.4);width:200px">
- <div style="font-size:.6rem;color:var(--text3);letter-spacing:.06em;font-weight:600;margin-bottom:.5rem;text-align:center">CHANGE AVATAR</div>
- <div id="avatarPopupGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px"></div>
- </div>
- <div class="prof-uname" id="profUN"></div>
- <div class="prof-uemail" id="profUE"></div>
- </div>
- <div class="prof-nav">
- <div class="pni on" id="pni-ov" onclick="showP('ov')" style="gap:9px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Overview</div>
- <div class="pni" id="pni-notif" onclick="showP('notif')" style="gap:9px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Notifications</div>
- <div class="pni" id="pni-hold" onclick="showP('hold')">🏦 My Holdings</div>
- <div class="pni" id="pni-rewards" onclick="showP('rewards')">🏅 Achievements</div>
- <div class="pni" id="pni-referral" onclick="showP('referral')">🎁 Referral</div>
- <div class="pni" id="pni-set" onclick="showP('set')">⚙️ Settings</div>
- <div class="pni" id="pni-quiz" onclick="showP('quiz')" style="gap:9px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Investor Profile</div>
- </div>
- <div class="prof-footer"><button class="btn-so" onclick="logout()">Sign out</button></div>
- </div>
- <div>
- <div class="psec on" id="p-ov">
- <div class="psec-title">Overview</div>
- <div class="sg">
- <div class="sg-lbl">ACCOUNT</div>
- <div class="sg-row"><div><div class="sg-label" id="ov-n"></div><div class="sg-desc">Name</div></div></div>
- <div class="sg-row"><div><div class="sg-label" id="ov-e"></div><div class="sg-desc">Email</div></div></div>
- <div class="sg-row"><div><div class="sg-label" id="ov-s"></div><div class="sg-desc">Member since</div></div></div>
- </div>
- <!-- Investor Profile quick card -->
- <div class="sg">
- <div class="sg-lbl">INVESTOR PROFILE</div>
- <div class="sg-row" style="flex-direction:column;align-items:flex-start;gap:10px">
-   <div id="ov-quiz-result" style="display:none;width:100%">
-     <div id="ov-quiz-type" style="font-size:.95rem;font-weight:800;font-family:'Geist',sans-serif;margin-bottom:3px"></div>
-     <div id="ov-quiz-desc" style="font-size:.75rem;color:var(--text2);line-height:1.6;margin-bottom:8px"></div>
-     <button onclick="showP('quiz')" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 12px;font-family:inherit;font-size:.74rem;font-weight:600;cursor:pointer">Retake Quiz →</button>
+<div class="set-shell">
+ <aside class="set-side">
+  <div class="logo set-logo" onclick="show('app')">
+   <div class="logo-icon"><img src="/stocksight-logo-96.png" alt="StockSight" width="96" height="96"></div>
+   <div class="logo-name">Stock<span>Sight</span></div>
+  </div>
+  <button type="button" class="set-back" onclick="show('app')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to dashboard</button>
+  <div class="set-user">
+   <div class="prof-av" id="profAv" onclick="toggleAvatarPopup()" title="Change avatar"></div>
+   <div id="avatarPopup" class="set-avatar-pop" style="display:none">
+    <div class="set-avatar-pop-title">Choose an avatar</div>
+    <div id="avatarPopupGrid"></div>
    </div>
-   <div id="ov-quiz-empty" style="width:100%">
-     <div style="font-size:.8rem;color:var(--text2);margin-bottom:8px">Find out if you're Conservative, Moderate, or Aggressive.</div>
-     <button onclick="openQuizModal()" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer">Take the Quiz →</button>
-   </div>
- </div>
- </div>
- <!-- Portfolio value summary -->
- <div class="sg">
- <div class="sg-lbl">PORTFOLIO SUMMARY</div>
- <div class="sg-row">
- <div><div class="sg-label">Total positions</div><div class="sg-desc">Stocks/crypto/indexes tracked</div></div>
- <div class="sg-label" id="ov-positions" style="color:var(--accent2);font-weight:700">—</div>
- </div>
- <div class="sg-row">
- <div><div class="sg-label">Total cost basis</div><div class="sg-desc">Total amount invested (money spent on stocks)</div></div>
- <div class="sg-label" id="ov-cost" style="color:var(--accent2);font-weight:700">—</div>
- </div>
- </div>
- <!-- Change password -->
- <div class="sg">
- <div class="sg-lbl">SECURITY</div>
- <div class="sg-row" style="flex-direction:column;align-items:flex-start;gap:10px">
- <div><div class="sg-label">Change Password</div><div class="sg-desc">Update your account password</div></div>
- <div style="display:grid;gap:7px;width:100%">
- <input id="pw-cur" type="password" placeholder="Current password" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:.8rem;outline:none;width:100%;transition:border-color .2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
- <input id="pw-new" type="password" placeholder="New password (min 6 chars)" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:.8rem;outline:none;width:100%;transition:border-color .2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
- <input id="pw-new2" type="password" placeholder="Confirm new password" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:.8rem;outline:none;width:100%;transition:border-color .2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
- <div id="pw-err" style="font-size:.71rem;color:var(--red);display:none"></div>
- <div id="pw-ok" style="font-size:.71rem;color:var(--green);display:none"> Password changed successfully!</div>
- <button onclick="changePassword()" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:8px;padding:9px 18px;font-family:inherit;font-weight:700;font-size:.8rem;cursor:pointer;align-self:flex-start;transition:all .2s">Update Password</button>
- </div>
- </div>
- <!-- Delete Account -->
- <div style="margin-top:.5rem;padding-top:1rem;border-top:1px solid var(--border)">
- <div class="sg-label" style="color:var(--red);margin-bottom:4px">Danger Zone</div>
- <div class="sg-desc" style="margin-bottom:10px">Permanently delete your account and all data. This cannot be undone.</div>
- <div id="deleteStep1">
- <button onclick="showDeleteConfirm()" style="background:rgba(255,56,96,.1);border:1px solid rgba(255,56,96,.35);color:var(--red);border-radius:8px;padding:8px 16px;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(255,56,96,.18)'" onmouseout="this.style.background='rgba(255,56,96,.1)'">
- Delete Account
- </button>
- </div>
- <div id="deleteStep2" style="display:none;background:rgba(255,56,96,.07);border:1px solid rgba(255,56,96,.25);border-radius:12px;padding:1rem">
- <div style="font-size:.82rem;font-weight:700;color:var(--red);margin-bottom:6px"> Are you sure?</div>
- <div style="font-size:.75rem;color:var(--text2);line-height:1.65;margin-bottom:12px">This will permanently delete your account, watchlist, portfolio, and all saved data. <strong style="color:var(--text)">There is no way to recover it.</strong></div>
- <div style="font-size:.7rem;color:var(--text3);margin-bottom:5px">Enter your password to confirm:</div>
- <input id="deletePasswordInput" type="password" placeholder="Your current password"
- style="background:var(--card2);border:1px solid rgba(255,56,96,.4);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:.8rem;outline:none;width:100%;margin-bottom:6px;transition:border-color .2s"
- oninput="validateDeleteInputs()"
- onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='rgba(255,56,96,.4)'"/>
- <div style="font-size:.7rem;color:var(--text3);margin-bottom:5px">Type <strong style="color:var(--text)">DELETE</strong> to confirm:</div>
- <input id="deleteConfirmInput" type="text" placeholder="Type DELETE here"
- style="background:var(--card2);border:1px solid rgba(255,56,96,.4);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:.8rem;outline:none;width:100%;margin-bottom:6px;transition:border-color .2s"
- oninput="validateDeleteInputs()"
- onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='rgba(255,56,96,.4)'"/>
- <div id="deleteErr" style="font-size:.7rem;color:var(--red);margin-bottom:8px;display:none"></div>
- <div style="display:flex;gap:8px">
- <button id="deleteConfirmBtn" onclick="deleteAccount()" disabled
- style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer;opacity:.5;transition:opacity .2s"
- onmouseover="if(!this.disabled)this.style.opacity='1'" onmouseout="if(!this.disabled)this.style.opacity='.9'">
- Yes, delete my account
- </button>
- <button onclick="hideDeleteConfirm()" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:9px 16px;font-family:inherit;font-size:.78rem;cursor:pointer">
- Cancel
- </button>
- </div>
- </div>
- </div>
- </div>
- <!-- StockSight Score (#20) -->
- <div class="sg">
- <div class="sg-lbl">YOUR STOCKSIGHT SCORE</div>
- <div style="padding:.875rem" id="ssScoreDisplay">
- <div style="font-size:.72rem;color:var(--text3)">Add holdings in My Holdings to generate your score.</div>
- </div>
- </div>
+   <div class="set-user-txt"><div class="prof-uname" id="profUN"></div><div class="prof-uemail" id="profUE"></div></div>
+  </div>
+  <nav class="prof-nav" aria-label="Settings sections">
+   <button type="button" class="pni on" id="pni-ov" onclick="showP('ov')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Overview</button>
+   <button type="button" class="pni" id="pni-rewards" onclick="showP('rewards')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.48 12.89 17 22l-5-3-5 3 1.52-9.11"/></svg>Achievements</button>
+   <button type="button" class="pni" id="pni-hold" onclick="showP('hold')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>My holdings</button>
+   <button type="button" class="pni" id="pni-quiz" onclick="showP('quiz')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Investor profile</button>
+   <button type="button" class="pni" id="pni-notif" onclick="showP('notif')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifications</button>
+   <button type="button" class="pni" id="pni-set" onclick="showP('set')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>Preferences</button>
+  </nav>
+  <button type="button" class="btn-so" onclick="logout()">Sign out</button>
+ </aside>
 
- <div class="sg">
- <div class="sg-lbl">QUICK LINKS</div>
- <div class="sg-row" style="cursor:pointer" onclick="showP('hold')"><div><div class="sg-label" style="color:var(--teal)">→ Manage Holdings</div><div class="sg-desc">Add stocks to your portfolio</div></div></div>
- <div class="sg-row" style="cursor:pointer" onclick="showP('set')"><div><div class="sg-label" style="color:var(--teal)">→ Settings</div><div class="sg-desc">Theme, accent color, chart style</div></div></div>
- </div>
+ <main class="set-main">
 
+  <!-- OVERVIEW -->
+  <section class="psec on" id="p-ov">
+   <header class="psec-title"><h1>Overview</h1><p>Your account at a glance.</p></header>
+   <div class="set-stats" id="ovStats"></div>
 
- </div>
- <!-- ACHIEVEMENTS SECTION -->
- <div class="psec" id="p-rewards">
- <div class="psec-title"> Achievements</div>
-
- <div class="sg">
- <div class="sg-lbl">🏅 BADGES</div>
- <div id="badgesContainer"></div>
- </div>
-
- </div>
- <!-- REFERRAL SECTION -->
- <div class="psec" id="p-referral">
- <div class="psec-title"> Refer a Friend</div>
-
- <div class="sg">
- <div id="referralSection"></div>
- </div>
-
- </div>
- <!-- NOTIFICATIONS SECTION -->
- <div class="psec" id="p-notif">
- <div class="psec-title"> Notifications &amp; Digest</div>
-
- <div class="sg">
- <div class="sg-lbl">WEEKLY AI MARKET BRIEFING</div>
- <div class="sg-row" style="flex-direction:column;align-items:flex-start;gap:10px">
- <div>
- <div class="sg-label">Weekly Market Digest</div>
- <div class="sg-desc">Every Monday — portfolio P&amp;L, top movers, Fear &amp; Greed shift, AI stock picks</div>
- </div>
- <button id="notif-btn" onclick="subscribeNotif()" style="background:linear-gradient(135deg,#007a7a,var(--teal));color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:inherit;font-weight:700;font-size:.8rem;cursor:pointer;white-space:nowrap">
- Subscribe
- </button>
- <div id="notif-ok" style="display:none;font-size:.72rem;color:var(--green)"> Subscribed! You'll receive your first digest next Monday.</div>
- <div id="notif-err" style="display:none;font-size:.72rem;color:var(--red)">Please log in to subscribe.</div>
- </div>
- </div>
-
- <div class="sg">
- <div class="sg-lbl">WHAT'S INCLUDED EACH WEEK</div>
- <div class="sg-row">
- <div style="display:flex;align-items:center;gap:10px">
- <div style="font-size:1.1rem;flex-shrink:0"></div>
- <div><div class="sg-label">Portfolio performance</div><div class="sg-desc">How your holdings moved this week (P&amp;L %)</div></div>
- </div>
- </div>
- <div class="sg-row">
- <div style="display:flex;align-items:center;gap:10px">
- <div style="font-size:1.1rem;flex-shrink:0"></div>
- <div><div class="sg-label">Fear &amp; Greed update</div><div class="sg-desc">Did market sentiment shift toward fear or greed?</div></div>
- </div>
- </div>
- <div class="sg-row">
- <div style="display:flex;align-items:center;gap:10px">
- <div style="font-size:1.1rem;flex-shrink:0"></div>
- <div><div class="sg-label">Top movers of the week</div><div class="sg-desc">The biggest gainers and losers across stocks, indexes, and crypto</div></div>
- </div>
- </div>
- <div class="sg-row">
- <div style="display:flex;align-items:center;gap:10px">
- <div style="font-size:1.1rem;flex-shrink:0"></div>
- <div><div class="sg-label">Stock of the Day</div><div class="sg-desc">One highlighted stock with AI verdict, key stats, and bull/bear case</div></div>
- </div>
- </div>
- <div class="sg-row">
- <div style="display:flex;align-items:center;gap:10px">
- <div style="font-size:1.1rem;flex-shrink:0"></div>
- <div><div class="sg-label">Trending on StockSight</div><div class="sg-desc">The most searched stocks and cryptos by our community this week</div></div>
- </div>
- </div>
- <div class="sg-row">
- <div style="display:flex;align-items:center;gap:10px">
- <div style="font-size:1.1rem;flex-shrink:0"></div>
- <div><div class="sg-label">Stocks similar to yours</div><div class="sg-desc">Based on your portfolio and watchlist — discover related investments you may have missed</div></div>
- </div>
- </div>
- <div class="sg-row">
- <div style="display:flex;align-items:center;gap:10px">
- <div style="font-size:1.1rem;flex-shrink:0"></div>
- <div><div class="sg-label">AI pick of the week</div><div class="sg-desc">One stock our model is watching closely with a full breakdown</div></div>
- </div>
- </div>
- <div class="sg-row">
- <div style="display:flex;align-items:center;gap:10px">
- <div style="font-size:1.1rem;flex-shrink:0"></div>
- <div><div class="sg-label">What to watch next week</div><div class="sg-desc">Key earnings dates, Fed meetings, CPI releases, and economic events</div></div>
- </div>
- </div>
- <div class="sg-row">
- <div style="display:flex;align-items:center;gap:10px">
- <div style="font-size:1.1rem;flex-shrink:0"></div>
- <div><div class="sg-label">Paper trading recap</div><div class="sg-desc">Your virtual portfolio performance — how your paper trades did this week</div></div>
- </div>
- </div>
- </div>
-
- <div class="sg">
- <div class="sg-lbl">BROWSER NOTIFICATIONS</div>
- <div class="sg-row" style="justify-content:space-between">
- <div>
- <div class="sg-label">Watchlist Price Alerts</div>
- <div class="sg-desc">Get a browser notification when a stock on your watchlist moves 3%+ in a day</div>
- </div>
- <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
- <span id="browser-notif-lbl" style="font-size:.68rem;color:var(--text3)">${localStorage.getItem('ss_browser_notifs')==='1'?'On':'Off'}</span>
- <div class="notif-tog${localStorage.getItem('ss_browser_notifs')==='1'?' on':''}" id="browser-notif-tog" onclick="toggleBrowserNotifs()"></div>
- </div>
- </div>
- </div>
-
- <div class="sg">
- <div class="sg-lbl">PRICE ALERT NOTIFICATIONS</div>
- <div class="sg-row">
- <div>
- <div class="sg-label">Active Alerts</div>
- <div class="sg-desc">Price targets you've set on individual stocks</div>
- </div>
- </div>
- <div id="notif-alerts-list" style="padding:.5rem .875rem .875rem">
- <div style="font-size:.74rem;color:var(--text3)">No alerts set yet. Search any stock and tap Set Alert on the asset page.</div>
- </div>
- </div>
- </div>
-
- <div class="psec" id="p-hold">
- <div class="psec-title"> My Holdings</div>
- <div style="font-size:.76rem;color:var(--text2);margin-bottom:1.25rem;line-height:1.6">Track your real investments here. Your holdings are used to calculate P&amp;L, portfolio value, and personalized recommendations.</div>
-
- <!-- Add Holding Form -->
- <div class="card" style="margin-bottom:1.25rem;border-color:rgba(108,92,231,.25)">
- <div class="card-hdr" style="background:linear-gradient(135deg,rgba(108,92,231,.08),transparent)">
- <div class="card-hdr-title" style="color:var(--accent2)">+ Add a Holding</div>
- <div class="card-hdr-sub">Enter the stock you own and how much you paid</div>
- </div>
- <div style="padding:1rem">
-
- <!-- Ticker -->
- <div style="margin-bottom:.875rem">
- <div style="font-size:.62rem;color:var(--text3);letter-spacing:.08em;font-weight:600;margin-bottom:5px">TICKER / SYMBOL</div>
- <input id="ph-t" type="text" placeholder="e.g. AAPL, BTC, SPX"
- style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:.88rem;outline:none;text-transform:uppercase"
- onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
- </div>
-
- <!-- Input mode toggle: Shares or Total Amount -->
- <div style="margin-bottom:.875rem">
- <div style="font-size:.62rem;color:var(--text3);letter-spacing:.08em;font-weight:600;margin-bottom:6px">HOW WOULD YOU LIKE TO ENTER YOUR POSITION?</div>
- <div style="display:flex;gap:6px">
- <button id="holdModeShares" onclick="setHoldInputMode('shares')"
- style="flex:1;padding:8px;border-radius:8px;border:2px solid rgba(108,92,231,.5);background:rgba(108,92,231,.12);color:var(--accent2);font-family:inherit;font-size:.76rem;font-weight:700;cursor:pointer;transition:all .15s">
- # Shares + Price per share
- </button>
- <button id="holdModeAmount" onclick="setHoldInputMode('amount')"
- style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--border);background:var(--card2);color:var(--text2);font-family:inherit;font-size:.76rem;font-weight:700;cursor:pointer;transition:all .15s">
- $ Total amount invested
- </button>
- </div>
- </div>
-
- <!-- Shares mode -->
- <div id="holdSharesWrap" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.875rem">
- <div>
- <div style="font-size:.62rem;color:var(--text3);letter-spacing:.08em;font-weight:600;margin-bottom:5px">NUMBER OF SHARES</div>
- <input id="ph-s" type="number" placeholder="e.g. 10" step="any" min="0"
- style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:.88rem;outline:none"
- onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'" oninput="updateHoldingPreview()"/>
- </div>
- <div>
- <div style="font-size:.62rem;color:var(--text3);letter-spacing:.08em;font-weight:600;margin-bottom:5px">PRICE PER SHARE ($)</div>
- <input id="ph-p" type="number" placeholder="e.g. 185.50" step="any" min="0"
- style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:.88rem;outline:none"
- onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'" oninput="updateHoldingPreview()"/>
- </div>
- </div>
-
- <!-- Total amount mode -->
- <div id="holdAmountWrap" style="display:none;margin-bottom:.875rem">
- <div style="font-size:.62rem;color:var(--text3);letter-spacing:.08em;font-weight:600;margin-bottom:5px">TOTAL AMOUNT INVESTED ($)</div>
- <input id="ph-total" type="number" placeholder="e.g. 1500" step="any" min="0"
- style="width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:.88rem;outline:none"
- onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'" oninput="updateHoldingPreview()"/>
- <div style="font-size:.62rem;color:var(--text3);margin-top:5px">We'll calculate the number of shares automatically using today's simulated price</div>
- </div>
-
- <!-- Preview -->
- <div id="holdingPreview" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:.75rem;margin-bottom:.875rem;font-size:.75rem;color:var(--text2)"></div>
-
- <!-- Error -->
- <div class="h-err" id="hErr" style="margin-bottom:.5rem"></div>
-
- <button class="btn-add" onclick="addHolding()" style="width:100%;padding:10px;font-size:.85rem">+ Add Holding</button>
- </div>
- </div>
-
- <!-- Holdings list -->
- <div class="h-list" id="hList"></div>
- <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
- <span style="font-size:.68rem;color:var(--text3)"> Holdings save automatically</span>
- <span class="save-ok" id="saveOk"></span>
- </div>
- </div>
- <div class="psec" id="p-set">
- <div class="psec-title">Settings</div>
-
- <div class="sg">
- <div class="sg-lbl">APPEARANCE</div>
- <div class="sg-row">
- <div><div class="sg-label">Theme</div><div class="sg-desc">Dark or light background</div></div>
- <div class="tog-row">
- <button class="tog on-a" id="tD" onclick="setTheme('dark')"> Dark</button>
- <button class="tog" id="tL" onclick="setTheme('light')"> Light</button>
- </div>
- </div>
- <div class="sg-row" id="darkScheduleRow">
- <div><div class="sg-label">Auto Dark Mode</div><div class="sg-desc">Switch to dark mode automatically after 6 PM and back to light at 8 AM</div></div>
- <div class="tog-row">
- <button class="tog" id="dschOn" onclick="setDarkSchedule(true)">On</button>
- <button class="tog on-a" id="dschOff" onclick="setDarkSchedule(false)">Off</button>
- </div>
- </div>
- <div class="sg-row">
- <div><div class="sg-label">Accent Color</div><div class="sg-desc">Changes buttons, highlights &amp; links</div></div>
- <div class="tog-row" id="accentToggles" style="flex-wrap:wrap;gap:5px">
- <button class="tog" id="ac-purple" onclick="setAccent('purple')" title="Purple">🟣 Purple</button>
- <button class="tog" id="ac-blue" onclick="setAccent('blue')" title="Blue">🔵 Blue</button>
- <button class="tog" id="ac-green" onclick="setAccent('green')" title="Green">🟢 Green</button>
- <button class="tog" id="ac-orange" onclick="setAccent('orange')" title="Orange">🟠 Orange</button>
- <button class="tog" id="ac-pink" onclick="setAccent('pink')" title="Pink">🟥 Pink</button>
- <button class="tog" id="ac-gold" onclick="setAccent('gold')" title="Gold">🟡 Gold</button>
- </div>
- </div>
- <div class="sg-row">
- <div><div class="sg-label">Compact Mode</div><div class="sg-desc">Tighter spacing — fits more on screen</div></div>
- <div class="tog-row">
- <button class="tog" id="cmOn" onclick="setCompact(true)">On</button>
- <button class="tog on-a" id="cmOff" onclick="setCompact(false)">Off</button>
- </div>
- </div>
- </div>
-
- <div class="sg">
- <div class="sg-lbl">INVESTOR MODE</div>
- <div class="sg-row">
- <div><div class="sg-label">Display mode</div><div class="sg-desc">Beginner = super simple · Experienced = standard · Advanced = full data</div></div>
- <div class="tog-row">
- <button class="tog" id="mB" onclick="setMode('beginner')">🐣 Beginner</button>
- <button class="tog on-g" id="mS" onclick="setMode('simple')">📈 Experienced</button>
- <button class="tog" id="mA" onclick="setMode('advanced')">⚡ Advanced</button>
- </div>
- </div>
- </div>
-
- <div class="sg">
- <div class="sg-lbl">CHART PREFERENCES</div>
- <div class="sg-row">
- <div><div class="sg-label">Default Chart Style</div><div class="sg-desc">How price data is displayed on charts</div></div>
- <div class="tog-row" id="chartStyleToggles">
- <button class="tog" id="cs-1" onclick="setChartStyle('1')" title="Candles"> Candles</button>
- <button class="tog" id="cs-3" onclick="setChartStyle('3')" title="Line"> Line</button>
- <button class="tog" id="cs-5" onclick="setChartStyle('5')" title="Bars"> Bars</button>
- <button class="tog" id="cs-8" onclick="setChartStyle('8')" title="Heikin Ashi"> H. Ashi</button>
- </div>
- </div>
- <div class="sg-row">
- <div><div class="sg-label">Default Timeframe</div><div class="sg-desc">Starting interval when opening a chart</div></div>
- <div class="tog-row" id="intervalToggles">
- <button class="tog" id="ci-D" onclick="setChartInterval('D')">1 Day</button>
- <button class="tog" id="ci-W" onclick="setChartInterval('W')">1 Week</button>
- <button class="tog" id="ci-M" onclick="setChartInterval('M')">1 Month</button>
- </div>
- </div>
- </div>
-
- <div class="sg">
- <div class="sg-lbl">DISPLAY</div>
- <div class="sg-row">
- <div><div class="sg-label">Name in welcome bar</div><div class="sg-desc">How your name appears at the top</div></div>
- <div class="tog-row">
- <button class="tog" id="nd-first" onclick="setNameDisplay('first')">First only</button>
- <button class="tog" id="nd-full" onclick="setNameDisplay('full')">Full name</button>
- </div>
- </div>
- <div class="sg-row">
- <div><div class="sg-label">Portfolio Name</div><div class="sg-desc">Displayed at the top of your Portfolio tab</div></div>
- <div style="display:flex;gap:7px;align-items:center">
- <input id="portNameInp" type="text" placeholder="e.g. Tech Heavy "
- style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 11px;color:var(--text);font-family:inherit;font-size:.78rem;outline:none;width:150px;transition:border-color .2s"
- onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"
- onkeydown="if(event.key==='Enter')savePortfolioName()"/>
- <button onclick="savePortfolioName()" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:7px;padding:6px 12px;font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer">Save</button>
- </div>
- </div>
- <div class="sg-row">
- <div><div class="sg-label">Currency</div><div class="sg-desc">Used for price prediction display</div></div>
- <div class="tog-row" id="currencyToggles">
- <button class="tog" id="cu-USD" onclick="setCurrency('USD')">USD $</button>
- <button class="tog" id="cu-EUR" onclick="setCurrency('EUR')">EUR €</button>
- <button class="tog" id="cu-GBP" onclick="setCurrency('GBP')">GBP £</button>
- <button class="tog" id="cu-JPY" onclick="setCurrency('JPY')">JPY ¥</button>
- </div>
- </div>
- </div>
-
- <div class="sg">
- <div class="sg-lbl">DASHBOARD STOCKS</div>
- <div class="sg-row">
- <div><div class="sg-label">Stocks tab default</div><div class="sg-desc">Chart shown on Stocks homepage</div></div>
- <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Geist',sans-serif;font-size:.82rem;font-weight:700;color:var(--accent2)" id="dashPickS"></span>
- <button class="tog" onclick="changeDashStockSettings('s')">Change</button>
- </div>
- </div>
- <div class="sg-row">
- <div><div class="sg-label">Indexes tab default</div><div class="sg-desc">Chart shown on Indexes homepage</div></div>
- <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Geist',sans-serif;font-size:.82rem;font-weight:700;color:var(--teal)" id="dashPickI"></span>
- <button class="tog" onclick="changeDashStockSettings('i')">Change</button>
- </div>
- </div>
- <div class="sg-row">
- <div><div class="sg-label">Crypto tab default</div><div class="sg-desc">Chart shown on Crypto homepage</div></div>
- <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Geist',sans-serif;font-size:.82rem;font-weight:700;color:var(--gold)" id="dashPickC"></span>
- <button class="tog" onclick="changeDashStockSettings('c')">Change</button>
- </div>
- </div>
- </div>
-
- <div class="sg">
- <div class="sg-lbl">PREFERRED BROKER</div>
- <div class="sg-row" style="flex-direction:column;align-items:flex-start;gap:10px">
- <div>
- <div class="sg-label">Invest Now destination</div>
- <div class="sg-desc">When you click "Invest Now" on a stock, we open this broker. Currently: <strong id="currentBrokerLabel" style="color:var(--accent2)">Not set</strong></div>
- </div>
- <div style="display:flex;gap:8px;flex-wrap:wrap">
- <button class="tog" id="bset-robinhood" onclick="setBrokerFromSettings('robinhood')"> Robinhood</button>
- <button class="tog" id="bset-tastytrade" onclick="setBrokerFromSettings('tastytrade')"> Tastytrade</button>
- <button class="tog" id="bset-schwab" onclick="setBrokerFromSettings('schwab')"> Schwab</button>
- <button class="tog" id="bset-fidelity" onclick="setBrokerFromSettings('fidelity')"> Fidelity</button>
- <button class="tog" id="bset-etrade" onclick="setBrokerFromSettings('etrade')"> E*TRADE</button>
- <button class="tog" id="bset-webull" onclick="setBrokerFromSettings('webull')"> Webull</button>
- <button class="tog" id="bset-ibkr" onclick="setBrokerFromSettings('ibkr')"> IBKR</button>
- </div>
- </div>
- </div>
- </div><!-- end p-set -->
-
- <div class="psec" id="p-quiz">
-  <div class="psec-title">Investor Profile</div>
-
-  <!-- investor type result / empty state -->
-  <div class="sg">
-    <div class="sg-lbl">INVESTOR TYPE</div>
-    <div id="quiz-result-banner" style="display:none;border-radius:12px;padding:1rem 1.1rem;border:1px solid var(--border2);margin-bottom:.5rem">
-      <div id="quiz-result-type" style="font-size:1.1rem;font-weight:800;font-family:'Geist',sans-serif;margin-bottom:4px"></div>
-      <div id="quiz-result-desc" style="font-size:.76rem;color:var(--text2);line-height:1.6;margin-bottom:.75rem"></div>
-      <button onclick="openQuizModal()" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 12px;font-family:inherit;font-size:.74rem;font-weight:600;cursor:pointer">Retake Quiz →</button>
+   <div class="set-grid">
+    <div class="sg">
+     <div class="sg-lbl">Account</div>
+     <div class="sg-row"><div><div class="sg-desc">Name</div><div class="sg-label" id="ov-n"></div></div></div>
+     <div class="sg-row"><div><div class="sg-desc">Email</div><div class="sg-label" id="ov-e"></div></div></div>
+     <div class="sg-row"><div><div class="sg-desc">Member since</div><div class="sg-label" id="ov-s"></div></div></div>
     </div>
-    <div id="quiz-empty-state">
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center">
-        <div style="font-size:.82rem;color:var(--text2);margin-bottom:.75rem">Answer 5 quick questions and we'll personalise your experience.</div>
-        <button onclick="openQuizModal()" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:8px;padding:9px 22px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer">Take the Quiz 🎯</button>
+
+    <div class="sg">
+     <div class="sg-lbl">Investor profile</div>
+     <div class="sg-row sg-stack">
+      <div id="ov-quiz-result" style="display:none;width:100%">
+       <div id="ov-quiz-type" class="set-big"></div>
+       <div id="ov-quiz-desc" class="sg-desc set-para"></div>
+       <button type="button" class="set-btn" onclick="showP('quiz')">See your profile</button>
       </div>
+      <div id="ov-quiz-empty" style="width:100%">
+       <div class="sg-desc set-para">Find out if you invest like a conservative, moderate or aggressive investor. Five quick questions.</div>
+       <button type="button" class="set-btn set-btn-main" onclick="openQuizModal()">Take the quiz</button>
+      </div>
+     </div>
     </div>
-  </div>
 
-  <!-- risk tolerance -->
-  <div class="sg" style="margin-top:1rem">
-    <div class="sg-lbl">RISK TOLERANCE</div>
-    <div id="risk-options" style="display:flex;flex-direction:column;gap:8px;padding:.25rem 0"></div>
-  </div>
+    <div class="sg">
+     <div class="sg-lbl">Real holdings</div>
+     <div class="sg-row"><div><div class="sg-label">Positions</div><div class="sg-desc">Stocks, crypto and indexes you track</div></div><div class="sg-val" id="ov-positions">—</div></div>
+     <div class="sg-row"><div><div class="sg-label">Cost basis</div><div class="sg-desc">Total money you put in</div></div><div class="sg-val" id="ov-cost">—</div></div>
+     <div class="sg-row"><button type="button" class="set-link" onclick="showP('hold')">Manage holdings</button></div>
+    </div>
 
-  <!-- investment style -->
-  <div class="sg" style="margin-top:1rem">
-    <div class="sg-lbl">INVESTMENT STYLE</div>
-    <div id="style-options" style="display:flex;flex-direction:column;gap:8px;padding:.25rem 0"></div>
-  </div>
+    <div class="sg">
+     <div class="sg-lbl">StockSight score</div>
+     <div class="sg-pad" id="ssScoreDisplay"><div class="sg-desc">Add holdings in My holdings to generate your score.</div></div>
+    </div>
+   </div>
 
-  <!-- investment goals -->
-  <div class="sg" style="margin-top:1rem">
-    <div class="sg-lbl">INVESTMENT GOALS</div>
-    <div style="display:flex;flex-direction:column;gap:8px;padding:.25rem 0" id="goals-list"></div>
-  </div>
+   <div class="sg">
+    <div class="sg-lbl">Security</div>
+    <div class="sg-row sg-stack">
+     <div><div class="sg-label">Change password</div><div class="sg-desc">Use at least 6 characters.</div></div>
+     <div class="set-pw">
+      <input id="pw-cur" class="set-input" type="password" placeholder="Current password" autocomplete="current-password"/>
+      <input id="pw-new" class="set-input" type="password" placeholder="New password" autocomplete="new-password"/>
+      <input id="pw-new2" class="set-input" type="password" placeholder="Confirm new password" autocomplete="new-password"/>
+     </div>
+     <div id="pw-err" class="set-msg err" style="display:none"></div>
+     <div id="pw-ok" class="set-msg ok" style="display:none">Password changed.</div>
+     <button type="button" class="set-btn set-btn-main" onclick="changePassword()">Update password</button>
+    </div>
+   </div>
 
-  <!-- preferred sectors -->
-  <div class="sg" style="margin-top:1rem">
-    <div class="sg-lbl">PREFERRED SECTORS <span style="color:var(--text3);font-weight:400;letter-spacing:0">(pick up to 3)</span></div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;padding:.25rem 0" id="sectors-list"></div>
-    <div id="sector-save-msg" style="display:none;font-size:.7rem;color:var(--green);margin-top:6px"> Saved</div>
-  </div>
- </div>
+   <div class="sg sg-danger">
+    <div class="sg-lbl">Danger zone</div>
+    <div class="sg-row sg-stack">
+     <div><div class="sg-label">Delete account</div><div class="sg-desc">Permanently deletes your account, watchlist, portfolio and every saved setting. This can't be undone.</div></div>
+     <div id="deleteStep1"><button type="button" class="set-btn set-btn-danger" onclick="showDeleteConfirm()">Delete account</button></div>
+     <div id="deleteStep2" style="display:none;width:100%">
+      <div class="set-danger-box">
+       <div class="sg-label">Are you sure?</div>
+       <div class="sg-desc set-para">There is no way to recover your data afterwards.</div>
+       <label class="set-field-lbl" for="deletePasswordInput">Your password</label>
+       <input id="deletePasswordInput" class="set-input" type="password" placeholder="Current password" oninput="validateDeleteInputs()"/>
+       <label class="set-field-lbl" for="deleteConfirmInput">Type DELETE to confirm</label>
+       <input id="deleteConfirmInput" class="set-input" type="text" placeholder="DELETE" oninput="validateDeleteInputs()"/>
+       <div id="deleteErr" class="set-msg err" style="display:none"></div>
+       <div class="set-btn-row">
+        <button type="button" id="deleteConfirmBtn" class="set-btn set-btn-danger-solid" onclick="deleteAccount()" disabled>Yes, delete my account</button>
+        <button type="button" class="set-btn" onclick="hideDeleteConfirm()">Cancel</button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section>
 
- </div>
- </div>
+  <!-- ACHIEVEMENTS -->
+  <section class="psec" id="p-rewards">
+   <header class="psec-title"><h1>Achievements</h1><p>Badges for exploring, learning and trading on StockSight.</p></header>
+   <div id="badgesContainer"></div>
+  </section>
 
-<!-- About Creator tab - inside prof-layout content area -->
-<div class="psec" id="p-creator">
- <div class="psec-title"> About the Creator</div>
+  <!-- NOTIFICATIONS -->
+  <section class="psec" id="p-notif">
+   <header class="psec-title"><h1>Notifications</h1><p>Choose what StockSight tells you about.</p></header>
+
+   <div class="sg">
+    <div class="sg-lbl">Weekly market digest</div>
+    <div class="sg-row">
+     <div><div class="sg-label">Monday email briefing</div><div class="sg-desc">Your portfolio, the week's top movers, the fear and greed shift and what to watch next.</div></div>
+     <button id="notif-btn" type="button" class="set-btn set-btn-main" onclick="subscribeNotif()">Subscribe</button>
+    </div>
+    <div id="notif-ok" class="set-msg ok sg-pad" style="display:none">Subscribed. Your first digest arrives next Monday.</div>
+    <div id="notif-err" class="set-msg err sg-pad" style="display:none">Please log in to subscribe.</div>
+    <div class="set-includes">
+     <div><b>Portfolio performance</b><span>How your holdings moved this week</span></div>
+     <div><b>Fear and greed</b><span>Whether sentiment shifted</span></div>
+     <div><b>Top movers</b><span>Biggest gainers and losers</span></div>
+     <div><b>Stock of the day</b><span>One pick with its AI verdict</span></div>
+     <div><b>Trending</b><span>What the community searched</span></div>
+     <div><b>Paper trading recap</b><span>How your practice trades did</span></div>
+     <div><b>AI pick of the week</b><span>A stock our model is watching</span></div>
+     <div><b>Next week</b><span>Earnings dates and economic events</span></div>
+    </div>
+   </div>
+
+   <div class="sg">
+    <div class="sg-lbl">Browser notifications</div>
+    <div class="sg-row">
+     <div><div class="sg-label">Watchlist price moves</div><div class="sg-desc">A browser notification when a watchlist stock moves 3% or more in a day</div></div>
+     <div class="set-toggle-wrap"><span id="browser-notif-lbl" class="sg-desc">Off</span><div class="notif-tog" id="browser-notif-tog" role="switch" tabindex="0" onclick="toggleBrowserNotifs()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleBrowserNotifs()}"></div></div>
+    </div>
+   </div>
+
+   <div class="sg">
+    <div class="sg-lbl">Price alerts</div>
+    <div class="sg-row"><div><div class="sg-label">Active alerts</div><div class="sg-desc">Targets you set on stock pages. Remove any you no longer need.</div></div></div>
+    <div id="notif-alerts-list" class="sg-pad"><div class="sg-desc">No alerts yet. Open any stock and use the Alerts tab.</div></div>
+   </div>
+  </section>
+
+  <!-- HOLDINGS -->
+  <section class="psec" id="p-hold">
+   <header class="psec-title"><h1>My holdings</h1><p>Track your real investments. They power the Portfolio tab, your P&amp;L and recommendations.</p></header>
+   <div class="set-hold">
+    <div class="sg">
+     <div class="sg-lbl">Add a holding</div>
+     <div class="sg-pad">
+      <label class="set-field-lbl" for="ph-t">Ticker or symbol</label>
+      <input id="ph-t" class="set-input" type="text" placeholder="e.g. AAPL, BTC, SPX" style="text-transform:uppercase"/>
+      <div class="set-field-lbl">How do you want to enter it?</div>
+      <div class="set-seg">
+       <button type="button" id="holdModeShares" onclick="setHoldInputMode('shares')">Shares and price</button>
+       <button type="button" id="holdModeAmount" onclick="setHoldInputMode('amount')">Total amount</button>
+      </div>
+      <div id="holdSharesWrap" class="set-two">
+       <div><label class="set-field-lbl" for="ph-s">Number of shares</label><input id="ph-s" class="set-input" type="number" placeholder="e.g. 10" step="any" min="0" oninput="updateHoldingPreview()"/></div>
+       <div><label class="set-field-lbl" for="ph-p">Price per share ($)</label><input id="ph-p" class="set-input" type="number" placeholder="e.g. 185.50" step="any" min="0" oninput="updateHoldingPreview()"/></div>
+      </div>
+      <div id="holdAmountWrap" style="display:none">
+       <label class="set-field-lbl" for="ph-total">Total amount invested ($)</label>
+       <input id="ph-total" class="set-input" type="number" placeholder="e.g. 1500" step="any" min="0" oninput="updateHoldingPreview()"/>
+       <div class="sg-desc set-para">We work out the share count from today's reference price.</div>
+      </div>
+      <div id="holdingPreview" class="set-preview" style="display:none"></div>
+      <div class="h-err" id="hErr"></div>
+      <button type="button" class="btn-add set-btn set-btn-main set-btn-wide" onclick="addHolding()">Add holding</button>
+     </div>
+    </div>
+    <div class="sg">
+     <div class="sg-lbl">Your holdings <span class="save-ok" id="saveOk"></span></div>
+     <div class="h-list sg-pad" id="hList"></div>
+     <div class="sg-pad sg-desc">Holdings save automatically.</div>
+    </div>
+   </div>
+  </section>
+
+  <!-- PREFERENCES -->
+  <section class="psec" id="p-set">
+   <header class="psec-title"><h1>Preferences</h1><p>Make StockSight look and work the way you like.</p></header>
+   <div class="set-grid">
+    <div class="sg">
+     <div class="sg-lbl">Appearance</div>
+     <div class="sg-row"><div><div class="sg-label">Theme</div><div class="sg-desc">Light or dark background</div></div>
+      <div class="tog-row"><button class="tog" id="tL" onclick="setTheme('light')">Light</button><button class="tog" id="tD" onclick="setTheme('dark')">Dark</button></div></div>
+     <div class="sg-row" id="darkScheduleRow"><div><div class="sg-label">Auto dark mode</div><div class="sg-desc">Dark after 6 PM, light again at 8 AM</div></div>
+      <div class="tog-row"><button class="tog" id="dschOn" onclick="setDarkSchedule(true)">On</button><button class="tog on-a" id="dschOff" onclick="setDarkSchedule(false)">Off</button></div></div>
+     <div class="sg-row sg-stack"><div><div class="sg-label">Accent color</div><div class="sg-desc">Buttons, highlights and links</div></div>
+      <div class="tog-row set-swatches" id="accentToggles">
+       <button class="tog" id="ac-purple" onclick="setAccent('purple')"><i style="background:#7c3aed"></i>Purple</button>
+       <button class="tog" id="ac-blue" onclick="setAccent('blue')"><i style="background:#2563eb"></i>Blue</button>
+       <button class="tog" id="ac-green" onclick="setAccent('green')"><i style="background:#16a34a"></i>Green</button>
+       <button class="tog" id="ac-orange" onclick="setAccent('orange')"><i style="background:#ea580c"></i>Orange</button>
+       <button class="tog" id="ac-pink" onclick="setAccent('pink')"><i style="background:#db2777"></i>Pink</button>
+       <button class="tog" id="ac-gold" onclick="setAccent('gold')"><i style="background:#ca8a04"></i>Gold</button>
+      </div></div>
+     <div class="sg-row"><div><div class="sg-label">Compact mode</div><div class="sg-desc">Tighter spacing</div></div>
+      <div class="tog-row"><button class="tog" id="cmOn" onclick="setCompact(true)">On</button><button class="tog on-a" id="cmOff" onclick="setCompact(false)">Off</button></div></div>
+    </div>
+
+    <div class="sg">
+     <div class="sg-lbl">Experience</div>
+     <div class="sg-row sg-stack"><div><div class="sg-label">Display mode</div><div class="sg-desc">Beginner keeps things simple, Advanced shows every number</div></div>
+      <div class="tog-row"><button class="tog" id="mB" onclick="setMode('beginner')">Beginner</button><button class="tog on-g" id="mS" onclick="setMode('simple')">Experienced</button><button class="tog" id="mA" onclick="setMode('advanced')">Advanced</button></div></div>
+     <div class="sg-row"><div><div class="sg-label">Name in greeting</div><div class="sg-desc">How we greet you on Markets</div></div>
+      <div class="tog-row"><button class="tog" id="nd-first" onclick="setNameDisplay('first')">First name</button><button class="tog" id="nd-full" onclick="setNameDisplay('full')">Full name</button></div></div>
+     <div class="sg-row sg-stack"><div><div class="sg-label">Currency</div><div class="sg-desc">Used for price predictions</div></div>
+      <div class="tog-row" id="currencyToggles"><button class="tog" id="cu-USD" onclick="setCurrency('USD')">USD $</button><button class="tog" id="cu-EUR" onclick="setCurrency('EUR')">EUR €</button><button class="tog" id="cu-GBP" onclick="setCurrency('GBP')">GBP £</button><button class="tog" id="cu-JPY" onclick="setCurrency('JPY')">JPY ¥</button></div></div>
+     <div class="sg-row sg-stack"><div><div class="sg-label">Portfolio name</div><div class="sg-desc">Shown on your Portfolio tab</div></div>
+      <div class="set-inline"><input id="portNameInp" class="set-input" type="text" placeholder="e.g. Long-term growth" onkeydown="if(event.key==='Enter')savePortfolioName()"/><button type="button" class="set-btn set-btn-main" onclick="savePortfolioName()">Save</button></div></div>
+    </div>
+
+    <div class="sg">
+     <div class="sg-lbl">Charts</div>
+     <div class="sg-row sg-stack"><div><div class="sg-label">Chart style</div><div class="sg-desc">How prices are drawn on full charts</div></div>
+      <div class="tog-row" id="chartStyleToggles"><button class="tog" id="cs-1" onclick="setChartStyle('1')">Candles</button><button class="tog" id="cs-3" onclick="setChartStyle('3')">Line</button><button class="tog" id="cs-5" onclick="setChartStyle('5')">Bars</button><button class="tog" id="cs-8" onclick="setChartStyle('8')">Heikin Ashi</button></div></div>
+     <div class="sg-row"><div><div class="sg-label">Default timeframe</div><div class="sg-desc">Starting interval</div></div>
+      <div class="tog-row" id="intervalToggles"><button class="tog" id="ci-D" onclick="setChartInterval('D')">Day</button><button class="tog" id="ci-W" onclick="setChartInterval('W')">Week</button><button class="tog" id="ci-M" onclick="setChartInterval('M')">Month</button></div></div>
+     <div class="sg-row"><div><div class="sg-label">Stocks chart</div><div class="sg-desc">Default on the Markets chart</div></div>
+      <div class="set-inline"><b class="set-pick" id="dashPickS"></b><button class="tog" onclick="changeDashStockSettings('s')">Change</button></div></div>
+     <div class="sg-row"><div><div class="sg-label">Indexes chart</div><div class="sg-desc">Default when Indexes is selected</div></div>
+      <div class="set-inline"><b class="set-pick" id="dashPickI"></b><button class="tog" onclick="changeDashStockSettings('i')">Change</button></div></div>
+     <div class="sg-row"><div><div class="sg-label">Crypto chart</div><div class="sg-desc">Default when Crypto is selected</div></div>
+      <div class="set-inline"><b class="set-pick" id="dashPickC"></b><button class="tog" onclick="changeDashStockSettings('c')">Change</button></div></div>
+    </div>
+
+    <div class="sg">
+     <div class="sg-lbl">Preferred broker</div>
+     <div class="sg-row sg-stack"><div><div class="sg-label">Invest button destination</div><div class="sg-desc">Where "Invest" sends you from a stock page. Currently <strong id="currentBrokerLabel">not set</strong>.</div></div>
+      <div class="tog-row set-wrap">
+       <button class="tog" id="bset-robinhood" onclick="setBrokerFromSettings('robinhood')">Robinhood</button>
+       <button class="tog" id="bset-schwab" onclick="setBrokerFromSettings('schwab')">Schwab</button>
+       <button class="tog" id="bset-fidelity" onclick="setBrokerFromSettings('fidelity')">Fidelity</button>
+       <button class="tog" id="bset-webull" onclick="setBrokerFromSettings('webull')">Webull</button>
+       <button class="tog" id="bset-etrade" onclick="setBrokerFromSettings('etrade')">E*TRADE</button>
+       <button class="tog" id="bset-tastytrade" onclick="setBrokerFromSettings('tastytrade')">Tastytrade</button>
+       <button class="tog" id="bset-ibkr" onclick="setBrokerFromSettings('ibkr')">IBKR</button>
+      </div></div>
+    </div>
+   </div>
+  </section>
+
+  <!-- INVESTOR PROFILE -->
+  <section class="psec" id="p-quiz">
+   <header class="psec-title"><h1>Investor profile</h1><p>Tell us how you invest and we'll tailor the AI notes on stock pages.</p></header>
+   <div class="sg">
+    <div class="sg-lbl">Investor type</div>
+    <div class="sg-pad">
+     <div id="quiz-result-banner" style="display:none">
+      <div id="quiz-result-type" class="set-big"></div>
+      <div id="quiz-result-desc" class="sg-desc set-para"></div>
+      <button type="button" class="set-btn" onclick="openQuizModal()">Retake the quiz</button>
+     </div>
+     <div id="quiz-empty-state">
+      <div class="sg-desc set-para">Answer 5 quick questions and we'll personalise your experience.</div>
+      <button type="button" class="set-btn set-btn-main" onclick="openQuizModal()">Take the quiz</button>
+     </div>
+    </div>
+   </div>
+   <div class="set-grid">
+    <div class="sg"><div class="sg-lbl">Risk tolerance</div><div id="risk-options" class="sg-pad set-options"></div></div>
+    <div class="sg"><div class="sg-lbl">Investment style</div><div id="style-options" class="sg-pad set-options"></div></div>
+    <div class="sg"><div class="sg-lbl">Goals</div><div id="goals-list" class="sg-pad set-options"></div></div>
+    <div class="sg"><div class="sg-lbl">Favorite sectors <span class="sg-desc">pick up to 3</span></div><div id="sectors-list" class="sg-pad set-chips"></div><div id="sector-save-msg" class="set-msg ok sg-pad" style="display:none">Saved</div></div>
+   </div>
+  </section>
+
+  <!-- About Creator tab - inside prof-layout content area -->
+<section class="psec" id="p-creator">
+ <header class="psec-title"><h1>About the creator</h1><p>The person behind StockSight.</p></header>
 
  <!-- Hero -->
  <div class="about-hero" style="margin-bottom:1.5rem">
@@ -3084,10 +3018,11 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  </div>
  </div>
 
-</div>
+</section>
 
 
-</div><!-- end prof-layout content -->
+ </main>
+</div><!-- end set-shell -->
 
 <!-- ── Quiz Modal ── -->
 <div id="quizModal" style="position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);padding:1rem">
@@ -4762,9 +4697,9 @@ function renderSectorHeatmap(containerId) {
  const isPos = s.pct>=0;
  const intensity = Math.min(1, Math.abs(s.pct)/3);
  const bg = isPos
- ? `rgba(0,201,122,${0.07+intensity*0.25})`
- : `rgba(255,56,96,${0.07+intensity*0.25})`;
- const border = isPos ? 'rgba(0,201,122,.25)' : 'rgba(255,56,96,.2)';
+ ? `rgba(124,58,237,${0.06+intensity*0.2})`
+ : `rgba(217,45,45,${0.06+intensity*0.2})`;
+ const border = isPos ? 'rgba(124,58,237,.22)' : 'rgba(217,45,45,.2)';
  const col = isPos ? 'var(--green)' : 'var(--red)';
  return `<div class="hm-cell" style="background:${bg};border:1px solid ${border}">
  <div class="hm-name" style="color:var(--text2)">${s.name}</div>
@@ -6204,7 +6139,12 @@ const DASH_LESSONS = [
    'When a company earns more, more people usually want to own it and the price tends to rise. Bad news, like weak sales or a lawsuit, can push it down.',
    'Indexes such as the S&P 500 group hundreds of stocks together so you can see how the whole market is doing at a glance. When someone says "the market is up today", they usually mean the S&P 500.',
   ],
-  cta: ['See the S&P 500', "closeLesson();dashSelect('FOREXCOM:SPXUSD','S&P 500','SPX','i',document.querySelector('.dash-tile .dash-hit'))"],
+  quiz: [
+   { q: 'What do you own when you buy one share of a company?', a: ['A small piece of the company', 'A loan you gave the company', 'A coupon for its products'], why: 'A share is a slice of ownership, including a claim on future profits.' },
+   { q: 'What does the S&P 500 track?', a: ['About 500 large US companies', 'The 500 most traded cryptocurrencies', 'Interest rates set by the Fed'], why: 'It bundles roughly 500 big US companies to show how the market is doing.' },
+   { q: 'Why do stock prices change during the day?', a: ['Buyers and sellers keep agreeing on new prices', 'The government sets them every hour', 'Companies update them on their websites'], why: 'Every trade is a new agreement between a buyer and a seller.' },
+  ],
+  cta: ['See the S&P 500', "closeLesson();switchTab('s');setTimeout(()=>document.querySelector('.dash-tile .dash-hit')?.click(),400)"],
  },
  {
   title: 'How to place your first trade', mins: 3,
@@ -6213,7 +6153,12 @@ const DASH_LESSONS = [
    'Start with a company you understand. Search for it in StockSight and read the plain-English verdict and the chart before you decide anything.',
    'Decide how much to put in. A common rule for beginners is to only invest money you will not need for the next few years, because prices can drop for a while before they recover.',
    'Pick an order type. A market order buys right away at the current price. A limit order only buys if the price reaches a number you choose, so you never pay more than you planned.',
-   'Practice before you use real money. The Paper Trade tab gives you $10,000 of pretend cash and the same steps as a real broker, so mistakes cost nothing. When you are ready for real trades you will need a brokerage account; StockSight never places real orders.',
+   'Practice before you use real money. The Paper Trade tab gives you $10,000 of pretend cash and the same steps as a real broker, so mistakes cost nothing. StockSight never places real orders.',
+  ],
+  quiz: [
+   { q: 'Which order buys right away at the current price?', a: ['A market order', 'A limit order', 'A stop order'], why: 'Market orders fill immediately at whatever the price is right now.' },
+   { q: 'You never want to pay more than $150 a share. What should you use?', a: ['A limit order at $150', 'A market order', 'Buy as many shares as you can'], why: 'A limit order only fills at your price or better.' },
+   { q: 'Which money is best to invest?', a: ['Money you won\'t need for a few years', 'Next month\'s rent', 'Money borrowed on a credit card'], why: 'Prices can drop for a while, so give your money time to recover.' },
   ],
   cta: ['Open Paper Trade', "closeLesson();switchTab('pt')"],
  },
@@ -6224,11 +6169,292 @@ const DASH_LESSONS = [
    'The line shows the price over time. The left side is older and the right side is now, so a line that climbs from left to right means the price went up over that period.',
    'Use the time ranges (1D, 1M, 1Y and so on) to zoom out. A stock can look scary over a single day and perfectly fine over a whole year.',
    'Many charts color a period green when the price ended higher than it started and red when it ended lower.',
-   'Candlestick charts pack more detail into each bar: where the price opened, the highest and lowest it reached, and where it closed. Volume bars underneath show how many shares traded; big moves on heavy volume usually matter more.',
+   'Candlestick charts pack more detail into each bar: where the price opened, the highest and lowest it reached, and where it closed. Big moves on heavy trading volume usually matter more.',
   ],
-  cta: ['Try the chart above', 'closeLesson();document.getElementById("dashChart")?.scrollIntoView({behavior:"smooth",block:"center"})'],
+  quiz: [
+   { q: 'Where is the most recent price on a chart?', a: ['On the right side', 'On the left side', 'In the middle'], why: 'Time runs left to right, so the newest price is on the right.' },
+   { q: 'A stock fell today but is up 30% this year. How would you see that?', a: ['Switch the range to 1Y', 'Only look at the 1D view', 'Ignore the chart'], why: 'Zooming out shows the bigger trend behind a single bad day.' },
+   { q: 'What does one candlestick show?', a: ['The open, high, low and close', 'Only the closing price', 'How many people own the stock'], why: 'Each candle packs four prices for its time period.' },
+  ],
+  cta: ['Try the chart', "closeLesson();switchTab('s')"],
+ },
+ {
+  title: 'Risk and diversification', mins: 3,
+  icon: DASH_ICON('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'),
+  body: [
+   'Every investment carries risk: the chance it is worth less when you need the money. Even great companies can drop 20% or more in a bad year.',
+   'Volatility measures how much a price swings. A stock with 60% yearly volatility can move much further, up and down, than one with 15%.',
+   'Diversification means spreading your money across many companies and industries, so one bad pick can\'t sink everything. Index funds do this for you by holding hundreds of stocks at once.',
+   'Time helps too. Broad stock markets have historically trended up over long periods, but short-term drops are normal. Money you won\'t need for years can ride them out.',
+  ],
+  quiz: [
+   { q: 'What does diversification mean?', a: ['Spreading money across many investments', 'Buying more of your best stock', 'Selling whenever the price drops'], why: 'Spreading out means one bad pick hurts less.' },
+   { q: 'Stock A swings about 15% a year and stock B about 60%. Which is more volatile?', a: ['Stock B', 'Stock A', 'They are the same'], why: 'Bigger swings mean higher volatility.' },
+   { q: 'Why do many beginners like index funds?', a: ['They hold many stocks at once', 'They can never lose money', 'They pay a fixed interest rate'], why: 'One purchase gives you a slice of hundreds of companies.' },
+  ],
+  cta: ['Open the screener', "closeLesson();switchTab('screen')"],
+ },
+ {
+  title: 'ETFs and index funds', mins: 2,
+  icon: DASH_ICON('<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>'),
+  body: [
+   'An ETF (exchange-traded fund) is a basket of investments you can buy in one go, just like a single stock. One share of an S&P 500 ETF gives you a small piece of all 500 companies.',
+   'Index funds follow a market index instead of trying to pick winners. Because nobody is paid to choose stocks, their fees are usually very low.',
+   'Fees matter more than they look. A fund charging 1% a year takes far more of your money over decades than one charging 0.05%. You\'ll find the fee listed as the expense ratio.',
+   'Popular funds track the S&P 500 (like SPY or VOO) or the Nasdaq 100 (like QQQ). Search any of them on StockSight to see how the whole basket is doing.',
+  ],
+  quiz: [
+   { q: 'What is an ETF?', a: ['A basket of investments that trades like one stock', 'A savings account at a bank', 'A type of cryptocurrency'], why: 'You buy and sell it like a stock, but it holds many investments.' },
+   { q: 'Why are index funds usually cheap?', a: ['They follow an index instead of paying stock pickers', 'The government pays their fees', 'They only hold one company'], why: 'Tracking an index needs far less work than picking stocks.' },
+   { q: 'Where do you find a fund\'s yearly fee?', a: ['Its expense ratio', 'Its ticker symbol', 'Its share price'], why: 'The expense ratio is the percentage charged each year.' },
+  ],
+  cta: ['Look up SPY', "closeLesson();goAsset('SPY','s')"],
+ },
+ {
+  title: 'Reading a company\'s earnings', mins: 3,
+  icon: DASH_ICON('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/>'),
+  body: [
+   'Public companies report their results every three months. This is called earnings season, and prices often jump or drop on the news.',
+   'Revenue is all the money a company brings in from sales. Profit, also called net income, is what\'s left after paying every cost.',
+   'Earnings per share (EPS) splits that profit across each share. Analysts publish estimates beforehand, and beating or missing them can move the stock a lot.',
+   'Look at the trend, not one report. Revenue and profit growing over several years usually tells you more than a single good or bad quarter.',
+  ],
+  quiz: [
+   { q: 'How often do US public companies report earnings?', a: ['Every three months', 'Once every five years', 'Every day'], why: 'Results come out quarterly, four times a year.' },
+   { q: 'What is revenue?', a: ['All the money brought in from sales', 'Profit after every cost', 'The stock\'s price'], why: 'Revenue is the top line, before any costs.' },
+   { q: 'What does EPS stand for?', a: ['Earnings per share', 'Equity price spread', 'Estimated profit score'], why: 'It is profit divided across every share.' },
+  ],
+  cta: ['Check Apple\'s earnings', "closeLesson();goAsset('AAPL','s')"],
  },
 ];
+
+/* ════════════════════════════════
+ LEARNING XP: lessons, quizzes and the tour all earn XP and levels
+════════════════════════════════ */
+const LEARN_LEVELS = [
+ { min: 0, name: 'Rookie' }, { min: 100, name: 'Learner' }, { min: 220, name: 'Analyst' },
+ { min: 360, name: 'Strategist' }, { min: 520, name: 'Market Pro' },
+];
+const learnKey = () => 'ss_learn_' + (user?.email || 'guest');
+function getLearn() {
+ const s = safeParse(learnKey(), {});
+ return { xp: s.xp || 0, lessons: s.lessons || {}, tour: s.tour || [], tourDone: !!s.tourDone };
+}
+function saveLearn(s) { try { localStorage.setItem(learnKey(), JSON.stringify(s)); } catch {} }
+function learnLevel(xp) {
+ let i = 0;
+ LEARN_LEVELS.forEach((l, j) => { if (xp >= l.min) i = j; });
+ const cur = LEARN_LEVELS[i], next = LEARN_LEVELS[i + 1];
+ return { n: i + 1, name: cur.name, min: cur.min, next: next ? next.min : null, pct: next ? (xp - cur.min) / (next.min - cur.min) * 100 : 100 };
+}
+function lessonDone(i) { const l = getLearn().lessons[i]; return !!(l && l.read && l.best != null); }
+
+function showXpPop(n) {
+ const el = document.createElement('div');
+ el.className = 'xp-pop';
+ el.textContent = `+${n} XP`;
+ document.body.appendChild(el);
+ setTimeout(() => el.remove(), 1300);
+}
+
+function learnAddXP(n) {
+ if (n <= 0) return;
+ const s = getLearn();
+ const before = learnLevel(s.xp).n;
+ s.xp += n;
+ saveLearn(s);
+ showXpPop(n);
+ const after = learnLevel(s.xp);
+ if (after.n > before) {
+  setTimeout(() => { toast(`Level up! You reached Level ${after.n}: ${after.name}`, 'success', 3500); try { launchConfetti(); } catch {} }, 500);
+ }
+ refreshLearnRow();
+ if (user) checkAndAwardBadges();
+}
+
+function learnRowHTML() {
+ const s = getLearn();
+ const lv = learnLevel(s.xp);
+ const order = DASH_LESSONS.map((_, i) => i);
+ const pending = order.filter(i => !lessonDone(i));
+ const show = (pending.length >= 3 ? pending : [...pending, ...order.filter(i => lessonDone(i))]).slice(0, 3);
+ return `
+ <button type="button" class="dash-learn-intro learn-level" onclick="openLearnHub()" aria-label="Open all lessons">
+  <span class="lv-ring" style="--p:${lv.pct.toFixed(0)}"><b>${lv.n}</b></span>
+  <span class="lv-txt"><span class="lv-name">Learn &amp; grow</span><span class="lv-sub">Level ${lv.n} ${lv.name}, ${s.xp} XP</span></span>
+ </button>
+ ${show.map(i => {
+  const l = DASH_LESSONS[i];
+  const st = s.lessons[i] || {};
+  const done = lessonDone(i);
+  return `<button type="button" class="dash-lesson dash-lesson-${i % 3}${done ? ' is-done' : ''}" onclick="openLesson(${i})">
+   <span class="dash-lesson-ico">${done ? DASH_ICON('<polyline points="20 6 9 17 4 12"/>') : l.icon}</span>
+   <span class="dash-lesson-txt"><span class="dash-lesson-title">${l.title}</span><span class="dash-lesson-time">${done ? `Quiz ${st.best}/3 · Done` : st.read ? 'Quiz waiting · +30 XP' : `${l.mins} min · +50 XP`}</span></span>
+  </button>`;
+ }).join('')}`;
+}
+
+function refreshLearnRow() {
+ const row = document.querySelector('.dash-learn');
+ if (row) row.innerHTML = learnRowHTML();
+ const hub = document.getElementById('learnHubBody');
+ if (hub) hub.innerHTML = learnHubHTML();
+}
+
+function learnHubHTML() {
+ const s = getLearn();
+ const lv = learnLevel(s.xp);
+ const done = DASH_LESSONS.filter((_, i) => lessonDone(i)).length;
+ const aced = Object.values(s.lessons).filter(l => l.best === 3).length;
+ return `
+ <div class="hub-top">
+  <span class="lv-ring lv-ring-lg" style="--p:${lv.pct.toFixed(0)}"><b>${lv.n}</b></span>
+  <div class="hub-lv">
+   <h2 id="learnHubTitle">Level ${lv.n}: ${lv.name}</h2>
+   <p>${s.xp} XP${lv.next ? `, ${lv.next - s.xp} XP to Level ${lv.n + 1}` : ', top level reached'}</p>
+   <div class="hub-bar"><i style="width:${lv.pct.toFixed(0)}%"></i></div>
+  </div>
+ </div>
+ <div class="hub-stats">
+  <div><b>${done}/${DASH_LESSONS.length}</b><span>Lessons done</span></div>
+  <div><b>${aced}</b><span>Perfect quizzes</span></div>
+  <div><b>${s.tourDone ? 'Done' : 'Not yet'}</b><span>App tour</span></div>
+ </div>
+ <div class="hub-list">
+  ${DASH_LESSONS.map((l, i) => {
+   const st = s.lessons[i] || {};
+   const isDone = lessonDone(i);
+   return `<button type="button" class="hub-item dash-lesson-${i % 3}${isDone ? ' is-done' : ''}" onclick="openLesson(${i})">
+    <span class="dash-lesson-ico">${isDone ? DASH_ICON('<polyline points="20 6 9 17 4 12"/>') : l.icon}</span>
+    <span class="hub-item-txt"><b>${l.title}</b><span>${isDone ? `Done, best quiz ${st.best}/3` : st.read ? 'Read, quiz waiting' : `${l.mins} min read`}</span></span>
+    <span class="hub-xp">${isDone && st.best === 3 ? 'Mastered' : '+' + (isDone ? (3 - st.best) * 10 : st.read ? 30 : 50) + ' XP'}</span>
+   </button>`;
+  }).join('')}
+ </div>
+ <button type="button" class="hub-tour" onclick="closeLesson();${user ? 'restartTutorial()' : "openModal('signup')"}">${s.tourDone ? 'Replay the app tour' : 'Take the app tour'}<span>${s.tourDone ? 'Refresh your memory' : 'Up to 150 XP'}</span></button>`;
+}
+
+function openLearnHub() {
+ closeLesson();
+ const ov = document.createElement('div');
+ ov.className = 'modal-overlay lesson-overlay';
+ ov.id = 'lessonOverlay';
+ ov.innerHTML = `<div class="modal-box lesson-box hub-box" role="dialog" aria-modal="true" aria-labelledby="learnHubTitle">
+  <button type="button" class="modal-close" onclick="closeLesson()" aria-label="Close">${DASH_ICON('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button>
+  <div id="learnHubBody">${learnHubHTML()}</div>
+ </div>`;
+ ov.addEventListener('click', e => { if (e.target === ov) closeLesson(); });
+ document.body.appendChild(ov);
+}
+
+let _lesson = null;
+function openLesson(i) {
+ const l = DASH_LESSONS[i];
+ if (!l) return;
+ closeLesson();
+ _lesson = { i, page: 0, mode: 'read', q: 0, score: 0, picked: null, order: l.quiz.map(qq => qq.a.map((_, k) => k).sort(() => Math.random() - 0.5)) };
+ const ov = document.createElement('div');
+ ov.className = 'modal-overlay lesson-overlay';
+ ov.id = 'lessonOverlay';
+ ov.innerHTML = `<div class="modal-box lesson-box" role="dialog" aria-modal="true" aria-labelledby="lessonTitle">
+  <button type="button" class="modal-close" onclick="closeLesson()" aria-label="Close">${DASH_ICON('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button>
+  <div id="lessonBody"></div>
+ </div>`;
+ ov.addEventListener('click', e => { if (e.target === ov) closeLesson(); });
+ document.body.appendChild(ov);
+ renderLesson();
+}
+
+function renderLesson() {
+ const box = document.getElementById('lessonBody');
+ if (!box || !_lesson) return;
+ const L = _lesson, l = DASH_LESSONS[L.i];
+ const head = `<div class="lesson-head"><div class="lesson-ico dash-lesson-${L.i % 3}">${l.icon}</div><div><h2 id="lessonTitle" class="lesson-title">${l.title}</h2><div class="lesson-time">${L.mode === 'read' ? `${l.mins} min read · +20 XP` : L.mode === 'quiz' ? 'Quick check · +10 XP per right answer' : 'Lesson complete'}</div></div></div>`;
+ if (L.mode === 'read') {
+  const last = L.page === l.body.length - 1;
+  box.innerHTML = `${head}
+  <div class="lesson-steps">${l.body.map((_, k) => `<i class="${k <= L.page ? 'on' : ''}"></i>`).join('')}</div>
+  <p class="lesson-card" key="${L.page}">${l.body[L.page]}</p>
+  <div class="lesson-nav">
+   <button type="button" class="dash-btn" onclick="lessonStep(-1)" ${L.page === 0 ? 'disabled' : ''}>Back</button>
+   <button type="button" class="lesson-cta" onclick="lessonStep(1)">${last ? 'Take the quiz' : 'Next'}</button>
+  </div>`;
+ } else if (L.mode === 'quiz') {
+  const qq = l.quiz[L.q];
+  const order = L.order[L.q];
+  const answered = L.picked !== null;
+  box.innerHTML = `${head}
+  <div class="lesson-steps">${l.quiz.map((_, k) => `<i class="${k < L.q || (k === L.q && answered) ? 'on' : ''}"></i>`).join('')}</div>
+  <div class="quiz-q">Question ${L.q + 1} of ${l.quiz.length}</div>
+  <p class="quiz-text">${qq.q}</p>
+  <div class="quiz-opts">${order.map(k => {
+   const cls = !answered ? '' : k === 0 ? ' right' : k === L.picked ? ' wrong' : ' dim';
+   return `<button type="button" class="quiz-opt${cls}" onclick="lessonAnswer(${k})" ${answered ? 'disabled' : ''}>${qq.a[k]}</button>`;
+  }).join('')}</div>
+  ${answered ? `<p class="quiz-why ${L.picked === 0 ? 'ok' : 'no'}"><b>${L.picked === 0 ? 'Correct.' : 'Not quite.'}</b> ${qq.why}</p>
+  <div class="lesson-nav"><span></span><button type="button" class="lesson-cta" onclick="lessonNextQ()">${L.q === l.quiz.length - 1 ? 'See results' : 'Next question'}</button></div>` : ''}`;
+ } else {
+  const st = getLearn().lessons[L.i] || {};
+  const lv = learnLevel(getLearn().xp);
+  box.innerHTML = `${head}
+  <div class="quiz-result">
+   <div class="quiz-score ${L.score === 3 ? 'perfect' : ''}"><b>${L.score}/3</b><span>${L.score === 3 ? 'Perfect score' : L.score === 2 ? 'Nice work' : 'Keep practicing'}</span></div>
+   <div class="quiz-earned">You earned <b>${L.earned} XP</b> this round${st.best != null && st.best > L.score ? `, your best is still ${st.best}/3` : ''}.</div>
+   <div class="hub-lvline"><span>Level ${lv.n}: ${lv.name}</span><div class="hub-bar"><i style="width:${lv.pct.toFixed(0)}%"></i></div></div>
+  </div>
+  <div class="lesson-nav">
+   ${L.score < 3 ? `<button type="button" class="dash-btn" onclick="openLesson(${L.i})">Try again</button>` : `<button type="button" class="dash-btn" onclick="${l.cta[1].replace(/"/g, '&quot;')}">${l.cta[0]}</button>`}
+   ${L.i < DASH_LESSONS.length - 1 ? `<button type="button" class="lesson-cta" onclick="openLesson(${L.i + 1})">Next lesson</button>` : `<button type="button" class="lesson-cta" onclick="openLearnHub()">See all lessons</button>`}
+  </div>`;
+ }
+ box.querySelector('.lesson-cta, .quiz-opt:not([disabled])')?.focus();
+}
+
+function lessonStep(d) {
+ const L = _lesson, l = DASH_LESSONS[L.i];
+ if (d > 0 && L.page === l.body.length - 1) {
+  const s = getLearn();
+  const st = s.lessons[L.i] || {};
+  if (!st.read) { st.read = true; s.lessons[L.i] = st; saveLearn(s); learnAddXP(20); }
+  L.mode = 'quiz'; L.q = 0; L.picked = null; L.score = 0;
+ } else {
+  L.page = Math.max(0, Math.min(l.body.length - 1, L.page + d));
+ }
+ renderLesson();
+}
+
+function lessonAnswer(k) {
+ const L = _lesson;
+ if (L.picked !== null) return;
+ L.picked = k;
+ if (k === 0) L.score++;
+ renderLesson();
+}
+
+function lessonNextQ() {
+ const L = _lesson, l = DASH_LESSONS[L.i];
+ if (L.q < l.quiz.length - 1) { L.q++; L.picked = null; renderLesson(); return; }
+ const s = getLearn();
+ const st = s.lessons[L.i] || { read: true };
+ const prevBest = st.best ?? 0;
+ let earned = Math.max(0, L.score - prevBest) * 10;
+ if (L.score === 3 && prevBest < 3) earned += 20;
+ st.best = Math.max(prevBest, L.score);
+ s.lessons[L.i] = st;
+ saveLearn(s);
+ L.earned = earned;
+ L.mode = 'done';
+ if (earned) learnAddXP(earned);
+ if (L.score === 3) { try { launchConfetti(); } catch {} }
+ renderLesson();
+ refreshLearnRow();
+}
+
+function closeLesson() {
+ document.getElementById('lessonOverlay')?.remove();
+ _lesson = null;
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLesson(); });
 
 function dashLineColors() {
  return theme === 'dark'
@@ -6269,30 +6495,6 @@ function dashSelect(symbol, name, ticker, type, btn) {
  dashChart('dashChart', symbol, name);
 }
 
-function openLesson(i) {
- const l = DASH_LESSONS[i];
- if (!l) return;
- closeLesson();
- const ov = document.createElement('div');
- ov.className = 'modal-overlay lesson-overlay';
- ov.id = 'lessonOverlay';
- ov.innerHTML = `<div class="modal-box lesson-box" role="dialog" aria-modal="true" aria-labelledby="lessonTitle">
-  <button type="button" class="modal-close" onclick="closeLesson()" aria-label="Close">${DASH_ICON('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button>
-  <div class="lesson-ico dash-lesson-${i}">${l.icon}</div>
-  <h2 id="lessonTitle" class="lesson-title">${l.title}</h2>
-  <div class="lesson-time">${l.mins} min read</div>
-  ${l.body.map(p => `<p>${p}</p>`).join('')}
-  <button type="button" class="lesson-cta" onclick="${l.cta[1].replace(/"/g, '&quot;')}">${l.cta[0]}</button>
- </div>`;
- ov.addEventListener('click', e => { if (e.target === ov) closeLesson(); });
- document.body.appendChild(ov);
- ov.querySelector('.lesson-cta').focus();
-}
-
-function closeLesson() {
- document.getElementById('lessonOverlay')?.remove();
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLesson(); });
 
 function renderHome(t) {
  // Guard: only render for market tabs
@@ -6407,17 +6609,7 @@ function renderHome(t) {
  </div>
  </div>
 
- <section class="dash-learn">
- <div class="dash-learn-intro">
- <h2>Learn &amp; grow</h2>
- <p>Short lessons for new investors</p>
- </div>
- ${DASH_LESSONS.map((l, i) => `
- <button type="button" class="dash-lesson dash-lesson-${i}" onclick="openLesson(${i})">
- <span class="dash-lesson-ico">${l.icon}</span>
- <span class="dash-lesson-txt"><span class="dash-lesson-title">${l.title}</span><span class="dash-lesson-time">${l.mins} min read</span></span>
- </button>`).join('')}
- </section>
+ <section class="dash-learn">${learnRowHTML()}</section>
 
  <div class="card">
  <div class="card-hdr">
@@ -7567,117 +7759,57 @@ function buildAICard(el, ticker, profile) {
    const stockRisk = d?.[1] ?? 30;
    if (investorProfileIdx === 0) { // Conservative
      if (['Strong Buy','Buy'].includes(profile.verdict) && stockRisk >= 45)
-       personalNote = `⚠️ <strong>Conservative investor note:</strong> This stock carries <strong>${riskLvl}risk</strong>. Consider position-sizing carefully or looking at lower-volatility alternatives.`;
+       personalNote = `<strong>Conservative investor note:</strong> This stock carries <strong>${riskLvl}risk</strong>. Consider position-sizing carefully or looking at lower-volatility alternatives.`;
      else if (['Strong Buy','Buy'].includes(profile.verdict))
-       personalNote = `🛡️ <strong>Conservative investor note:</strong> This aligns well with your conservative profile — ${riskLvl}volatility fits your risk tolerance.`;
+       personalNote = `<strong>Conservative investor note:</strong> This aligns well with your conservative profile — ${riskLvl}volatility fits your risk tolerance.`;
    } else if (investorProfileIdx === 2) { // Aggressive
      if (['Hold','Sell'].includes(profile.verdict))
-       personalNote = `🚀 <strong>Aggressive investor note:</strong> Even with a Hold rating, watch for breakout catalysts if you have high conviction. High-risk tolerance may support a speculative position.`;
+       personalNote = `<strong>Aggressive investor note:</strong> Even with a Hold rating, watch for breakout catalysts if you have high conviction. High-risk tolerance may support a speculative position.`;
      else
-       personalNote = `🚀 <strong>Aggressive investor note:</strong> Strong upside potential here — aligns with your growth-oriented profile.`;
+       personalNote = `<strong>Aggressive investor note:</strong> Strong upside potential here — aligns with your growth-oriented profile.`;
    } else { // Moderate
-     personalNote = `⚖️ <strong>Moderate investor note:</strong> ${profile.verdict === 'Strong Buy' || profile.verdict === 'Buy' ? 'This looks like a balanced opportunity — consider scaling in gradually.' : 'Wait for a better entry point or a clearer trend before committing.'}`;
+     personalNote = `<strong>Moderate investor note:</strong> ${profile.verdict === 'Strong Buy' || profile.verdict === 'Buy' ? 'This looks like a balanced opportunity — consider scaling in gradually.' : 'Wait for a better entry point or a clearer trend before committing.'}`;
    }
  }
 
+ const bullText = isSimple ? simpleReason.split('.').slice(0,3).join('.')+'.' : (bullReason || profile.reason);
+ const bearText = bearReason || (isSimple ? `${ticker} is subject to market volatility${d?` and has ~${vol}% annual price swings`:''}. Never invest more than you can afford to lose.` : `No specific risk breakdown available. Research ${ticker}'s competitive position and balance sheet on Yahoo Finance.`);
+ const plainNote = personalNote.replace(/^[^<]*(<strong>)/, '$1');
  el.innerHTML = `
- <!-- AI scanning header -->
- <div style="display:flex;align-items:center;gap:8px;margin-bottom:.875rem;padding:.6rem .875rem;background:linear-gradient(135deg,rgba(108,92,231,.08),rgba(108,92,231,.03));border:1px solid rgba(108,92,231,.18);border-radius:8px">
- <div style="width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);animation:blink 2s infinite;flex-shrink:0"></div>
- <div style="font-size:.68rem;color:var(--accent2);font-weight:600">StockSight AI &nbsp;·&nbsp; ${isSimple?'Investment Analysis':'Fundamental Analysis Engine'}</div>
- <div style="margin-left:auto;font-size:.6rem;color:var(--text3)">Model v2.4</div>
- </div>
-
- <!-- Verdict + Score side by side -->
- <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:.75rem;margin-bottom:.75rem">
- <div>
- <div style="font-size:.58rem;color:var(--text3);letter-spacing:.1em;margin-bottom:4px">${isSimple?'WHAT SHOULD I DO?':'AI VERDICT'}</div>
- <div style="font-family:'Geist',sans-serif;font-size:${isSimple?'.95rem':'1.15rem'};font-weight:800;color:${profile.color};line-height:1.2">${verdictLabel}</div>
- </div>
- <div style="text-align:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.5rem .875rem;min-width:80px">
- <div style="font-size:.56rem;color:var(--text3);letter-spacing:.08em;margin-bottom:2px">${isSimple?'CONFIDENCE':'CONVICTION'}</div>
- <div style="font-family:'Geist',sans-serif;font-size:1.1rem;font-weight:800;color:${scoreColor}">${scoreLabel}</div>
- </div>
- </div>
-
- <!-- Score bar -->
- <div style="position:relative;height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:.875rem">
- <div style="height:100%;width:${profile.score}%;background:linear-gradient(90deg,${scoreColor}88,${scoreColor});border-radius:4px;transition:width 1.2s cubic-bezier(.16,1,.3,1)"></div>
- </div>
-
- <!-- Bull / Bear breakdown — always shown, fills space -->
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.875rem">
- <div style="background:rgba(0,201,122,.06);border:1px solid rgba(0,201,122,.2);border-radius:9px;padding:.75rem">
- <div style="font-size:.58rem;color:var(--green);letter-spacing:.08em;font-weight:700;margin-bottom:5px"> ${isSimple?'REASONS TO BUY':'BULL CASE'}</div>
- <div style="font-size:.74rem;color:var(--text);line-height:1.65">${isSimple ? simpleReason.split('.').slice(0,3).join('.')+'.': bullReason || profile.reason}</div>
- </div>
- <div style="background:rgba(255,56,96,.05);border:1px solid rgba(255,56,96,.18);border-radius:9px;padding:.75rem">
- <div style="font-size:.58rem;color:var(--red);letter-spacing:.08em;font-weight:700;margin-bottom:5px"> ${isSimple?'RISKS TO KNOW':'BEAR CASE'}</div>
- <div style="font-size:.74rem;color:var(--text);line-height:1.65">${bearReason || (isSimple ? `${ticker} is subject to market volatility${d?` and has ~${vol}% annual price swings`:''}. Never invest more than you can afford to lose.` : `No specific risk breakdown available. Research ${ticker}'s competitive position and balance sheet on Yahoo Finance.`)}</div>
- </div>
- </div>
-
- ${personalNote ? `
- <!-- Personalised investor note -->
- <div style="background:rgba(108,92,231,.07);border:1px solid rgba(108,92,231,.22);border-radius:9px;padding:.7rem .875rem;margin-bottom:.875rem;font-size:.76rem;color:var(--text2);line-height:1.6">${personalNote}</div>
- ` : ''}
-
- <!-- Key metrics row -->
- ${d ? `
- <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:.875rem">
- ${[
- ['SECTOR', sector],
- ['BETA', beta+'x'],
- ['VOLATILITY', '~'+vol+'%'],
- ['5YR GROWTH', '+'+growth+'%/yr'],
- ].map(([lbl,val])=>`
- <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:.6rem .4rem;text-align:center">
- <div style="font-size:.52rem;color:var(--text3);letter-spacing:.06em;margin-bottom:4px">${lbl}</div>
- <div style="font-size:.8rem;font-weight:700;color:var(--text)">${val}</div>
- </div>`).join('')}
- </div>
- ` : ''}
-
- ${kbp ? `
- <!-- Moat section -->
- <div style="background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:.875rem;margin-bottom:.875rem">
- <div style="font-size:.58rem;color:var(--teal);letter-spacing:.08em;font-weight:700;margin-bottom:6px"> ${isSimple?'WHY IT HAS AN ADVANTAGE':'COMPETITIVE MOAT'}</div>
- <div style="font-size:.8rem;color:var(--text);line-height:1.7">${kbp.moat}</div>
- </div>` : ''}
-
- <!-- Score Transparency — How we score this -->
- ${d ? `
- <div style="margin-bottom:.875rem">
- <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.textContent=this.textContent.includes('▸')?'▾ Hide score breakdown':'▸ How we score this'"
- style="background:none;border:none;font-size:.68rem;color:var(--accent2);cursor:pointer;padding:0;font-family:inherit;font-weight:600">▸ How we score this</button>
- <div style="display:none;margin-top:.6rem;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.875rem">
- <div style="font-size:.62rem;color:var(--text3);letter-spacing:.08em;font-weight:600;margin-bottom:.6rem">SCORE BREAKDOWN — ${profile.score}/100</div>
- ${[
- ['Analyst Consensus', Math.min(100, profile.score >= 70 ? 82 : profile.score >= 55 ? 64 : 38), '30%', 'Buy/Hold/Sell ratings from Wall Street analysts'],
- ['Revenue Growth', Math.min(100, 40 + d[3]*1.5), '25%', `Estimated 5-yr growth rate: ~${d[3]}%/yr`],
- ['Risk / Volatility', Math.max(10, 100 - d[1]*0.9), '25%', `Annual volatility ~${d[1]}% · beta ${d[0]}x vs. market`],
- ['Sector Momentum', Math.min(100, profile.score >= 60 ? 70 : 50), '20%', `Sector: ${d[2]} · based on industry trend data`],
- ].map(([lbl, pct, weight, note]) => `
- <div style="margin-bottom:.5rem">
- <div style="display:flex;justify-content:space-between;font-size:.7rem;margin-bottom:3px">
- <span style="color:var(--text2)">${lbl} <span style="color:var(--text3);font-size:.62rem">(${weight} weight)</span></span>
- <span style="font-weight:700;color:var(--text)">${Math.round(pct)}/100</span>
- </div>
- <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:2px">
- <div style="height:100%;width:${Math.round(pct)}%;background:${pct>=70?'var(--green)':pct>=50?'var(--gold)':'var(--red)'};border-radius:3px"></div>
- </div>
- <div style="font-size:.6rem;color:var(--text3)">${note}</div>
- </div>`).join('')}
- <div style="font-size:.62rem;color:var(--text3);margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)">⚠️ Scores are based on historical patterns and publicly available data. They do not account for breaking news, earnings surprises, or black swan events. Always verify with current financial statements.</div>
- </div>
- </div>` : ''}
-
- <!-- Tags + Disclaimer -->
- <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
- <div style="font-size:.6rem;padding:3px 9px;border-radius:20px;border:1px solid rgba(108,92,231,.3);color:var(--accent2);background:rgba(108,92,231,.07)"> StockSight AI</div>
- <div style="font-size:.6rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--text3)">${isSimple?' Based on company research':' Fundamental + quantitative analysis'}</div>
- <div style="font-size:.6rem;padding:3px 9px;border-radius:20px;border:1px solid rgba(245,158,11,.3);color:var(--gold);background:rgba(245,158,11,.07)"> Historical data only — past ≠ future</div>
- <div style="font-size:.6rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--text3)"> Not financial advice</div>
+ <div class="ai-card">
+  <div class="ai-verdict">
+   <div><span class="ai-kicker">${isSimple?'What should I do?':'AI verdict'}</span><b style="color:${profile.color}">${verdictLabel.trim()}</b></div>
+   <div class="ai-score"><span class="ai-kicker">${isSimple?'Confidence':'Conviction'}</span><b style="color:${scoreColor}">${scoreLabel}</b></div>
+  </div>
+  <div class="ai-bar"><i style="width:${profile.score}%;background:${scoreColor}"></i></div>
+  <div class="ai-cases">
+   <section class="ai-case ai-bull"><h4>${isSimple?'Reasons to buy':'Bull case'}</h4><p>${bullText}</p></section>
+   <section class="ai-case ai-bear"><h4>${isSimple?'Risks to know':'Bear case'}</h4><p>${bearText}</p></section>
+  </div>
+  ${plainNote ? `<p class="ai-note">${plainNote}</p>` : ''}
+  ${d ? `<div class="ai-metrics">
+   <div><span>Sector</span><b>${sector}</b></div>
+   <div><span>Beta</span><b>${beta}x</b></div>
+   <div><span>Volatility</span><b>~${vol}%</b></div>
+   <div><span>5yr growth</span><b>+${growth}%/yr</b></div>
+  </div>` : ''}
+  ${kbp ? `<section class="ai-moat"><h4>${isSimple?'Why it has an advantage':'Competitive moat'}</h4><p>${kbp.moat}</p></section>` : ''}
+  ${d ? `<details class="ai-how"><summary>How we score this (${profile.score}/100)</summary>
+   <div class="ai-how-body">
+    ${[
+     ['Analyst consensus', Math.min(100, profile.score >= 70 ? 82 : profile.score >= 55 ? 64 : 38), '30%', 'Buy, hold and sell ratings from Wall Street analysts'],
+     ['Revenue growth', Math.min(100, 40 + d[3]*1.5), '25%', `Estimated 5-year growth: about ${d[3]}% a year`],
+     ['Risk and volatility', Math.max(10, 100 - d[1]*0.9), '25%', `Yearly swings about ${d[1]}%, beta ${d[0]}x the market`],
+     ['Sector momentum', Math.min(100, profile.score >= 60 ? 70 : 50), '20%', `${d[2]} sector trend`],
+    ].map(([lbl, pct, weight, note]) => `<div class="ai-how-row">
+     <div><span>${lbl} <small style="display:inline;color:var(--text3)">${weight}</small></span><b>${Math.round(pct)}/100</b></div>
+     <i><em style="width:${Math.round(pct)}%;background:${pct>=70?'var(--green)':pct>=50?'var(--gold)':'var(--red)'}"></em></i>
+     <small>${note}</small>
+    </div>`).join('')}
+    <small style="color:var(--text3);font-size:.72rem">Scores come from historical patterns and public data. They don't account for breaking news or earnings surprises.</small>
+   </div>
+  </details>` : ''}
+  <p class="ai-foot">StockSight AI, based on historical data. Not financial advice.</p>
  </div>`;
 }
 
@@ -8954,7 +9086,6 @@ function loadProfilePage() {
  renderHoldingsList();
  renderBadges('badgesContainer');
  checkAndAwardBadges();
- renderReferralSection('referralSection');
  renderAvatarPicker('avatarPickerContainer');
  checkMilestones();
  loadQuizResult();
@@ -9606,13 +9737,13 @@ function setBrokerFromSettings(id) {
 ════════════════════════════════ */
 const TUTORIAL_STEPS = [
  {
- title: 'Welcome to StockSight! ',
- desc: 'This quick interactive tour teaches you the site by having you actually try things. Takes ~2 minutes. Everything else is locked until we\'re done.',
+ title: 'Welcome to StockSight',
+ desc: 'This quick tour teaches you the site by having you actually try things. Each step you complete earns 10 XP, and finishing the tour adds a 50 XP bonus. Takes about 2 minutes.',
  target: null, action: null,
  },
  {
  title: 'Your Homepage',
- desc: 'This is your dashboard. It shows top movers, live charts, market news, and upcoming earnings — all in one place. Scroll down to explore.',
+ desc: 'This is your dashboard: live index tiles, a big chart, and tabs for top movers, sectors and news, all on one screen. Every hands-on step in this tour earns XP.',
  target: '#mainContent', action: null,
  },
  {
@@ -9670,8 +9801,8 @@ const TUTORIAL_STEPS = [
  action: { prompt: 'Click the profile button (top right) ↑', doneText: 'That\'s your control panel!', detect: 'profile-click' },
  },
  {
- title: 'You\'re all set! ',
- desc: 'Tour complete! Search for a stock you\'re interested in and start exploring. Good luck!',
+ title: 'You\'re all set',
+ desc: 'Tour complete. Press Finish to collect your 50 XP bonus, then try a lesson in Learn & grow to keep leveling up.',
  target: null, action: null,
  },
 ];
@@ -9730,13 +9861,13 @@ function renderTutStep() {
  restoreTutElevated();
  cleanTutListeners();
 
- label.innerHTML = `<span>STEP ${tutStep + 1} OF ${TUTORIAL_STEPS.length}</span>`;
+ const tourXp = getLearn().tour;
+ label.innerHTML = `<span>Step ${tutStep + 1} of ${TUTORIAL_STEPS.length}</span>${step.action ? `<span class="tut-xp${tourXp.includes(tutStep) ? ' got' : ''}">${tourXp.includes(tutStep) ? 'XP earned' : '+10 XP'}</span>` : ''}`;
  title.textContent = step.title;
  desc.textContent = step.desc;
  btn.textContent = tutStep === TUTORIAL_STEPS.length - 1 ? 'Finish ' : 'Next →';
 
- dots.innerHTML = TUTORIAL_STEPS.map((_,i) =>
- `<div class="tut-dot${i===tutStep?' on':''}"></div>`).join('');
+ dots.innerHTML = `<div class="tut-prog"><i style="width:${((tutStep + 1) / TUTORIAL_STEPS.length * 100).toFixed(0)}%"></i></div>`;
 
  if (step.action) {
  prompt.classList.add('show');
@@ -9814,6 +9945,14 @@ function attachTutAction(detect) {
  prompt.classList.remove('show');
  done.classList.add('show');
  btn.disabled = false;
+ const ls = getLearn();
+ if (!ls.tour.includes(tutStep)) {
+  ls.tour.push(tutStep);
+  saveLearn(ls);
+  learnAddXP(10);
+  const chip = document.querySelector('#tutStepLabel .tut-xp');
+  if (chip) { chip.classList.add('got'); chip.textContent = 'XP earned'; }
+ }
  document.getElementById('tutSpotlight').classList.remove('pulse');
  cleanTutListeners();
  }
@@ -9860,7 +9999,18 @@ function cleanTutListeners() {
 
 function tutNext() {
  tutStep++;
- if (tutStep >= TUTORIAL_STEPS.length) { skipTutorial(); return; }
+ if (tutStep >= TUTORIAL_STEPS.length) {
+  const ls = getLearn();
+  if (!ls.tourDone) {
+   ls.tourDone = true;
+   saveLearn(ls);
+   learnAddXP(50);
+   setTimeout(() => toast('Tour complete! 50 XP bonus added.', 'success', 3200), 300);
+   try { launchConfetti(); } catch {}
+  }
+  skipTutorial();
+  return;
+ }
  renderTutStep();
 }
 
@@ -9897,7 +10047,7 @@ function dismissBrokerPrompt() {
 
 ['su-fn','su-e','su-p'].forEach(id=>document.getElementById(id)?.addEventListener('keydown',e=>{if(e.key==='Enter')doSignup();}));
 ['li-e','li-p'].forEach(id=>document.getElementById(id)?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
-document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeHelp(); closeModal(); closeBrokerModal(); skipTutorial(); } });
+document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeHelp(); closeModal(); closeBrokerModal(); if (tutorialActive()) skipTutorial(); } });
 
 /* ════════════════════════════════
  ONBOARDING QUESTIONNAIRE
@@ -12008,8 +12158,8 @@ const BADGES = [
  { id:'five_holdings', icon:'💎', name:'Diversified', desc:'Tracking 5+ portfolio holdings', check: () => holdings.length >= 5 },
  { id:'ten_holdings', icon:'🏦', name:'Fund Manager', desc:'Tracking 10+ portfolio holdings', check: () => holdings.length >= 10 },
  // ── PAPER TRADING ──
- { id:'paper_profit', icon:'📈', name:'In the Green', desc:'Paper portfolio value above $10,000', check: () => { try{const pt=getPtPortfolio();const refs={BTC:67000,ETH:3500,AAPL:222,NVDA:875,TSLA:175,MSFT:415,AMZN:195,META:550};const v=Object.entries(pt.holdings).reduce((s,[t,sh])=>s+sh*(refs[t]||100),pt.cash);return v>10050;}catch{return false;} } },
- { id:'paper_big', icon:'💰', name:'Paper Millionaire', desc:'Paper portfolio value above $15,000', check: () => { try{const pt=getPtPortfolio();const refs={BTC:67000,ETH:3500,AAPL:222,NVDA:875,TSLA:175,MSFT:415,AMZN:195,META:550};const v=Object.entries(pt.holdings).reduce((s,[t,sh])=>s+sh*(refs[t]||100),pt.cash);return v>15000;}catch{return false;} } },
+ { id:'paper_profit', icon:'📈', name:'In the Green', desc:'Paper portfolio value above $10,000', check: () => ptAccountValue() > 10050 },
+ { id:'paper_big', icon:'💰', name:'Paper Millionaire', desc:'Paper portfolio value above $15,000', check: () => ptAccountValue() > 15000 },
  { id:'paper_five_pos', icon:'🎯', name:'Active Trader', desc:'Held 5+ different paper positions at once', check: () => Object.keys(getPtPortfolio().holdings).length >= 5 },
  // ── VOTING ──
  { id:'five_votes', icon:'🗣️', name:'Pundit', desc:'Voted on 5+ stock polls', check: () => { try{return Object.keys(safeParse('ss_votes_'+(user?.email||''),{})).length >= 5;}catch{return false;} } },
@@ -12028,8 +12178,6 @@ const BADGES = [
  { id:'early_bird', icon:'🌅', name:'Early Bird', desc:'Used StockSight before 8am', check: () => new Date().getHours() < 8 },
  { id:'night_trader', icon:'🦉', name:'Night Trader', desc:'Used StockSight after midnight', check: () => new Date().getHours() < 4 },
  { id:'weekend_warrior', icon:'📅', name:'Weekend Warrior', desc:'Checked stocks on the weekend', check: () => [0,6].includes(new Date().getDay()) },
- { id:'referral_sent', icon:'🤝', name:'Connector', desc:'Invited a friend using your referral code', check: () => { try{return JSON.parse(localStorage.getItem('ss_referred_by_'+(user?.email||''))||'[]').length>0;}catch{return false;} } },
- { id:'referral_redeemed', icon:'🎁', name:'Welcomed', desc:'Redeemed a friend\'s referral code', check: () => !!localStorage.getItem('ss_referral_used_'+(user?.email||'')) },
  { id:'checklist_done', icon:'✅', name:'Ready to Go', desc:'Completed the getting started checklist', check: () => isChecklistComplete() },
  // ── SECRET ──
  { id:'secret_1', icon:'🎰', name:'Lucky Dip', desc:'You found it! Searched for a stock that doesn\'t exist — curiosity rewarded.',
@@ -12037,6 +12185,13 @@ const BADGES = [
  { id:'secret_2', icon:'🕰️', name:'Time Traveler', desc:'You found it! Visited StockSight at exactly midnight.',
  check: () => { const n=new Date(); return n.getHours()===0 && n.getMinutes()===0; }, secret: true },
 ];
+
+function ptAccountValue() {
+ try {
+  const pt = getPtPortfolio();
+  return (Number(pt.cash) || 0) + Object.entries(pt.holdings || {}).reduce((sum, [t, h]) => sum + (typeof h === 'object' && h ? Number(h.shares) || 0 : Number(h) || 0) * ptDailyPrice(t), 0);
+ } catch { return 0; }
+}
 
 function getEarnedBadges() {
  try { return JSON.parse(localStorage.getItem('ss_badges_'+(user?.email||''))||'[]'); } catch { return []; }
@@ -12706,7 +12861,7 @@ function renderOnboardingChecklist(containerId) {
  </div>
  <div style="text-align:right">
  <div style="font-size:.88rem;font-weight:800;color:var(--accent2)">${pct}%</div>
- <button onclick="document.getElementById('${containerId}').style.display='none'" style="background:none;border:none;font-size:.65rem;color:var(--text3);cursor:pointer;font-family:inherit">dismiss</button>
+ <button onclick="document.getElementById('${containerId}').style.display='none';ssApplyTabGroups()" style="background:none;border:none;font-size:.72rem;color:var(--text3);cursor:pointer;font-family:inherit">Dismiss</button>
  </div>
  </div>
  <div style="height:5px;background:var(--border);border-radius:3px;margin-bottom:.875rem;overflow:hidden">
@@ -12746,7 +12901,7 @@ function checkMilestones() {
  { id:'first_watch', check: ()=> watchlist.length >= 1, msg:' First stock saved to watchlist!' },
  { id:'streak_7', check: ()=>{ try{return (safeParse('ss_streak_'+(user?.email||''),{})).streak>=7;}catch{return false;}}, msg:' 7-day streak! You\'re on fire.' },
  { id:'checklist_done', check: ()=> isChecklistComplete(), msg:' Getting started checklist complete!' },
- { id:'paper_profit', check: ()=>{ try{const pt=getPtPortfolio();const refs={BTC:67000,ETH:3500,AAPL:222,NVDA:875,TSLA:175};const v=Object.entries(pt.holdings).reduce((s,[t,sh])=>s+sh*(refs[t]||100),pt.cash);return v>10050;}catch{return false;}}, msg:' Paper portfolio in the green! Great start.' },
+ { id:'paper_profit', check: () => ptAccountValue() > 10050, msg:' Paper portfolio in the green! Great start.' },
  ];
 
  let anyNew = false;
@@ -14960,7 +15115,7 @@ function ssApplyTabGroups() {
  const mc = document.getElementById('mainContent');
  if (!mc) return;
  const ob = mc.querySelector('.ss-panel > #obChecklistWrap');
- if (ob && !ob.querySelector('.ob-check-card')) {
+ if (ob && (!ob.querySelector('.ob-check-card') || ob.style.display === 'none')) {
   const panel = ob.parentElement, wrap = panel.closest('.ss-tabs');
   const i = [...panel.parentElement.children].indexOf(panel);
   wrap.querySelectorAll(':scope > .ss-tabs-bar > .ss-tab')[i]?.remove();
@@ -15064,23 +15219,45 @@ function renderRail() {
  renderRailNews();
 }
 
+const RAIL_COLLAPSE_BTN = `<button type="button" class="rail-collapse" onclick="toggleRail(false)" aria-label="Hide this panel" data-tip="Hide panel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>`;
+
+function toggleRail(open) {
+ const shell = document.querySelector('.ss-shell');
+ if (!shell) return;
+ const collapsed = open === undefined ? !shell.classList.contains('rail-collapsed') : !open;
+ shell.classList.toggle('rail-collapsed', collapsed);
+ try { localStorage.setItem('ss_rail_collapsed', collapsed ? '1' : '0'); } catch {}
+ const t = document.getElementById('railToggle');
+ if (t) { t.setAttribute('aria-pressed', String(!collapsed)); t.dataset.tip = collapsed ? 'Show portfolio panel' : 'Hide portfolio panel'; }
+ setTimeout(() => { window.dispatchEvent(new Event('resize')); if (!collapsed) renderRail(); }, 460);
+}
+try {
+ if (localStorage.getItem('ss_rail_collapsed') === '1') {
+  document.querySelector('.ss-shell')?.classList.add('rail-collapsed');
+  const t = document.getElementById('railToggle');
+  if (t) { t.setAttribute('aria-pressed', 'false'); t.dataset.tip = 'Show portfolio panel'; }
+ }
+} catch {}
+
 function renderRailPortfolio() {
  const box = document.getElementById('railPort');
  if (!box) return;
  if (!user) {
   box.innerHTML = `
-  <div class="rail-h"><h3>Practice portfolio</h3></div>
+  <div class="rail-h"><h3>Paper trading</h3>${RAIL_COLLAPSE_BTN}</div>
   <p class="rail-muted">Make a free account to paper trade with $10,000 of pretend money and follow how you do.</p>
   <button type="button" class="rail-cta" onclick="openModal('signup')">Create free account</button>`;
   return;
  }
  const pt = getPtPortfolio();
  const rows = Object.entries(pt.holdings || {})
-  .filter(([, h]) => h && h.shares > 0)
   .map(([t, h]) => {
+   const shares = typeof h === 'object' && h ? Number(h.shares) || 0 : Number(h) || 0;
    const p = ptDailyPrice(t);
-   return { t, value: h.shares * p, day: h.shares * (p - ptDailyPrice_yesterday(t)) };
+   const avg = typeof h === 'object' && h && h.avgCost ? Number(h.avgCost) : null;
+   return { t, shares, value: shares * p, day: shares * (p - ptDailyPrice_yesterday(t)), pl: avg ? (p - avg) / avg * 100 : null };
   })
+  .filter(r => r.shares > 0)
   .sort((a, b) => b.value - a.value);
  const cash = Number(pt.cash) || 0;
  const invested = rows.reduce((s, r) => s + r.value, 0);
@@ -15100,25 +15277,29 @@ function renderRailPortfolio() {
   offset += len;
   return arc;
  }).join('');
+ const pct = n => (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
 
  box.innerHTML = `
- <div class="rail-h"><h3>Practice portfolio</h3><button type="button" class="rail-link" onclick="switchTab('pt')">Open</button></div>
+ <div class="rail-h"><h3>Paper trading</h3><div class="rail-h-actions"><button type="button" class="rail-link" onclick="switchTab('pt')">Trade</button>${RAIL_COLLAPSE_BTN}</div></div>
  <div class="rail-port">
   <div>
-   <div class="rail-label">Total value</div>
+   <div class="rail-label">Account value</div>
    <div class="rail-big">${railMoney(total)}</div>
    <div class="rail-delta ${pl >= 0 ? 'up' : 'dn'}">${railMoney(pl, true)} (${(pl / 100).toFixed(2)}%) all time</div>
   </div>
-  <svg class="rail-donut" width="76" height="76" viewBox="0 0 76 76" role="img" aria-label="Portfolio allocation">
+  <svg class="rail-donut" width="76" height="76" viewBox="0 0 76 76" role="img" aria-label="Where your money is">
    <circle class="dbg" cx="38" cy="38" r="30" fill="none" stroke-width="10"/>${arcs}
   </svg>
  </div>
- <div class="rail-legend">${slices.map(s => `<span><i class="${s.cls}"></i>${escapeHTML(s.label)} ${total > 0 ? Math.round(s.value / total * 100) : 0}%</span>`).join('')}</div>
- <div class="rail-stats">
-  <div><span>Invested</span><b>${railMoney(invested)}</b></div>
-  <div><span>Cash</span><b>${railMoney(cash)}</b></div>
+ ${rows.length ? `<div class="rail-pos">
+  ${rows.slice(0, 4).map((r, i) => `<button type="button" class="rail-pos-row" onclick="goAsset('${r.t}','${TICKERS.find(e => e.t === r.t)?.k || 's'}')">
+   <i class="d${i + 1}"></i><b>${escapeHTML(r.t)}</b><span class="rp-sh">${+r.shares.toFixed(4)} sh</span><span class="rp-val">${railMoney(r.value)}</span>${r.pl === null ? '<span></span>' : `<span class="${r.pl >= 0 ? 'up' : 'dn'}">${pct(r.pl)}</span>`}
+  </button>`).join('')}
+  ${rows.length > 4 ? `<button type="button" class="rail-pos-more" onclick="switchTab('pt')">+${rows.length - 4} more positions</button>` : ''}
+ </div>` : `<div class="rail-empty"><p>No positions yet. Buy your first stock with pretend money.</p><button type="button" class="rail-cta" onclick="switchTab('pt')">Make a practice trade</button></div>`}
+ <div class="rail-stats rail-stats-2">
   <div><span>Today</span><b class="${day >= 0 ? 'up' : 'dn'}">${railMoney(day, true)}</b></div>
-  <div><span>Positions</span><b>${rows.length}</b></div>
+  <div><span>Buying power</span><b>${railMoney(cash)}</b></div>
  </div>`;
 }
 
