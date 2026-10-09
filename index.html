@@ -1472,12 +1472,116 @@ body .ss-top .welcome-bar{background:none!important;padding:0!important;margin:0
 body .ss-side #tabBar .tab{font-size:.9rem;padding:10px 12px;font-weight:500}
 body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 .ss-side .tab::after{display:none}
-.ticker-tape:has(.ticker-inner:empty){display:none}
+#tickerTape{display:none!important}
 :root,[data-theme="dark"]{--card-rgb:22,22,28}
 [data-theme="light"]{--card-rgb:255,255,255}
 #mainContent div:has(> #wyl-buttons){background:var(--card)!important;border-color:var(--border)!important;box-shadow:0 1px 2px var(--shadow2)}
 
 @media(max-width:1599px){.ss-top .wb-date{display:none}}
+
+/* ── Top bar: search + market status (welcome text moves into the page) ── */
+.ss-top .welcome-bar,#searchSection,#marketStatusBar,#searchHist{display:none!important}
+.ss-top-search{flex:1;min-width:0;max-width:480px}
+.ss-top-search #si{height:42px;border-radius:11px;font-size:.92rem;background:var(--card);box-shadow:none}
+.ss-top-right{display:flex;align-items:center;gap:16px;margin-left:auto;flex-shrink:0}
+.tb-market{display:grid;grid-template-columns:auto auto;column-gap:7px;align-items:center;justify-items:end;line-height:1.25;white-space:nowrap}
+.tbm-dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}
+.tbm-label{font-size:.82rem;font-weight:600;color:var(--text2)}
+.tbm-time{grid-column:1/-1;font-family:var(--mono);font-size:.72rem;color:var(--text3)}
+.tbm-open .tbm-dot{background:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.15)}
+.tbm-open .tbm-label{color:#15803d}
+.tbm-pre .tbm-dot{background:#d97706}
+.tbm-pre .tbm-label{color:#b45309}
+[data-theme="dark"] .tbm-open .tbm-label{color:#4ade80}
+[data-theme="dark"] .tbm-pre .tbm-label{color:#fbbf24}
+
+/* ── Markets dashboard ── */
+.ss-content{position:relative}
+#marketFilter{position:absolute;top:30px;right:32px;margin:0!important;z-index:2}
+.ss-content:not(:has(.dash-head)) #marketFilter{display:none!important}
+.dash-head{margin:2px 0 22px;padding-right:300px}
+.dash-head h1{font-size:1.65rem;font-weight:700;letter-spacing:-.035em;line-height:1.2}
+.dash-head p{font-size:.95rem;color:var(--text2);margin-top:5px}
+.dash-tiles,.dash-pop{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.dash-tiles{margin-bottom:16px}
+.dash-pop{margin-bottom:30px}
+.dash-tile,.dash-card{position:relative;background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 2px var(--shadow2);transition:border-color .15s ease,box-shadow .15s ease}
+.dash-tile{height:148px}
+.dash-card{height:164px}
+.dash-tile:hover,.dash-card:hover{border-color:var(--border3);box-shadow:0 6px 18px var(--shadow2)}
+.dash-tile.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow2)}
+.dash-tile-tv,.dash-card-tv{position:absolute;inset:6px 6px 0}
+.dash-hit{position:absolute;inset:0;width:100%;height:100%;background:transparent;border:0;cursor:pointer;border-radius:inherit}
+.dash-chart-card{margin-bottom:30px}
+.dash-chart-hdr{position:absolute;top:14px;right:16px;z-index:2}
+.dash-chart-card{position:relative}
+.dash-chart-title{font-size:.82rem;font-weight:600;color:var(--text3)}
+.dash-chart-actions{display:flex;gap:8px}
+.dash-chart{height:430px;padding:0 6px 6px}
+.dash-btn{height:32px;padding:0 13px;border-radius:9px;border:1px solid var(--border2);background:var(--card);color:var(--text2);font:550 .8rem 'Geist',sans-serif;cursor:pointer;transition:background .15s ease,color .15s ease,transform .15s var(--ease-out)}
+.dash-btn:hover{background:var(--card2);color:var(--text)}
+.dash-btn:active{transform:scale(.97)}
+.dash-btn-main{background:var(--accent);border-color:var(--accent);color:#fff}
+.dash-btn-main:hover{background:var(--accent3);color:#fff}
+.dash-sec-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.dash-sec-h h2,.dash-learn-intro h2{font-size:1.1rem;font-weight:650;letter-spacing:-.025em}
+#customizePanel{margin-bottom:14px}
+:root,[data-theme="dark"]{
+ --l0bg:rgba(139,92,246,.12);--l0bd:rgba(139,92,246,.28);--l0c:#c4b5fd;
+ --l1bg:rgba(34,197,94,.10);--l1bd:rgba(34,197,94,.26);--l1c:#86efac;
+ --l2bg:rgba(249,115,22,.10);--l2bd:rgba(249,115,22,.26);--l2c:#fdba74;
+}
+[data-theme="light"]{
+ --l0bg:#f5f1ff;--l0bd:#e3d9fd;--l0c:#6d28d9;
+ --l1bg:#effaf3;--l1bd:#cdeedb;--l1c:#15803d;
+ --l2bg:#fff5ec;--l2bd:#fbdcc2;--l2c:#c2410c;
+}
+.dash-lesson-0{--lbg:var(--l0bg);--lbd:var(--l0bd);--lc:var(--l0c)}
+.dash-lesson-1{--lbg:var(--l1bg);--lbd:var(--l1bd);--lc:var(--l1c)}
+.dash-lesson-2{--lbg:var(--l2bg);--lbd:var(--l2bd);--lc:var(--l2c)}
+.dash-learn{display:grid;grid-template-columns:minmax(160px,.85fr) repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
+.dash-learn-intro{padding:6px 4px 0 0}
+.dash-learn-intro p{font-size:.86rem;line-height:1.5;color:var(--text2);margin-top:6px}
+.dash-lesson{display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:150px;padding:16px;text-align:left;border-radius:var(--r);border:1px solid var(--lbd);background:var(--lbg);color:var(--text);font-family:'Geist',sans-serif;cursor:pointer;transition:box-shadow .15s ease,transform .15s var(--ease-out)}
+.dash-lesson:hover{box-shadow:0 6px 18px var(--shadow2)}
+.dash-lesson:active{transform:scale(.98)}
+.dash-lesson-ico,.lesson-ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--card);color:var(--lc)}
+.lesson-ico{background:var(--lbg)}
+.dash-lesson-title{font-size:.95rem;font-weight:650;line-height:1.3;letter-spacing:-.015em}
+.dash-lesson-time{font-size:.76rem;color:var(--text3);margin-top:auto}
+.lesson-box{max-width:540px;padding:28px 30px}
+.lesson-title{font-size:1.4rem;font-weight:700;letter-spacing:-.03em;margin:16px 0 4px}
+.lesson-time{font-size:.8rem;color:var(--text3);margin-bottom:16px}
+.lesson-box p{font-size:.96rem;line-height:1.65;color:var(--text2);margin-bottom:12px}
+.lesson-cta{width:100%;margin-top:8px;padding:12px;border:none;border-radius:var(--r2);background:var(--accent);color:#fff;font:600 .9rem 'Geist',sans-serif;cursor:pointer}
+.lesson-cta:hover{background:var(--accent3)}
+.lesson-box .modal-close svg{width:16px;height:16px}
+
+@media(max-width:1180px){
+ .dash-head{padding-right:0}
+ #marketFilter{position:static;margin-bottom:16px!important}
+}
+@media(max-width:1024px){
+ .dash-tiles,.dash-pop{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .dash-learn{grid-template-columns:1fr 1fr}
+ .dash-learn-intro{grid-column:1/-1}
+ .tbm-time{display:none}
+}
+@media(max-width:768px){
+ .ss-top-search{order:3;flex:1 1 100%;max-width:none}
+ .tb-market{display:none}
+ .ss-top-right{gap:8px}
+ .dash-head{padding:14px 18px 0}
+ .dash-head h1{font-size:1.4rem}
+ .dash-tiles,.dash-pop,.dash-sec-h,.dash-learn,#customizePanel{margin-left:18px;margin-right:18px}
+ .dash-tile{height:132px}
+ .dash-chart{height:340px}
+ .dash-chart-hdr{position:static;display:flex;justify-content:flex-end;padding:12px 18px 0}
+ .dash-chart-card{margin-top:4px}
+ .dash-learn{grid-template-columns:1fr}
+ .dash-lesson{min-height:0}
+ .dash-sec-h{margin-top:20px}
+}
 
 /* ── Landing (gate) ── */
 #S-gate{max-width:1240px;margin:0 auto}
@@ -1578,7 +1682,7 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  </section>
 
  <figure class="g2-shot">
- <img src="/images/app-preview.jpg" alt="The StockSight dashboard showing a practice portfolio, a live watchlist and the stock search" width="1600" height="503">
+ <img src="/images/app-preview.jpg" alt="The StockSight Markets dashboard with live index tiles, an S&P 500 chart, a practice portfolio and a watchlist" width="1600" height="867">
  </figure>
 
  <section class="g2-grid" aria-label="What StockSight does">
@@ -1647,18 +1751,33 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  <div class="welcome-bar">
  <div class="wb-left" id="wbGreeting">Welcome back, <strong id="wbName"></strong></div>
  <div style="display:flex;align-items:center;gap:1rem">
- <div id="streakBadge" style="display:none;align-items:center;gap:6px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:20px;padding:5px 13px">
- <span style="font-size:1rem"></span>
- <span id="streakCount" style="font-family:'Geist',sans-serif;font-size:.9rem;font-weight:800;color:var(--gold)"></span>
- <span style="font-size:.65rem;color:var(--gold);font-weight:600">day streak</span>
- </div>
  <div class="wb-right">
  <div class="wb-date" id="wbDate"></div>
  <div class="wb-time" id="wbTime"></div>
  </div>
  </div>
  </div>
+ <div class="ss-top-search">
+ <div class="search-wrap">
+ <span class="search-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+ <input id="si" type="text" enterkeyhint="search" autocomplete="off" aria-label="Search stocks, indexes and crypto"
+ placeholder="Search a stock, index or crypto, like AAPL, Apple or Bitcoin"
+ oninput="onSearchInput(this.value)"
+ onfocus="showSearchHistory()"
+ onblur="setTimeout(()=>{const d=document.getElementById('sdrop');if(d&&!d.matches(':hover'))d.style.display='none'},200)"
+ onkeydown="if(event.key==='Enter'){document.getElementById('sdrop').style.display='none';doSearch();}if(event.key==='Escape')document.getElementById('sdrop').style.display='none';"/>
+ <div id="sdrop"></div>
+ </div>
+ </div>
+ <div class="ss-top-right">
+ <div id="streakBadge" style="display:none;align-items:center;gap:6px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:20px;padding:5px 13px">
+ <span style="font-size:1rem"></span>
+ <span id="streakCount" style="font-family:'Geist',sans-serif;font-size:.9rem;font-weight:800;color:var(--gold)"></span>
+ <span style="font-size:.65rem;color:var(--gold);font-weight:600">day streak</span>
+ </div>
+ <div class="tb-market" id="tbMarket" aria-live="off"></div>
  <div class="hdr-actions" id="appHdrActions"></div>
+ </div>
  </header>
 
  <div class="ticker-tape" id="tickerTape">
@@ -1681,16 +1800,6 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 
  <div id="searchSection">
  <div class="search-row">
- <div class="search-wrap">
- <span class="search-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
- <input id="si" type="text"
- placeholder="Search a stock, index or crypto, like AAPL, Apple or Bitcoin"
- oninput="onSearchInput(this.value)"
- onfocus="showSearchHistory()"
- onblur="setTimeout(()=>{const d=document.getElementById('sdrop');if(d&&!d.matches(':hover'))d.style.display='none'},200)"
- onkeydown="if(event.key==='Enter'){document.getElementById('sdrop').style.display='none';doSearch();}if(event.key==='Escape')document.getElementById('sdrop').style.display='none';"/>
- <div id="sdrop"></div>
- </div>
  <button class="btn-go bg-s" id="goBtn" onclick="doSearch()">Analyze →</button>
  </div>
  <div class="picks" id="picks"></div>
@@ -5030,6 +5139,13 @@ function startClock() {
 
  const ms = getMarketStatus();
 
+ const tbm = document.getElementById('tbMarket');
+ if (tbm) {
+  const et = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' });
+  tbm.className = 'tb-market tbm-' + ms.status;
+  tbm.innerHTML = `<span class="tbm-dot"></span><span class="tbm-label">${ms.label}</span><span class="tbm-time">${et} ET</span>`;
+ }
+
  let countdown = '';
  if(ms.status==='open' && ms.closesAt) {
  const cd = fmtCountdown(ms.closesAt);
@@ -5737,6 +5853,119 @@ function applyModeLabels() {
 /* ════════════════════════════════
  HOMEPAGE (with dashboard stock picker)
 ════════════════════════════════ */
+/* ════════════════════════════════
+ MARKETS DASHBOARD: index tiles, main chart, popular cards, lessons
+════════════════════════════════ */
+const DASH_DEFAULT_PICK = { s:'AAPL', i:'SPX', c:'BTC' };
+const DASH_TILES = {
+ s: [['FOREXCOM:SPXUSD','S&P 500','SPX','i'], ['FOREXCOM:NSXUSD','Nasdaq 100','NDX','i'], ['FOREXCOM:DJI','Dow Jones','DJI','i'], ['CAPITALCOM:VIX','VIX','VIX','i']],
+ i: [['FOREXCOM:SPXUSD','S&P 500','SPX','i'], ['FOREXCOM:NSXUSD','Nasdaq 100','NDX','i'], ['FOREXCOM:DJI','Dow Jones','DJI','i'], ['CAPITALCOM:RTY','Russell 2000','RUT','i']],
+ c: [['BITSTAMP:BTCUSD','Bitcoin','BTC','c'], ['BITSTAMP:ETHUSD','Ethereum','ETH','c'], ['COINBASE:SOLUSD','Solana','SOL','c'], ['BITSTAMP:XRPUSD','XRP','XRP','c']],
+};
+const DASH_POPULAR = {
+ s: [['NASDAQ:AAPL','Apple','AAPL','s'], ['NASDAQ:NVDA','NVIDIA','NVDA','s'], ['NASDAQ:TSLA','Tesla','TSLA','s'], ['NASDAQ:MSFT','Microsoft','MSFT','s']],
+ i: [['FOREXCOM:UKXGBP','FTSE 100','FTSE','i'], ['CAPITALCOM:J225','Nikkei 225','NI225','i'], ['CAPITALCOM:DE40','DAX','DAX','i'], ['CAPITALCOM:HK50','Hang Seng','HSI','i']],
+ c: [['BINANCE:BNBUSDT','BNB','BNB','c'], ['BINANCE:DOGEUSDT','Dogecoin','DOGE','c'], ['BINANCE:ADAUSDT','Cardano','ADA','c'], ['BINANCE:AVAXUSDT','Avalanche','AVAX','c']],
+};
+const DASH_ICON = d => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const DASH_LESSONS = [
+ {
+  title: 'What is the stock market?', mins: 2,
+  icon: DASH_ICON('<path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/>'),
+  body: [
+   'A stock is a small piece of ownership in a company. Buy one share of Apple and you own a tiny slice of Apple, including a claim on its future profits.',
+   'The stock market is where those shares change hands, mostly on exchanges like the New York Stock Exchange and the Nasdaq. Prices move all day because buyers and sellers keep agreeing on new prices.',
+   'When a company earns more, more people usually want to own it and the price tends to rise. Bad news, like weak sales or a lawsuit, can push it down.',
+   'Indexes such as the S&P 500 group hundreds of stocks together so you can see how the whole market is doing at a glance. When someone says "the market is up today", they usually mean the S&P 500.',
+  ],
+  cta: ['See the S&P 500', "closeLesson();dashSelect('FOREXCOM:SPXUSD','S&P 500','SPX','i',document.querySelector('.dash-tile .dash-hit'))"],
+ },
+ {
+  title: 'How to place your first trade', mins: 3,
+  icon: DASH_ICON('<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>'),
+  body: [
+   'Start with a company you understand. Search for it in StockSight and read the plain-English verdict and the chart before you decide anything.',
+   'Decide how much to put in. A common rule for beginners is to only invest money you will not need for the next few years, because prices can drop for a while before they recover.',
+   'Pick an order type. A market order buys right away at the current price. A limit order only buys if the price reaches a number you choose, so you never pay more than you planned.',
+   'Practice before you use real money. The Paper Trade tab gives you $10,000 of pretend cash and the same steps as a real broker, so mistakes cost nothing. When you are ready for real trades you will need a brokerage account; StockSight never places real orders.',
+  ],
+  cta: ['Open Paper Trade', "closeLesson();switchTab('pt')"],
+ },
+ {
+  title: 'How to read a stock chart', mins: 3,
+  icon: DASH_ICON('<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>'),
+  body: [
+   'The line shows the price over time. The left side is older and the right side is now, so a line that climbs from left to right means the price went up over that period.',
+   'Use the time ranges (1D, 1M, 1Y and so on) to zoom out. A stock can look scary over a single day and perfectly fine over a whole year.',
+   'Many charts color a period green when the price ended higher than it started and red when it ended lower.',
+   'Candlestick charts pack more detail into each bar: where the price opened, the highest and lowest it reached, and where it closed. Volume bars underneath show how many shares traded; big moves on heavy volume usually matter more.',
+  ],
+  cta: ['Try the chart above', 'closeLesson();document.getElementById("dashChart")?.scrollIntoView({behavior:"smooth",block:"center"})'],
+ },
+];
+
+function dashLineColors() {
+ return theme === 'dark'
+  ? { line: 'rgba(139,92,246,1)', top: 'rgba(139,92,246,0.24)', bottom: 'rgba(139,92,246,0)' }
+  : { line: 'rgba(109,40,217,1)', top: 'rgba(109,40,217,0.14)', bottom: 'rgba(109,40,217,0)' };
+}
+
+function dashMini(containerId, symbol) {
+ const c = dashLineColors();
+ injectTV(containerId, {
+  symbol, height: '100%', locale: 'en', dateRange: '1D', colorTheme: theme, isTransparent: true,
+  autosize: true, largeChartUrl: '', chartOnly: false, noTimeScale: true,
+  trendLineColor: c.line, underLineColor: c.top, underLineBottomColor: c.bottom,
+ }, 'mini-symbol-overview');
+}
+
+function dashChart(containerId, symbol, name) {
+ const c = dashLineColors();
+ injectTV(containerId, {
+  symbols: [[name, symbol + '|1D']], chartOnly: false, height: '100%', locale: 'en', colorTheme: theme, autosize: true,
+  showVolume: false, showMA: false, hideDateRanges: false, hideMarketStatus: false, hideSymbolLogo: false,
+  scalePosition: 'right', scaleMode: 'Normal', fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif', fontSize: '10',
+  noTimeScale: false, valuesTracking: '1', changeMode: 'price-and-percent', chartType: 'area', lineWidth: 2, lineType: 0,
+  dateRanges: ['1d|1', '1w|15', '1m|30', '3m|60', '12m|1D', '60m|1W', 'all|1M'], isTransparent: true,
+  lineColor: c.line, topColor: c.top, bottomColor: c.bottom, gridLineColor: 'rgba(0,0,0,0)',
+  widgetFontColor: theme === 'dark' ? '#a4a4b4' : '#585869',
+ }, 'symbol-overview');
+}
+
+function dashSelect(symbol, name, ticker, type, btn) {
+ document.querySelectorAll('.dash-tile').forEach(el => el.classList.toggle('on', !!btn && el === btn.parentElement));
+ const nameEl = document.getElementById('dashChartName');
+ if (nameEl) nameEl.textContent = name;
+ const full = document.getElementById('dashFull');
+ if (full) full.onclick = () => goAsset(ticker, type);
+ dashChart('dashChart', symbol, name);
+}
+
+function openLesson(i) {
+ const l = DASH_LESSONS[i];
+ if (!l) return;
+ closeLesson();
+ const ov = document.createElement('div');
+ ov.className = 'modal-overlay lesson-overlay';
+ ov.id = 'lessonOverlay';
+ ov.innerHTML = `<div class="modal-box lesson-box" role="dialog" aria-modal="true" aria-labelledby="lessonTitle">
+  <button type="button" class="modal-close" onclick="closeLesson()" aria-label="Close">${DASH_ICON('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button>
+  <div class="lesson-ico dash-lesson-${i}">${l.icon}</div>
+  <h2 id="lessonTitle" class="lesson-title">${l.title}</h2>
+  <div class="lesson-time">${l.mins} min read</div>
+  ${l.body.map(p => `<p>${p}</p>`).join('')}
+  <button type="button" class="lesson-cta" onclick="${l.cta[1].replace(/"/g, '&quot;')}">${l.cta[0]}</button>
+ </div>`;
+ ov.addEventListener('click', e => { if (e.target === ov) closeLesson(); });
+ document.body.appendChild(ov);
+ ov.querySelector('.lesson-cta').focus();
+}
+
+function closeLesson() {
+ document.getElementById('lessonOverlay')?.remove();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLesson(); });
+
 function renderHome(t) {
  // Guard: only render for market tabs
  const validTabs = ['s','i','c'];
@@ -5779,71 +6008,97 @@ function renderHome(t) {
 
  const uid = Date.now();
  const pinnedStocks = getPinnedStocks();
+ const tiles = DASH_TILES[t];
+ const userPick = dashPick[t] !== DASH_DEFAULT_PICK[t];
+ const chartSym = userPick ? defaultChartSym : tiles[0][0];
+ const chartName = userPick ? displayName : tiles[0][1];
+ const chartTk = userPick ? ticker : tiles[0][2];
+ const chartType = userPick ? tickerType : tiles[0][3];
+ const popular = (t === 's' && pinnedStocks.length ? pinnedStocks.slice(0, 4).map(p => [tvSym(p.t, p.k), p.n, p.t, p.k]) : DASH_POPULAR[t]);
+ const hr = new Date().getHours();
+ const first = user?.name ? escapeHTML(user.name.split(' ')[0]) : '';
+ const greet = (hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening') + (first ? `, ${first}` : '');
+ const sub = { s: "Here's what's happening in the markets today.", i: "Here's how the world's major indexes are doing.", c: "Here's what crypto is doing today." }[t];
+ const popTitle = { s: pinnedStocks.length ? 'Your pinned stocks' : 'Popular stocks', i: 'World markets', c: 'More coins' }[t];
 
  document.getElementById('mainContent').innerHTML = `
- ${isSimple ? `
- <!-- SIMPLE MODE: Clean, friendly, no clutter -->
- <div style="margin-bottom:1rem;background:linear-gradient(135deg,rgba(108,92,231,.1),rgba(0,180,216,.06));border:1px solid rgba(108,92,231,.2);border-radius:14px;padding:1rem 1.25rem">
- <div style="font-family:'Geist',sans-serif;font-size:1rem;font-weight:800;margin-bottom:4px"> What would you like to do today?</div>
- <div id="wyl-buttons" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:.75rem">
- <button onclick="document.getElementById('si').focus()" style="background:var(--card);border:2px solid var(--accent);color:var(--accent2);border-radius:10px;padding:8px 16px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer"> Look up a stock</button>
- <button onclick="switchTab('port')" style="background:var(--card);border:2px solid var(--border2);color:var(--text2);border-radius:10px;padding:8px 16px;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer"> Portfolio</button>
- <button onclick="switchTab('pt')" style="background:var(--card);border:2px solid var(--border2);color:var(--text2);border-radius:10px;padding:8px 16px;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer"> Practice trading</button>
+ <div class="dash-head">
+ <h1>${greet}</h1>
+ <p>${sub}</p>
  </div>
- </div>` : `
- <!-- ADVANCED MODE: Pinned stocks + customize -->
- ${pinnedStocks.length ? `
- <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
- <span style="font-size:.62rem;color:var(--text3);letter-spacing:.08em;font-weight:600"> PINNED</span>
- ${pinnedStocks.map(p=>`<button class="pin-chip pinned" onclick="goAsset('${p.t}','${p.k}')">
- <span style="font-size:.75rem;font-weight:800;color:var(--accent2)">${p.t}</span>
- <span style="font-size:.65rem;color:var(--text3)">${p.n}</span>
- <span onclick="event.stopPropagation();unpinStock('${p.t}')" style="margin-left:2px;color:var(--text3);font-size:.65rem"></span>
- </button>`).join('')}
- <button class="customize-btn" onclick="if(requireAuth('Custom Homepage'))toggleCustomizePanel()"> Customize</button>
- </div>` : `
- <div style="display:flex;justify-content:flex-end;margin-bottom:.75rem">
- <button class="customize-btn" onclick="if(requireAuth('Custom Homepage'))toggleCustomizePanel()"> Customize Homepage</button>
- </div>`}
 
- <!-- Customize panel (hidden by default) -->
+ <div class="dash-tiles">
+ ${tiles.map(([s, n, tk, ty], i) => `
+ <div class="dash-tile${s === chartSym ? ' on' : ''}">
+ <div class="dash-tile-tv" id="dash-tile-${uid}-${i}"></div>
+ <button type="button" class="dash-hit" aria-label="Show ${n} on the chart" onclick="dashSelect('${s}','${n}','${tk}','${ty}',this)"></button>
+ </div>`).join('')}
+ </div>
+
+ <div class="card dash-chart-card">
+ <div class="dash-chart-hdr">
+ <div class="dash-chart-actions">
+ ${!isSimple ? `<button type="button" class="dash-btn" onclick="changeDashStock('${t}')">Change</button>` : ''}
+ <button type="button" class="dash-btn dash-btn-main" id="dashFull" onclick="goAsset('${chartTk}','${chartType}')">Full analysis</button>
+ </div>
+ </div>
+ <div id="dashChart" class="dash-chart"></div>
+ </div>
+
+ <div class="dash-sec-h">
+ <h2>${popTitle}</h2>
+ ${t === 's' ? `<button type="button" class="rail-link" onclick="if(requireAuth('Custom Homepage'))toggleCustomizePanel()">${pinnedStocks.length ? 'Edit pins' : 'Pin your own'}</button>` : ''}
+ </div>
  <div id="customizePanel" class="customize-panel" style="display:none">
- <div style="font-family:'Geist',sans-serif;font-size:.88rem;font-weight:800;margin-bottom:.5rem"> Pin Stocks to Homepage</div>
- <div style="font-size:.74rem;color:var(--text2);margin-bottom:1rem">Pin up to 6 stocks for one-click access. Click any stock below to pin/unpin it.</div>
+ <div style="font-size:.92rem;font-weight:650;margin-bottom:.4rem">Pin stocks to your Markets page</div>
+ <div style="font-size:.8rem;color:var(--text2);margin-bottom:1rem">Pin up to 6 stocks. The first 4 show up here.</div>
  <div style="display:flex;gap:6px;flex-wrap:wrap" id="pinPickerChips">
  ${PICKS.s.concat(PICKS.c.slice(0,3)).map(t2=>{
  const f=TICKERS.find(e=>e.t===t2)||{t:t2,n:t2,k:'s'};
  const isPinned=pinnedStocks.some(p=>p.t===t2);
- return `<button class="pin-chip${isPinned?' pinned':''}" onclick="togglePin('${f.t}','${f.n}','${f.k}')">${isPinned?'':''} ${f.t}</button>`;
+ return `<button class="pin-chip${isPinned?' pinned':''}" onclick="togglePin('${f.t}','${f.n}','${f.k}')">${f.t}</button>`;
  }).join('')}
  </div>
  <div style="margin-top:.875rem;display:flex;gap:6px">
- <button onclick="toggleCustomizePanel()" style="background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:8px;padding:7px 16px;font-family:inherit;font-size:.76rem;font-weight:700;cursor:pointer">Done</button>
- <button onclick="clearPins()" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:7px 14px;font-family:inherit;font-size:.76rem;cursor:pointer;color:var(--text2)">Clear all pins</button>
+ <button class="dash-btn dash-btn-main" onclick="toggleCustomizePanel()">Done</button>
+ <button class="dash-btn" onclick="clearPins()">Clear all pins</button>
  </div>
- </div>`}
+ </div>
+ <div class="dash-pop">
+ ${popular.map(([s, n, tk, ty], i) => `
+ <div class="dash-card">
+ <div class="dash-card-tv" id="dash-pop-${uid}-${i}"></div>
+ <button type="button" class="dash-hit" aria-label="Open ${escapeHTML(n)}" onclick="goAsset('${tk}','${ty}')"></button>
+ </div>`).join('')}
+ </div>
 
- <div class="card" style="margin-bottom:.9rem;overflow:visible">
+ <section class="dash-learn">
+ <div class="dash-learn-intro">
+ <h2>Learn &amp; grow</h2>
+ <p>Short, plain-English lessons for new investors.</p>
+ </div>
+ ${DASH_LESSONS.map((l, i) => `
+ <button type="button" class="dash-lesson dash-lesson-${i}" onclick="openLesson(${i})">
+ <span class="dash-lesson-ico">${l.icon}</span>
+ <span class="dash-lesson-title">${l.title}</span>
+ <span class="dash-lesson-time">${l.mins} min read</span>
+ </button>`).join('')}
+ </section>
+
+ <div class="card" style="margin-top:28px;overflow:visible">
  <div class="card-hdr">
- <div class="card-hdr-title">${mode==='beginner' ? '🔥 What\'s Hot Right Now?' : isSimple ? ' What\'s Moving Today?' : ' Top Movers of the Day'}</div>
- <div class="card-hdr-sub">${mode==='beginner' ? 'These stocks are going up or down the most today — like a scoreboard!' : isSimple ? 'Stocks going up and down the most right now' : 'Biggest gainers & losers · real-time'}</div>
+ <div class="card-hdr-title">Top movers today</div>
+ <div class="card-hdr-sub">Biggest gainers and losers right now</div>
  </div>
  <div id="tv-ov-${uid}" style="height:${isSimple?380:450}px"></div>
- </div>
- <div class="card" style="margin-bottom:1rem">
- <div class="card-hdr">
- <div class="card-hdr-title">${mode==='beginner' ? `📊 ${displayName} — Price Over Time` : isSimple ? ` ${displayName} Price Chart` : `${displayName} (${ticker}) — ${chartLabel}`}</div>
- <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
- <div class="card-hdr-sub">${mode==='beginner' ? 'When the line goes up = the price went up. Simple as that! 📈' : isSimple ? 'The price over time — higher = more valuable' : 'Click any quick pick · drag & zoom · add indicators'}</div>
- ${!isSimple ? `<button onclick="changeDashStock('${t}')" style="font-size:.62rem;padding:2px 9px;border-radius:6px;border:1px solid var(--border2);background:var(--card2);color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text2)'"> Change</button>` : ''}
- </div>
- </div>
- <div id="tv-main-${uid}" style="height:${isSimple?380:500}px;min-height:${isSimple?380:500}px"></div>
  </div>
  <div id="obChecklistWrap"></div>
  <div id="homeSections"></div>`;
 
  setTimeout(() => {
+ tiles.forEach(([s], i) => dashMini(`dash-tile-${uid}-${i}`, s));
+ popular.forEach(([s], i) => dashMini(`dash-pop-${uid}-${i}`, s));
+ dashChart('dashChart', chartSym, chartName);
  injectTV(`tv-ov-${uid}`, {
  colorTheme: theme, dateRange: '1D', exchange: 'US',
  showChart: true, locale: 'en', isTransparent: true,
@@ -5856,14 +6111,6 @@ function renderHome(t) {
  belowLineFillColorFalling: 'rgba(241,53,53,0.12)',
  symbolActiveColor: 'rgba(41,191,138,0.12)',
  }, 'hotlists');
-
- injectTV(`tv-main-${uid}`, {
- autosize: true, symbol: defaultChartSym, interval: chartInterval, timezone: 'Etc/UTC',
- theme, style: chartStyle, locale: 'en',
- toolbar_bg: theme === 'dark' ? '#05050e' : '#ffffff',
- withdateranges: true, enable_publishing: false,
- allow_symbol_change: true, save_image: false,
- }, 'advanced-chart');
  }, 50);
 
  applyModeLabels();
