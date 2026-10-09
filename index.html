@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <!-- Google Identity Services -->
 <script src="https://accounts.google.com/gsi/client" async></script>
@@ -48,9 +48,10 @@
 <!-- ── Favicon ── -->
 <link rel="icon" type="image/png" href="/stocksight-logo.png">
 <link rel="apple-touch-icon" href="/stocksight-logo.png">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236c5ce7'/><polyline points='12,72 32,45 50,55 70,25 88,35' stroke='white' stroke-width='9' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
@@ -78,7 +79,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;overflow-x:hidden}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;overflow-x:hidden;max-width:100vw}
+body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;overflow-x:hidden;max-width:100vw}
 [data-theme="dark"] body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 1000px 600px at 50% -5%,rgba(108,92,231,0.06),transparent 60%);pointer-events:none;z-index:0}
 
 .screen{position:relative;z-index:1;width:100%;max-width:100%;margin:0 auto;padding:1.5rem 2.5rem}
@@ -104,7 +105,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;gap:12px;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none}
 .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,rgba(108,92,231,.3),rgba(108,92,231,.1));border:1px solid rgba(108,92,231,.5);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px var(--glow),inset 0 1px 0 rgba(255,255,255,0.1)}
-.logo-name{font-family:'Manrope',sans-serif;font-weight:800;font-size:1.12rem;letter-spacing:-.03em}
+.logo-name{font-family:'Geist',sans-serif;font-weight:800;font-size:1.12rem;letter-spacing:-.03em}
 .logo-name span{color:var(--accent2)}
 .hdr-actions{display:flex;align-items:center;gap:8px}
 .btn{border:none;border-radius:var(--r2);cursor:pointer;font-family:inherit;font-size:.8rem;transition:all .15s}
@@ -123,7 +124,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .gate-body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;position:relative;overflow:hidden}
 @keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.8}}
 .gate-tag{display:none}
-.gate-title{font-family:'Manrope',sans-serif;font-size:3.5rem;font-weight:900;letter-spacing:-.05em;margin-bottom:1rem;line-height:.97;max-width:700px}
+.gate-title{font-family:'Geist',sans-serif;font-size:3.5rem;font-weight:900;letter-spacing:-.05em;margin-bottom:1rem;line-height:.97;max-width:700px}
 .gate-title span{color:var(--green)}
 .gate-sub{font-size:.95rem;color:var(--text2);line-height:1.75;max-width:480px;margin-bottom:2rem}
 .gate-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%;margin-bottom:.75rem}
@@ -139,8 +140,8 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .gate-pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem;max-width:700px;margin:2.25rem auto 0;text-align:left;width:100%}
 .gate-pillar{padding:1.2rem 1.3rem;border:1px solid var(--border);border-radius:14px;background:var(--card);transition:border-color .2s}
 .gate-pillar:hover{border-color:var(--border2)}
-.gp-num{font-family:'Manrope',sans-serif;font-size:.58rem;font-weight:800;color:var(--green);letter-spacing:.16em;margin-bottom:.55rem;opacity:.7}
-.gp-title{font-family:'Manrope',sans-serif;font-size:.84rem;font-weight:800;margin-bottom:.45rem;letter-spacing:-.015em;line-height:1.25}
+.gp-num{font-family:'Geist',sans-serif;font-size:.58rem;font-weight:800;color:var(--green);letter-spacing:.16em;margin-bottom:.55rem;opacity:.7}
+.gp-title{font-family:'Geist',sans-serif;font-size:.84rem;font-weight:800;margin-bottom:.45rem;letter-spacing:-.015em;line-height:1.25}
 .gp-body{font-size:.71rem;color:var(--text2);line-height:1.65}
 @media(max-width:640px){.gate-pillars{grid-template-columns:1fr}}
 
@@ -151,7 +152,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 .modal-close{position:absolute;top:16px;right:16px;background:var(--card2);border:1px solid var(--border);color:var(--text3);font-size:.9rem;cursor:pointer;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .modal-close:hover{color:var(--text);border-color:var(--border2)}
-.modal-heading{font-family:'Manrope',sans-serif;font-size:1.22rem;font-weight:800;margin-bottom:4px;letter-spacing:-.02em}
+.modal-heading{font-family:'Geist',sans-serif;font-size:1.22rem;font-weight:800;margin-bottom:4px;letter-spacing:-.02em}
 .modal-sub{font-size:.77rem;color:var(--text2);margin-bottom:1.4rem;line-height:1.6}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:.62rem;color:var(--text3);letter-spacing:.1em;margin-bottom:6px;font-weight:600}
@@ -179,7 +180,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .wb-left strong{color:var(--accent2);font-weight:600}
 .wb-right{text-align:right}
 .wb-date{font-size:.69rem;color:var(--text3)}
-.wb-time{font-family:'Manrope',sans-serif;font-size:.98rem;font-weight:700;color:var(--accent2);letter-spacing:.04em}
+.wb-time{font-family:'Geist',sans-serif;font-size:.98rem;font-weight:700;color:var(--accent2);letter-spacing:.04em}
 
 /* TABS */
 .tabs{display:flex;gap:3px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:4px;margin-bottom:1.1rem;box-shadow:0 2px 12px var(--shadow2)}
@@ -212,7 +213,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 #sdrop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);border:1px solid var(--border2);border-radius:var(--r);z-index:50;overflow:hidden;box-shadow:0 16px 48px var(--shadow),0 0 0 1px rgba(255,255,255,0.04);display:none}
 .sd-opt{display:flex;align-items:center;gap:11px;padding:11px 15px;cursor:pointer;transition:background .1s;font-size:.82rem}
 .sd-opt:hover{background:var(--card2)}
-.sd-tick{font-weight:700;font-size:.84rem;min-width:52px;font-family:'Manrope',sans-serif}
+.sd-tick{font-weight:700;font-size:.84rem;min-width:52px;font-family:'Geist',sans-serif}
 .sd-name{color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sd-tag{font-size:.58rem;color:var(--text3);border:1px solid var(--border2);border-radius:5px;padding:2px 7px;font-weight:500}
 .btn-go{border:none;border-radius:var(--r);padding:12px 24px;font-family:inherit;font-weight:700;font-size:.85rem;color:#fff;cursor:pointer;white-space:nowrap;transition:all .2s;letter-spacing:-.01em}
@@ -223,7 +224,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 
 /* PICKS */
 .picks{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.4rem}
-.pick{font-size:.7rem;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:'Manrope',sans-serif;font-weight:700;transition:all .15s;letter-spacing:-.01em}
+.pick{font-size:.7rem;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:'Geist',sans-serif;font-weight:700;transition:all .15s;letter-spacing:-.01em}
 .pick:hover{border-color:var(--border2);color:var(--text2);background:var(--card)}
 .pick.ps{border-color:rgba(108,92,231,.45);color:var(--accent2);background:rgba(108,92,231,.08)}
 .pick.pi{border-color:rgba(0,180,216,.45);color:var(--teal);background:rgba(0,180,216,.08)}
@@ -232,7 +233,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 /* CARDS */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.25rem;transition:border-color .2s}
 .card-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;background:linear-gradient(135deg,var(--card),var(--card2))}
-.card-hdr-title{font-family:'Manrope',sans-serif;font-size:.97rem;font-weight:800;letter-spacing:-.01em}
+.card-hdr-title{font-family:'Geist',sans-serif;font-size:.97rem;font-weight:800;letter-spacing:-.01em}
 .card-hdr-sub{font-size:.66rem;color:var(--text3);margin-top:2px}
 
 /* ASSET HEADER */
@@ -241,7 +242,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .asset-top.s{border-color:rgba(108,92,231,.4)}
 .asset-top.i{border-color:rgba(0,180,216,.4)}
 .asset-top.c{border-color:rgba(245,158,11,.4)}
-.a-ticker{font-family:'Manrope',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.a-ticker{font-family:'Geist',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.03em;line-height:1}
 .a-name{font-size:.75rem;color:var(--text2);margin-top:4px}
 .a-badges{display:flex;gap:6px;margin-top:10px;align-items:center;flex-wrap:wrap}
 .badge{font-size:.59rem;padding:3px 9px;border-radius:20px;font-weight:600;letter-spacing:.04em}
@@ -264,7 +265,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .wl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:10px}
 .wl-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1rem;cursor:pointer;transition:all .22s;position:relative}
 .wl-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 8px 24px var(--shadow2)}
-.wl-tick{font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:-.02em}
+.wl-tick{font-family:'Geist',sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:-.02em}
 .wl-n{font-size:.67rem;color:var(--text2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wl-rm{position:absolute;top:9px;right:9px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:.85rem;line-height:1;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .wl-rm:hover{color:var(--red);background:var(--red2)}
@@ -280,7 +281,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .btn-cmp:hover{opacity:.9;transform:translateY(-1px)}
 
 .port-table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1rem}
-.port-table-hdr{padding:11px 15px;border-bottom:1px solid var(--border);font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--card),var(--card2))}
+.port-table-hdr{padding:11px 15px;border-bottom:1px solid var(--border);font-family:'Geist',sans-serif;font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--card),var(--card2))}
 table{width:100%;border-collapse:collapse}
 th{font-size:.61rem;color:var(--text3);letter-spacing:.1em;padding:0 12px 10px;border-bottom:1px solid var(--border);text-align:left;font-weight:600}
 th:not(:first-child){text-align:right}
@@ -288,7 +289,7 @@ td{padding:10px 12px;font-size:.79rem;border-bottom:1px solid var(--border)}
 td:not(:first-child){text-align:right}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--card2)}
-.td-tick{font-family:'Manrope',sans-serif;font-weight:700;color:var(--teal);cursor:pointer}
+.td-tick{font-family:'Geist',sans-serif;font-weight:700;color:var(--teal);cursor:pointer}
 .td-tick:hover{text-decoration:underline}
 .btn-rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.82rem;width:22px;height:22px;border-radius:5px;transition:all .15s}
 .btn-rm:hover{color:var(--red);background:var(--red2)}
@@ -297,7 +298,7 @@ tr:hover td{background:var(--card2)}
 .prof-sidebar{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;position:sticky;top:1rem}
 .prof-user{padding:1.4rem;border-bottom:1px solid var(--border);text-align:center;position:relative}
 .prof-av{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,rgba(108,92,231,.3),rgba(108,92,231,.1));border:2px solid rgba(108,92,231,.5);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:var(--accent2);margin:0 auto 10px}
-.prof-uname{font-family:'Manrope',sans-serif;font-size:.92rem;font-weight:700}
+.prof-uname{font-family:'Geist',sans-serif;font-size:.92rem;font-weight:700}
 .prof-uemail{font-size:.69rem;color:var(--text2);margin-top:3px}
 .prof-nav{padding:.5rem}
 .pni{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:.79rem;color:var(--text2);border:1px solid transparent;transition:all .15s;font-weight:500}
@@ -308,7 +309,7 @@ tr:hover td{background:var(--card2)}
 .btn-so:hover{color:var(--red);border-color:var(--red);background:var(--red2)}
 .psec{display:none}
 .psec.on{display:block}
-.psec-title{font-family:'Manrope',sans-serif;font-size:1.08rem;font-weight:700;margin-bottom:1.1rem;padding-bottom:.875rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;letter-spacing:-.02em}
+.psec-title{font-family:'Geist',sans-serif;font-size:1.08rem;font-weight:700;margin-bottom:1.1rem;padding-bottom:.875rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;letter-spacing:-.02em}
 .sg{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.1rem}
 .sg-lbl{font-size:.63rem;color:var(--text3);letter-spacing:.12em;padding:10px 16px 7px;background:var(--card2);border-bottom:1px solid var(--border);font-weight:700}
 .sg-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);gap:12px}
@@ -331,7 +332,7 @@ tr:hover td{background:var(--card2)}
 .h-err{font-size:.71rem;color:var(--red);margin-top:3px;min-height:14px}
 .h-list{display:flex;flex-direction:column;gap:5px;margin-top:7px;max-height:250px;overflow-y:auto}
 .h-row{display:flex;align-items:center;gap:9px;background:var(--card2);border:1px solid var(--border);border-radius:var(--r2);padding:9px 12px}
-.h-tick{font-family:'Manrope',sans-serif;font-size:.84rem;font-weight:800;color:var(--teal);min-width:52px}
+.h-tick{font-family:'Geist',sans-serif;font-size:.84rem;font-weight:800;color:var(--teal);min-width:52px}
 .h-det{flex:1;font-size:.71rem;color:var(--text2)}
 .h-rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.88rem;line-height:1;transition:color .15s}
 .h-rm:hover{color:var(--red)}
@@ -437,7 +438,7 @@ body.compact .asset-top{padding:1rem;margin-bottom:.7rem}
 
 /* ── SEARCH HISTORY (#19) ── */
 .search-hist{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.5rem;min-height:0}
-.sh-chip{font-size:.66rem;padding:3px 10px;border-radius:12px;border:1px solid var(--border);background:var(--card2);color:var(--text2);cursor:pointer;font-family:'Manrope',sans-serif;font-weight:600;transition:all .15s}
+.sh-chip{font-size:.66rem;padding:3px 10px;border-radius:12px;border:1px solid var(--border);background:var(--card2);color:var(--text2);cursor:pointer;font-family:'Geist',sans-serif;font-weight:600;transition:all .15s}
 .sh-chip:hover{border-color:var(--accent);color:var(--accent2);background:rgba(108,92,231,.08)}
 
 /* ── NOTES (#2) ── */
@@ -458,14 +459,14 @@ body.compact .asset-top{padding:1rem;margin-bottom:.7rem}
 
 /* ── FEAR & GREED GAUGE (#9) ── */
 .gauge-wrap{display:flex;flex-direction:column;align-items:center;padding:.5rem 0}
-.gauge-label{font-family:'Manrope',sans-serif;font-size:1.6rem;font-weight:800;margin-top:.5rem}
+.gauge-label{font-family:'Geist',sans-serif;font-size:1.6rem;font-weight:800;margin-top:.5rem}
 .gauge-sublabel{font-size:.7rem;color:var(--text3);margin-top:2px}
 
 /* ── SECTOR HEATMAP (#10) ── */
 .heatmap-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:.75rem .75rem 1rem}
 .hm-cell{border-radius:8px;padding:.5rem .4rem;text-align:center;cursor:default;transition:transform .15s}
 .hm-name{font-size:.62rem;color:var(--text2);margin-bottom:3px;font-weight:500;line-height:1.2}
-.hm-pct{font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:800}
+.hm-pct{font-family:'Geist',sans-serif;font-size:.82rem;font-weight:800}
 .hm-cell:hover{transform:scale(1.04)}
 .hm-name{font-size:.65rem;font-weight:700;margin-bottom:2px}
 .hm-pct{font-size:.82rem;font-weight:800}
@@ -591,8 +592,8 @@ header{margin-bottom:2rem}
 
 /* ── PROFILE CREATOR TAB (shared classes) ── */
 .about-hero{background:linear-gradient(135deg,var(--card),var(--card2));border:1px solid var(--border2);border-radius:var(--r);padding:2rem;margin-bottom:1rem;position:relative;overflow:hidden;display:flex;align-items:center;gap:1.75rem;flex-wrap:wrap}
-.about-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,rgba(108,92,231,.4),rgba(108,92,231,.15));border:2px solid rgba(108,92,231,.5);display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;font-size:2rem;font-weight:800;color:var(--accent2);flex-shrink:0;box-shadow:0 0 28px var(--glow)}
-.about-name{font-family:'Manrope',sans-serif;font-size:1.65rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.about-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,rgba(108,92,231,.4),rgba(108,92,231,.15));border:2px solid rgba(108,92,231,.5);display:flex;align-items:center;justify-content:center;font-family:'Geist',sans-serif;font-size:2rem;font-weight:800;color:var(--accent2);flex-shrink:0;box-shadow:0 0 28px var(--glow)}
+.about-name{font-family:'Geist',sans-serif;font-size:1.65rem;font-weight:800;letter-spacing:-.03em;line-height:1}
 .about-tagline{font-size:.82rem;color:var(--text2);margin-top:6px;line-height:1.6;max-width:480px}
 .about-location{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--text3);margin-top:8px}
 .about-info-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start}
@@ -615,11 +616,11 @@ header{margin-bottom:2rem}
 #helpPanel{position:fixed;top:0;right:-420px;width:400px;max-width:100vw;height:100%;background:var(--bg);border-left:1px solid var(--border2);z-index:1101;display:flex;flex-direction:column;transition:right .28s cubic-bezier(.4,0,.2,1);overflow:hidden;backdrop-filter:none;-webkit-backdrop-filter:none}
 #helpPanel.open{right:0}
 .help-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
-.help-hdr-title{font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.help-hdr-title{font-family:'Geist',sans-serif;font-size:1rem;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
 .help-close-btn{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:.8rem;color:var(--text2);cursor:pointer;transition:all .15s}
 .help-close-btn:hover{color:var(--text);border-color:var(--border2)}
 .help-body{flex:1;overflow-y:auto;padding:14px 18px 24px}
-.help-section-title{font-family:'Manrope',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.1em;color:var(--text3);margin:16px 0 8px}
+.help-section-title{font-family:'Geist',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.1em;color:var(--text3);margin:16px 0 8px}
 .help-quick-btns{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
 .help-quick-btn{background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:.72rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s}
 .help-quick-btn:hover{background:var(--card3);color:var(--accent2);border-color:rgba(108,92,231,.4)}
@@ -632,8 +633,8 @@ header{margin-bottom:2rem}
 .faq-item.open .faq-a{display:block}
 .help-about-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-top:6px}
 .help-about-row{display:flex;align-items:center;gap:13px;margin-bottom:12px}
-.help-about-av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(108,92,231,.4),rgba(108,92,231,.15));border:2px solid rgba(108,92,231,.4);display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;font-size:1.4rem;font-weight:800;color:var(--accent2);flex-shrink:0}
-.help-about-name{font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;letter-spacing:-.02em}
+.help-about-av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(108,92,231,.4),rgba(108,92,231,.15));border:2px solid rgba(108,92,231,.4);display:flex;align-items:center;justify-content:center;font-family:'Geist',sans-serif;font-size:1.4rem;font-weight:800;color:var(--accent2);flex-shrink:0}
+.help-about-name{font-family:'Geist',sans-serif;font-size:1rem;font-weight:800;letter-spacing:-.02em}
 .help-about-sub{font-size:.72rem;color:var(--text2);margin-top:2px}
 .help-about-bio{font-size:.78rem;color:var(--text2);line-height:1.7;margin-bottom:12px}
 .help-about-links{display:flex;flex-direction:column;gap:7px}
@@ -655,7 +656,7 @@ header{margin-bottom:2rem}
 .pie-legend-row{display:flex;align-items:center;gap:8px;font-size:.75rem}
 .pie-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 .pie-legend-label{color:var(--text2);flex:1}
-.pie-legend-pct{color:var(--text);font-weight:700;font-family:'Manrope',sans-serif}
+.pie-legend-pct{color:var(--text);font-weight:700;font-family:'Geist',sans-serif}
 
 /* ── NEWS FEED CARD ── */
 .news-card-inner{height:380px}
@@ -670,7 +671,7 @@ header{margin-bottom:2rem}
 .ob-step.active{display:block}
 @keyframes obFadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .ob-q-label{font-size:.62rem;color:var(--accent2);letter-spacing:.1em;font-weight:700;margin-bottom:8px}
-.ob-q-title{font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.5rem}
+.ob-q-title{font-family:'Geist',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.5rem}
 .ob-q-sub{font-size:.82rem;color:var(--text2);margin-bottom:1.75rem;line-height:1.6}
 .ob-options{display:flex;flex-direction:column;gap:10px;margin-bottom:2rem}
 .ob-opt{display:flex;align-items:center;gap:14px;padding:1rem 1.25rem;border-radius:14px;border:2px solid var(--border);background:var(--card);cursor:pointer;transition:all .18s;text-align:left}
@@ -701,7 +702,7 @@ header{margin-bottom:2rem}
 @keyframes tutBounce{0%,100%{transform:translateY(0) rotate(-45deg)}50%{transform:translateY(-8px) rotate(-45deg)}}
 .tut-card{position:fixed;z-index:9004;background:var(--card);border:1px solid rgba(108,92,231,.4);border-radius:16px;padding:1.25rem 1.5rem;max-width:300px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 1px rgba(108,92,231,.2);pointer-events:all;transition:all .35s cubic-bezier(.16,1,.3,1)}
 .tut-step-label{font-size:.58rem;color:var(--accent2);letter-spacing:.1em;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.tut-title{font-family:'Manrope',sans-serif;font-size:.95rem;font-weight:800;margin-bottom:6px}
+.tut-title{font-family:'Geist',sans-serif;font-size:.95rem;font-weight:800;margin-bottom:6px}
 .tut-desc{font-size:.78rem;color:var(--text2);line-height:1.65;margin-bottom:.875rem}
 .tut-action-prompt{display:none;align-items:center;gap:8px;padding:8px 12px;background:rgba(108,92,231,.1);border:1px solid rgba(108,92,231,.25);border-radius:8px;margin-bottom:.875rem;font-size:.74rem;color:var(--accent2);font-weight:600}
 .tut-action-prompt.show{display:flex}
@@ -721,7 +722,7 @@ header{margin-bottom:2rem}
 /* ── BROKER MODAL ── */
 #brokerModal{position:fixed;inset:0;z-index:8000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
 .broker-card{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:2rem;max-width:440px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,.4)}
-.broker-title{font-family:'Manrope',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:6px}
+.broker-title{font-family:'Geist',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:6px}
 .broker-sub{font-size:.78rem;color:var(--text2);margin-bottom:1.5rem;line-height:1.6}
 .broker-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem}
 .broker-opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:2px solid var(--border);background:var(--card2);cursor:pointer;transition:all .18s}
@@ -744,10 +745,10 @@ header{margin-bottom:2rem}
 .lb-row{display:grid;grid-template-columns:32px 1fr auto auto;align-items:center;gap:.75rem;padding:.7rem 1rem;border-bottom:1px solid var(--border);transition:background .15s}
 .lb-row:last-child{border-bottom:none}
 .lb-row:hover{background:var(--card2)}
-.lb-rank{font-family:'Manrope',sans-serif;font-weight:800;font-size:.82rem;color:var(--text3);text-align:center}
+.lb-rank{font-family:'Geist',sans-serif;font-weight:800;font-size:.82rem;color:var(--text3);text-align:center}
 .lb-rank.top{color:var(--gold)}
 .lb-name{font-size:.82rem;font-weight:600}
-.lb-val{font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:800}
+.lb-val{font-family:'Geist',sans-serif;font-size:.82rem;font-weight:800}
 .lb-ret{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px}
 /* Notification toggle pill */
 .notif-tog{display:inline-flex;width:38px;height:22px;border-radius:11px;background:var(--border2);cursor:pointer;transition:background .2s;flex-shrink:0;position:relative}
@@ -755,7 +756,7 @@ header{margin-bottom:2rem}
 .notif-tog.on{background:var(--green)}
 .notif-tog.on::after{left:19px}
 .pt-stat{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center}
-.pt-stat-val{font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800}
+.pt-stat-val{font-family:'Geist',sans-serif;font-size:1.1rem;font-weight:800}
 .pt-stat-lbl{font-size:.6rem;color:var(--text3);letter-spacing:.08em;margin-top:3px}
 
 /* ── CUSTOM HOMEPAGE ── */
@@ -843,7 +844,7 @@ body.mode-beginner .main-content { padding: 20px 18px; gap: 0; }
 /* ── EMPTY STATES ── */
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem;text-align:center;min-height:220px}
 .empty-state-art{font-size:3.5rem;margin-bottom:1rem;filter:drop-shadow(0 4px 12px rgba(0,0,0,.2))}
-.empty-state-title{font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;margin-bottom:.5rem}
+.empty-state-title{font-family:'Geist',sans-serif;font-size:1rem;font-weight:800;margin-bottom:.5rem}
 .empty-state-sub{font-size:.78rem;color:var(--text2);line-height:1.65;margin-bottom:1.25rem;max-width:280px}
 .empty-state-btn{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border:none;border-radius:10px;padding:9px 20px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .18s}
 .empty-state-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--glow)}
@@ -916,7 +917,7 @@ body.mode-beginner .main-content { padding: 20px 18px; gap: 0; }
  }
  .card-hdr{
   padding:18px 18px 6px;
-  font-family:'Manrope',sans-serif;
+  font-family:'Geist',sans-serif;
   font-size:1.1rem;font-weight:800;letter-spacing:-.02em;
  }
  .card-hdr-right{padding-right:18px}
@@ -1222,7 +1223,7 @@ html{scroll-behavior:smooth}
 [data-tip]::after{
  content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
  background:var(--card);border:1px solid var(--border2);border-radius:7px;
- padding:5px 10px;font-size:.68rem;font-family:'Inter',sans-serif;color:var(--text);
+ padding:5px 10px;font-size:.68rem;font-family:'Geist',sans-serif;color:var(--text);
  white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9000;
  box-shadow:0 4px 16px rgba(0,0,0,.3);
 }
@@ -1255,7 +1256,7 @@ html{scroll-behavior:smooth}
 
 /* ── DAY TRADE ── */
 .dt-stat{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.75rem .5rem;text-align:center}
-.dt-stat-v{font-family:'Manrope',sans-serif;font-size:1.05rem;font-weight:800;line-height:1.15}
+.dt-stat-v{font-family:'Geist',sans-serif;font-size:1.05rem;font-weight:800;line-height:1.15}
 .dt-stat-l{font-size:.56rem;color:var(--text3);letter-spacing:.07em;margin-top:5px;font-weight:600}
 .dt-ctrl{background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:8px 14px;font-family:inherit;font-size:.75rem;font-weight:600;color:var(--text2);cursor:pointer}
 .dt-ctrl:hover{border-color:var(--accent);color:var(--text)}
@@ -1278,6 +1279,275 @@ html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){
  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+/* ══════════════════════════════════════════
+   2026 REDESIGN: sidebar shell, Geist type, calm surfaces
+   Tokens below override the originals for both themes.
+   ══════════════════════════════════════════ */
+:root,[data-theme="dark"]{
+ --bg:#0f0f13;--card:#16161c;--card2:#1c1c23;--card3:#23232b;
+ --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.11);--border3:rgba(255,255,255,.18);
+ --text:#ececf1;--text2:#a4a4b4;--text3:#7a7a8e;
+ --accent:#8b5cf6;--accent2:#b49cfc;--accent3:#7c3aed;
+ --green:#a78bfa;--green2:rgba(167,139,250,.12);--red:#f87171;--red2:rgba(248,113,113,.1);
+ --gold:#f2b544;--teal:#4cc3e6;
+ --glow:transparent;--glow2:rgba(139,92,246,.13);
+ --shadow:rgba(0,0,0,.45);--shadow2:rgba(0,0,0,.25);
+ --ink:#ececf1;--ink-text:#0f0f13;
+ --d1:#8b5cf6;--d2:#b49cfc;--d3:#6d28d9;--d4:#ddd3fe;--d5:#5b5b6e;--dc:#34343f;--dbg:#23232b;
+ --r:14px;--r2:10px;
+ --mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+[data-theme="light"]{
+ --bg:#f6f6f9;--card:#ffffff;--card2:#f3f3f7;--card3:#ebebf1;
+ --border:#e8e8ef;--border2:#dcdce5;--border3:#c8c8d4;
+ --text:#15151d;--text2:#585869;--text3:#787889;
+ --accent:#6d28d9;--accent2:#6d28d9;--accent3:#5b21b6;
+ --green:#7c3aed;--green2:rgba(124,58,237,.09);--red:#d92d2d;--red2:rgba(217,45,45,.07);
+ --gold:#b45309;--teal:#0e7490;
+ --glow:transparent;--glow2:rgba(109,40,217,.08);
+ --shadow:rgba(28,24,56,.10);--shadow2:rgba(28,24,56,.05);
+ --ink:#15151d;--ink-text:#ffffff;
+ --d1:#6d28d9;--d2:#a78bfa;--d3:#4c1d95;--d4:#ddd6fe;--d5:#9ca3af;--dc:#e4e4ec;--dbg:#f0f0f5;
+}
+body{font-family:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;letter-spacing:-.006em;font-variant-numeric:tabular-nums;font-feature-settings:'ss01'}
+html,body{overflow-x:clip}
+[data-theme="dark"] body::before{display:none}
+::selection{background:var(--glow2);color:var(--text)}
+::-webkit-scrollbar-thumb:hover{background:var(--border3)}
+[data-tip]::after{font-family:'Geist',sans-serif;box-shadow:0 6px 20px var(--shadow)}
+
+/* ── Logo (real mark) ── */
+.logo-icon{width:34px;height:34px;padding:0;border:none;background:none;box-shadow:none;border-radius:9px;overflow:hidden;flex-shrink:0}
+.logo-icon img{width:100%;height:100%;display:block}
+.logo-name{font-weight:700;font-size:1.1rem;letter-spacing:-.03em;color:var(--text)}
+.logo-name span{color:var(--accent2)}
+
+/* ── App shell ── */
+.ss-shell{display:grid;grid-template-columns:236px minmax(0,1fr) 324px;min-height:100vh}
+.ss-side{position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:20px 14px 16px;background:var(--card);border-right:1px solid var(--border);scrollbar-width:none}
+.ss-side::-webkit-scrollbar{display:none}
+.ss-side-logo{padding:2px 10px 20px}
+.ss-main{min-width:0;display:flex;flex-direction:column}
+.ss-content{width:100%;max-width:1180px;margin:0 auto;padding:24px 32px 40px;flex:1}
+.ss-rail{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--card);border-left:1px solid var(--border);padding:20px 20px 28px;scrollbar-width:thin}
+@media(min-width:769px){
+ body #S-app.screen{padding:0;max-width:none}
+}
+
+/* Sidebar nav: the original tab buttons, stacked */
+.ss-side .tabs{display:flex;flex-direction:column;gap:2px;background:none;border:none;box-shadow:none;padding:0;margin:0;border-radius:0}
+.ss-side .tab{flex:none;justify-content:flex-start;gap:12px;padding:10px 12px;border-radius:10px;border:1px solid transparent;background:none;color:var(--text2);font-size:.9rem;font-weight:500;letter-spacing:-.01em;box-shadow:none;transition:background .15s ease,color .15s ease}
+.ss-side .tab:hover{background:var(--card2);color:var(--text)}
+.ss-side .tab[class*="on-"]{background:var(--glow2);color:var(--accent2);border-color:transparent;font-weight:600;box-shadow:none}
+.ss-side .tab-icon{display:flex;font-size:0}
+.ss-side .tab-icon svg{width:18px;height:18px;opacity:.8}
+.ss-side .tab[class*="on-"] .tab-icon svg{opacity:1}
+
+.ss-side-card{margin-top:auto;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--card2)}
+.ss-side-card img{display:block;width:100%;height:92px;object-fit:cover}
+.ss-side-card-title{font-weight:650;font-size:.92rem;padding:12px 14px 2px;letter-spacing:-.015em}
+.ss-side-card p{font-size:.8rem;line-height:1.5;color:var(--text2);padding:0 14px 12px}
+.ss-side-card button{display:block;width:calc(100% - 28px);margin:0 14px 14px;padding:9px 12px;border:none;border-radius:var(--r2);background:var(--accent);color:#fff;font:600 .82rem 'Geist',sans-serif;cursor:pointer;transition:background .15s ease,transform .15s var(--ease-out)}
+.ss-side-card button:hover{background:var(--accent3)}
+.ss-side-card button:active{transform:scale(.98)}
+.ss-theme{display:flex;align-items:center;gap:10px;margin-top:6px;padding:10px 12px;border:none;border-radius:10px;background:none;color:var(--text2);font:500 .86rem 'Geist',sans-serif;cursor:pointer;text-align:left}
+.ss-theme:hover{background:var(--card2);color:var(--text)}
+[data-theme="light"] .ss-ico-sun,[data-theme="light"] .ss-theme-light,[data-theme="dark"] .ss-ico-moon,[data-theme="dark"] .ss-theme-dark{display:none}
+
+/* Top bar */
+header.ss-top{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:20px;margin:0;padding:12px 32px;min-height:64px;flex-wrap:nowrap;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.ss-top-logo{display:none}
+.ss-top .welcome-bar{flex:1;min-width:0;margin:0;padding:0;background:none;border:none;border-radius:0;box-shadow:none;overflow:visible}
+.ss-top .welcome-bar::after{display:none}
+.wb-left{font-size:1.02rem;color:var(--text2);font-weight:500;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wb-left strong{color:var(--text);font-weight:650}
+.wb-right{display:flex;align-items:baseline;gap:10px;text-align:right}
+.wb-date{font-size:.8rem;color:var(--text3)}
+.wb-time{font-family:var(--mono);font-size:.8rem;font-weight:500;color:var(--text2);letter-spacing:0}
+.hdr-actions{gap:8px;flex-shrink:0}
+.btn-help,.icon-btn,#modeBtn,#notifBtn{height:36px;min-width:36px;border-radius:10px!important;background:var(--card)!important;border:1px solid var(--border2)!important;color:var(--text2)!important;box-shadow:none;display:inline-flex;align-items:center;justify-content:center}
+.btn-help:hover,.icon-btn:hover,#modeBtn:hover,#notifBtn:hover{border-color:var(--border3)!important;color:var(--text)!important;background:var(--card2)!important}
+#modeBtn{font-size:.76rem!important;padding:0 12px!important}
+.user-pill{height:36px;padding:3px 12px 3px 3px;border-radius:999px;background:var(--card);border-color:var(--border2)}
+.avatar{width:30px;height:30px;background:var(--glow2);border:none;color:var(--accent2);font-weight:650}
+.user-name{font-size:.84rem;color:var(--text);font-weight:550}
+
+/* Ticker tape */
+.ticker-tape{height:36px;background:var(--card);border-bottom:1px solid var(--border)}
+.tk-item{height:36px;padding:0 18px;font-family:var(--mono);font-size:.74rem;font-weight:500;border-right:1px solid var(--border)}
+.tk-sym{font-weight:600}
+
+/* ── Surfaces ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 1px 2px var(--shadow2)}
+.card-hdr{background:none;padding:16px 20px;border-bottom:1px solid var(--border)}
+.card-hdr-title{font-size:.98rem;font-weight:650;letter-spacing:-.015em}
+.card-hdr-sub{font-size:.78rem;color:var(--text3);opacity:1;margin-top:3px}
+.asset-top,.about-hero{background:var(--card);border:1px solid var(--border);box-shadow:0 1px 2px var(--shadow2)}
+.asset-top::after{display:none}
+.asset-top.s,.asset-top.i,.asset-top.c{border-color:var(--border)}
+.a-ticker{font-weight:750;letter-spacing:-.035em}
+.wl-card{box-shadow:0 1px 2px var(--shadow2)}
+.wl-card:hover{transform:none;border-color:var(--border3);box-shadow:0 6px 18px var(--shadow2)}
+.gate-pillar{background:var(--card);box-shadow:0 1px 2px var(--shadow2)}
+
+/* ── Search ── */
+.search-row{gap:10px}
+.search-ico{display:flex;left:15px;color:var(--text3)}
+#si{height:48px;border-radius:12px;padding:0 14px 0 44px;font-size:.95rem;background:var(--card);border:1px solid var(--border2);box-shadow:0 1px 2px var(--shadow2)}
+#si:focus{background:var(--card);border-color:var(--accent);box-shadow:0 0 0 4px var(--glow2)}
+#sdrop{border-radius:12px;box-shadow:0 18px 44px var(--shadow)}
+.sd-tick{font-family:var(--mono);font-weight:600}
+.btn-go{border-radius:12px;padding:0 22px;height:48px;font-weight:600;letter-spacing:-.01em}
+.btn-go:hover{opacity:1;transform:none}
+.bg-s{background:var(--accent);box-shadow:none}
+.bg-s:hover{background:var(--accent3)}
+.bg-i{background:var(--teal)}
+.bg-c{background:var(--gold)}
+.pick{font-family:var(--mono);font-weight:500;font-size:.74rem;color:var(--text2);border-color:var(--border2);background:var(--card);border-radius:999px}
+.pick:hover{color:var(--text);border-color:var(--border3);background:var(--card)}
+.mf-pill{border-radius:999px;background:var(--card);border-color:var(--border2);color:var(--text2);font-weight:550}
+.mf-pill.mf-on{background:var(--ink);color:var(--ink-text);border-color:var(--ink)}
+
+/* ── Buttons & modals ── */
+.btn-solid,.btn-modal{background:var(--accent);box-shadow:none;font-weight:600}
+.btn-solid:hover,.btn-modal:hover{background:var(--accent3)}
+.btn-outline{background:var(--card);border-color:var(--border2);color:var(--text)}
+.btn-outline:hover{background:var(--card2);border-color:var(--border3);color:var(--text)}
+.modal-overlay{background:rgba(14,12,26,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.modal-box{border-radius:18px;border-color:var(--border);box-shadow:0 30px 80px var(--shadow)}
+.modal-heading{font-weight:700;letter-spacing:-.025em}
+.field label{letter-spacing:.02em;font-size:.72rem;color:var(--text2)}
+.field input{background:var(--card);border-color:var(--border2)}
+.field input:focus{box-shadow:0 0 0 4px var(--glow2)}
+
+/* ── Right rail ── */
+.rail-sec{padding:4px 0 22px;margin-bottom:20px;border-bottom:1px solid var(--border)}
+.rail-sec:last-child{border-bottom:none;margin-bottom:0}
+.rail-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.rail-h h3{font-size:.98rem;font-weight:650;letter-spacing:-.02em}
+.rail-link{background:none;border:none;color:var(--accent2);font:600 .8rem 'Geist',sans-serif;cursor:pointer;padding:4px 0}
+.rail-link:hover{text-decoration:underline;text-underline-offset:3px}
+.rail-muted{font-size:.84rem;line-height:1.55;color:var(--text2)}
+.rail-cta{margin-top:14px;width:100%;padding:11px;border:none;border-radius:var(--r2);background:var(--accent);color:#fff;font:600 .86rem 'Geist',sans-serif;cursor:pointer}
+.rail-cta:hover{background:var(--accent3)}
+.rail-port{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rail-label{font-size:.78rem;color:var(--text3);margin-bottom:4px}
+.rail-big{font-size:1.65rem;font-weight:700;letter-spacing:-.04em;line-height:1.1}
+.rail-delta{font-size:.8rem;font-weight:550;margin-top:5px}
+.rail-delta.up,.rail-stats .up{color:var(--green)}
+.rail-delta.dn,.rail-stats .dn{color:var(--red)}
+.rail-donut{flex-shrink:0;transform:rotate(-90deg)}
+.rail-donut .dbg{stroke:var(--dbg)}
+.rail-donut .d1,.rail-legend .d1{stroke:var(--d1);background:var(--d1)}
+.rail-donut .d2,.rail-legend .d2{stroke:var(--d2);background:var(--d2)}
+.rail-donut .d3,.rail-legend .d3{stroke:var(--d3);background:var(--d3)}
+.rail-donut .d4,.rail-legend .d4{stroke:var(--d4);background:var(--d4)}
+.rail-donut .d5,.rail-legend .d5{stroke:var(--d5);background:var(--d5)}
+.rail-donut .dc,.rail-legend .dc{stroke:var(--dc);background:var(--dc)}
+.rail-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:14px 0 4px;font-size:.76rem;color:var(--text2)}
+.rail-legend span{display:inline-flex;align-items:center;gap:6px}
+.rail-legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.rail-stats{display:grid;grid-template-columns:1fr 1fr;margin-top:14px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.rail-stats div{padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.rail-stats div:nth-child(odd){border-right:1px solid var(--border)}
+.rail-stats div:nth-child(-n+2){border-bottom:1px solid var(--border)}
+.rail-stats span{font-size:.72rem;color:var(--text3)}
+.rail-stats b{font-size:.9rem;font-weight:600}
+.rail-wl{margin:0 -6px}
+.rail-news{display:flex;flex-direction:column;gap:4px}
+.rail-news-item{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:start;padding:8px;margin:0 -8px;border-radius:10px;text-decoration:none;color:inherit;transition:background .15s ease}
+.rail-news-item:hover{background:var(--card2)}
+.rail-news-item img{width:72px;height:52px;border-radius:8px;object-fit:cover;background:var(--card3);display:block}
+.rail-news-title{font-size:.82rem;font-weight:550;line-height:1.38;letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rail-news-meta{display:flex;gap:8px;font-size:.72rem;color:var(--text3);margin-top:5px}
+.rail-news-skel{display:grid;grid-template-columns:72px 1fr;gap:12px;padding:8px 0}
+.rail-news-skel i{height:52px;border-radius:8px;background:var(--card3);animation:shimmer 1.6s infinite}
+.rail-news-skel b{display:block;height:10px;border-radius:5px;background:var(--card3);margin:6px 0 8px;animation:shimmer 1.6s infinite}
+.rail-news-skel b+b{width:60%}
+
+/* Beat the per-mode (simple/beginner/advanced) rules that predate the shell */
+body .ss-top .welcome-bar{background:none!important;padding:0!important;margin:0!important;border:none!important;border-radius:0!important;flex-wrap:nowrap}
+.ss-top .wb-left{flex:1;min-width:0}
+body .ss-side #tabBar .tab{font-size:.9rem;padding:10px 12px;font-weight:500}
+body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
+.ss-side .tab::after{display:none}
+.ticker-tape:has(.ticker-inner:empty){display:none}
+:root,[data-theme="dark"]{--card-rgb:22,22,28}
+[data-theme="light"]{--card-rgb:255,255,255}
+#mainContent div:has(> #wyl-buttons){background:var(--card)!important;border-color:var(--border)!important;box-shadow:0 1px 2px var(--shadow2)}
+
+@media(max-width:1599px){.ss-top .wb-date{display:none}}
+
+/* ── Landing (gate) ── */
+#S-gate{max-width:1240px;margin:0 auto}
+#S-gate header{padding:4px 0 0}
+.gate-body.g2{display:block;min-height:0;text-align:left;overflow:visible;padding:56px 0 72px}
+.g2-hero{max-width:760px}
+.g2 .gate-title{font-size:clamp(2.6rem,5.6vw,4.4rem);font-weight:750;letter-spacing:-.045em;line-height:1.02;max-width:none;margin-bottom:22px;text-wrap:balance}
+.g2 .gate-title span{color:var(--accent2)}
+.g2 .gate-sub{font-size:1.12rem;line-height:1.6;max-width:56ch;margin-bottom:30px;color:var(--text2)}
+.g2 .gate-btns{justify-content:flex-start;margin-bottom:14px}
+.btn-gate-main{background:var(--accent);box-shadow:none;border-radius:12px;padding:14px 26px;font-weight:600;font-size:1rem}
+.btn-gate-main:hover{background:var(--accent3);box-shadow:none;transform:none}
+.btn-gate-ghost{background:var(--card);border-color:var(--border2);color:var(--text);border-radius:12px;padding:14px 24px;font-weight:550;font-size:1rem}
+.btn-gate-ghost:hover{background:var(--card2);border-color:var(--border3)}
+.g2-signin{font-size:.88rem;color:var(--text3)}
+.g2-signin button{background:none;border:none;padding:0;font:inherit;font-weight:600;color:var(--accent2);cursor:pointer}
+.g2-signin button:hover{text-decoration:underline;text-underline-offset:3px}
+.g2-shot{margin:56px 0 0;border:1px solid var(--border2);border-radius:18px;overflow:hidden;background:var(--card);box-shadow:0 2px 4px var(--shadow2),0 30px 70px -20px var(--shadow)}
+.g2-shot img{display:block;width:100%;height:auto}
+.g2-grid{display:grid;grid-template-columns:1.25fr 1fr;grid-template-rows:auto auto;gap:16px;margin-top:20px}
+.g2-cell{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px}
+.g2-cell h2{font-size:1.25rem;font-weight:650;letter-spacing:-.025em;line-height:1.25;margin-bottom:10px;text-wrap:balance}
+.g2-cell p{font-size:.95rem;line-height:1.6;color:var(--text2);max-width:46ch}
+.g2-cell-photo{grid-row:span 2;padding:0;overflow:hidden;display:flex;flex-direction:column}
+.g2-cell-photo img{width:100%;flex:1;min-height:200px;max-height:300px;object-fit:cover;display:block}
+.g2-cell-photo div{padding:24px 28px 28px}
+.g2-cell-ink{background:var(--ink);border-color:var(--ink)}
+.g2-cell-ink h2{color:var(--ink-text)}
+.g2-cell-ink p{color:color-mix(in srgb,var(--ink-text) 72%,transparent)}
+@media(max-width:768px){
+ #S-gate header{padding:14px 18px 8px}
+ .gate-body.g2{padding:28px 18px 48px}
+ .g2 .gate-title{font-size:2.35rem}
+ .g2 .gate-sub{font-size:1rem}
+ .g2 .gate-btns{padding:0}
+ .g2-shot{margin-top:36px;border-radius:12px}
+ .g2-grid{grid-template-columns:1fr}
+ .g2-cell-photo{grid-row:auto}
+ .g2-cell{padding:22px}
+ .g2-cell-photo{padding:0}
+}
+
+/* ── Responsive shell ── */
+@media(max-width:1279px){
+ .ss-shell{grid-template-columns:220px minmax(0,1fr)}
+ .ss-rail{display:none}
+}
+@media(max-width:1024px){
+ .ss-shell{grid-template-columns:200px minmax(0,1fr)}
+ .ss-content{padding:20px 22px 36px}
+ header.ss-top{padding:12px 22px}
+ .wb-date{display:none}
+}
+@media(max-width:768px){
+ .ss-shell{display:block}
+ .ss-side,.ss-rail{display:none!important}
+ header.ss-top{position:static;padding:14px 18px 8px;min-height:0;background:var(--bg);border-bottom:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+ .ss-top-logo{display:flex}
+ .ss-content{padding:0}
+ header.ss-top{flex-wrap:wrap;gap:10px}
+ .ss-top .hdr-actions{margin-left:auto;gap:6px}
+ .btn-help,.icon-btn,#notifBtn{height:34px;min-width:34px}
+ #si{height:46px}
+ .btn-go{height:46px}
+}
+@media(max-width:900px) and (orientation:landscape){
+ .ss-shell{display:block}
+ .ss-side,.ss-rail{display:none!important}
+ .ss-top-logo{display:flex}
+}
 </style>
 </head>
 <body>
@@ -1288,13 +1558,7 @@ html{scroll-behavior:smooth}
 <div id="S-gate" class="screen" style="display:none">
  <header>
  <div class="logo">
- <div class="logo-icon">
- <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
- <polyline points="1,13 5,8 8,10 12,4 17,6" stroke="#7c6ff7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
- <line x1="14" y1="12" x2="17" y2="12" stroke="#00cc88" stroke-width="1.5" stroke-linecap="round"/>
- <line x1="15.5" y1="10.5" x2="15.5" y2="13.5" stroke="#00cc88" stroke-width="1.5" stroke-linecap="round"/>
- </svg>
- </div>
+ <div class="logo-icon"><img src="/stocksight-logo-96.png" alt="StockSight" width="96" height="96"></div>
  <div class="logo-name">Stock<span>Sight</span></div>
  </div>
  <div class="hdr-actions">
@@ -1302,66 +1566,38 @@ html{scroll-behavior:smooth}
  <button class="btn btn-solid" onclick="openModal('signup')">Create free account</button>
  </div>
  </header>
- <div class="gate-body">
- <div style="position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center">
-
-
- <div class="gate-title">Stock research<br>for people who aren't<br><span>stock people.</span> Yet.</div>
- <div class="gate-sub">StockSight reads the market, explains what it means, and tells you what to watch. Free. No credit card. No finance degree required.</div>
-
+ <div class="gate-body g2">
+ <section class="g2-hero">
+ <h1 class="gate-title">Stock research for people who aren't <span>stock people.</span> Yet.</h1>
+ <p class="gate-sub">StockSight reads the market, explains what it means, and tells you what to watch. Free. No credit card. No finance degree required.</p>
  <div class="gate-btns">
- <button class="btn-gate-main" onclick="bootGuest()">Look up any stock →</button>
- <button class="btn-gate-ghost" onclick="openModal('signup')">Save your data — it's free</button>
+ <button class="btn-gate-main" onclick="bootGuest()">Look up any stock</button>
+ <button class="btn-gate-ghost" onclick="openModal('signup')">Create free account</button>
  </div>
- <div style="font-size:.69rem;color:var(--text3);margin-bottom:2.25rem">Already have an account? <span style="color:var(--accent2);cursor:pointer;font-weight:500" onclick="openModal('login')">Sign in →</span></div>
+ <p class="g2-signin">Already have an account? <button type="button" onclick="openModal('login')">Sign in</button></p>
+ </section>
 
- <!-- Product preview -->
- <div style="width:100%;max-width:520px;background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.5)">
- <div style="padding:10px 14px;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">
- <div style="width:9px;height:9px;border-radius:50%;background:#ff5f57;flex-shrink:0"></div>
- <div style="width:9px;height:9px;border-radius:50%;background:#febc2e;flex-shrink:0"></div>
- <div style="width:9px;height:9px;border-radius:50%;background:#28c840;flex-shrink:0"></div>
- <span style="font-size:.68rem;color:var(--text3);margin:0 auto;letter-spacing:.03em">stocksight.app</span>
- </div>
- <div style="padding:1.25rem;display:flex;flex-direction:column;gap:.625rem">
- <div style="display:flex;align-items:center;justify-content:space-between">
- <div style="display:flex;align-items:center;gap:8px">
- <span style="font-size:.8rem;font-weight:800;color:var(--text);font-family:'Manrope',sans-serif">AAPL</span>
- <span style="font-size:.65rem;color:var(--text3)">Apple Inc.</span>
- </div>
- <span id="prevPrice" style="font-family:'Manrope',sans-serif;font-size:.95rem;font-weight:800;color:var(--green)">$189.34</span>
- </div>
- <canvas id="prevChart" height="52" style="width:100%;border-radius:6px"></canvas>
- <div style="display:flex;align-items:center;gap:8px">
- <span id="prevVerdict" style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(168,85,247,.15);color:var(--green);border:1px solid rgba(168,85,247,.3)">● BUY</span>
- <span style="font-size:.62rem;color:var(--text3)">StockSight Score: 82/100</span>
- </div>
- <div style="background:var(--card2);border-radius:6px;height:8px;width:72%;animation:shimmer 1.8s infinite"></div>
- <div style="background:var(--card2);border-radius:6px;height:8px;width:50%;animation:shimmer 1.8s .3s infinite"></div>
- </div>
- <div style="font-size:.68rem;color:var(--text3);padding:9px 0;border-top:1px solid var(--border);text-align:center;letter-spacing:.02em">Search any stock, index, or crypto — live.</div>
- </div>
+ <figure class="g2-shot">
+ <img src="/images/app-preview.jpg" alt="The StockSight dashboard showing a practice portfolio, a live watchlist and the stock search" width="1600" height="503">
+ </figure>
 
- <!-- 3 numbered pillars -->
- <div class="gate-pillars">
- <div class="gate-pillar">
- <div class="gp-num">01</div>
- <div class="gp-title">It tells you what a stock actually means</div>
- <div class="gp-body">Live charts, a plain-English verdict (Buy / Hold / Sell), price predictions, and analyst targets — without the jargon.</div>
+ <section class="g2-grid" aria-label="What StockSight does">
+ <article class="g2-cell g2-cell-photo">
+ <img src="/images/news/markets.jpg" alt="" width="480" height="320" loading="lazy">
+ <div>
+ <h2>It tells you what a stock actually means</h2>
+ <p>Live charts, a plain-English verdict (Buy, Hold or Sell), price predictions and analyst targets, without the jargon.</p>
  </div>
- <div class="gate-pillar">
- <div class="gp-num">02</div>
- <div class="gp-title">It keeps track of what you own</div>
- <div class="gp-body">Portfolio tracker, watchlist, paper trading to practice with fake money, and a compare tool. All in one place.</div>
- </div>
- <div class="gate-pillar">
- <div class="gp-num">03</div>
- <div class="gp-title">It costs nothing. Not now, not later.</div>
- <div class="gp-body">No trial. No paywall. No Pro plan. The same live data used by Bloomberg and Reuters — completely free.</div>
- </div>
- </div>
-
- </div><!-- end z-index wrapper -->
+ </article>
+ <article class="g2-cell">
+ <h2>It keeps track of what you own</h2>
+ <p>Portfolio tracker, watchlist, paper trading with pretend money, and a compare tool. All in one place.</p>
+ </article>
+ <article class="g2-cell g2-cell-ink">
+ <h2>It costs nothing. Not now, not later.</h2>
+ <p>No trial. No paywall. No Pro plan. Every feature is free.</p>
+ </article>
+ </section>
  </div>
 </div>
 
@@ -1373,30 +1609,47 @@ html{scroll-behavior:smooth}
  APP SCREEN
 ═══════════════════════════════ -->
 <div id="S-app" class="screen" style="display:none">
- <header>
- <div class="logo" onclick="goHome()">
- <div class="logo-icon">
- <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
- <polyline points="1,13 5,8 8,10 12,4 17,6" stroke="#7c6ff7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
- <line x1="14" y1="12" x2="17" y2="12" stroke="#00cc88" stroke-width="1.5" stroke-linecap="round"/>
- <line x1="15.5" y1="10.5" x2="15.5" y2="13.5" stroke="#00cc88" stroke-width="1.5" stroke-linecap="round"/>
- </svg>
- </div>
+<div class="ss-shell">
+ <aside class="ss-side" aria-label="Main navigation">
+ <div class="logo ss-side-logo" onclick="goHome()">
+ <div class="logo-icon"><img src="/stocksight-logo-96.png" alt="StockSight" width="96" height="96"></div>
  <div class="logo-name">Stock<span>Sight</span></div>
  </div>
- <div class="hdr-actions" id="appHdrActions"></div>
- </header>
+ <nav class="tabs" id="tabBar">
+ <button class="tab on-s" id="tab-s" onclick="switchTab('s')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span> Markets</button>
+ <button class="tab" id="tab-w" onclick="switchTab('w')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Watchlist</button>
+ <button class="tab" id="tab-port" onclick="switchTab('port')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span> Portfolio</button>
+ <button class="tab" id="tab-screen" onclick="switchTab('screen')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span> Screener</button>
+ <button class="tab" id="tab-cmp" onclick="switchTab('cmp')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></svg></span> Compare</button>
+ <button class="tab" id="tab-pt" onclick="switchTab('pt')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></span> Paper Trade</button>
+ <button class="tab" id="tab-day" onclick="switchTab('day')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span> Day Trade</button>
 
- <div class="ticker-tape" id="tickerTape">
- <div class="ticker-inner" id="tickerInner"></div>
+ </nav>
+ <div class="ss-side-card">
+ <img src="/images/news/mobile-trading.jpg" alt="" width="480" height="320" loading="lazy">
+ <div class="ss-side-card-title">Practice first</div>
+ <p>Trade $10,000 of pretend money before you risk your own.</p>
+ <button type="button" onclick="switchTab('pt')">Open Paper Trade</button>
  </div>
+ <button type="button" class="ss-theme" onclick="toggleTheme()">
+ <svg class="ss-ico-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+ <svg class="ss-ico-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+ <span class="ss-theme-light">Light mode</span><span class="ss-theme-dark">Dark mode</span>
+ </button>
+ </aside>
 
+ <div class="ss-main">
+ <header class="ss-top">
+ <div class="logo ss-top-logo" onclick="goHome()">
+ <div class="logo-icon"><img src="/stocksight-logo-96.png" alt="StockSight" width="96" height="96"></div>
+ <div class="logo-name">Stock<span>Sight</span></div>
+ </div>
  <div class="welcome-bar">
  <div class="wb-left" id="wbGreeting">Welcome back, <strong id="wbName"></strong></div>
  <div style="display:flex;align-items:center;gap:1rem">
  <div id="streakBadge" style="display:none;align-items:center;gap:6px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:20px;padding:5px 13px">
  <span style="font-size:1rem"></span>
- <span id="streakCount" style="font-family:'Manrope',sans-serif;font-size:.9rem;font-weight:800;color:var(--gold)"></span>
+ <span id="streakCount" style="font-family:'Geist',sans-serif;font-size:.9rem;font-weight:800;color:var(--gold)"></span>
  <span style="font-size:.65rem;color:var(--gold);font-weight:600">day streak</span>
  </div>
  <div class="wb-right">
@@ -1405,22 +1658,19 @@ html{scroll-behavior:smooth}
  </div>
  </div>
  </div>
+ <div class="hdr-actions" id="appHdrActions"></div>
+ </header>
 
+ <div class="ticker-tape" id="tickerTape">
+ <div class="ticker-inner" id="tickerInner"></div>
+ </div>
+
+ <div class="ss-content">
  <!-- Market Status Bar -->
  <div id="marketStatusBar" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:.85rem;align-items:center"></div>
 
  <!-- Search History chips (#19) -->
  <div class="search-hist" id="searchHist"></div>
-
- <div class="tabs" id="tabBar">
- <button class="tab on-s" id="tab-s" onclick="switchTab('s')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span> Markets</button>
- <button class="tab" id="tab-w" onclick="switchTab('w')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Watchlist</button>
- <button class="tab" id="tab-port" onclick="switchTab('port')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span> Portfolio</button>
- <button class="tab" id="tab-screen" onclick="switchTab('screen')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span> Screener</button>
- <button class="tab" id="tab-cmp" onclick="switchTab('cmp')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></svg></span> Compare</button>
- <button class="tab" id="tab-pt" onclick="switchTab('pt')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></span> Paper Trade</button>
- <button class="tab" id="tab-day" onclick="switchTab('day')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span> Day Trade</button>
- </div>
 
  <!-- Market filter pills -->
  <div id="marketFilter" style="display:none;gap:6px;margin-bottom:1rem;flex-wrap:wrap">
@@ -1432,9 +1682,9 @@ html{scroll-behavior:smooth}
  <div id="searchSection">
  <div class="search-row">
  <div class="search-wrap">
- <span class="search-ico"></span>
+ <span class="search-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
  <input id="si" type="text"
- placeholder="Search a stock, index, or crypto — AAPL, Apple, Bitcoin..."
+ placeholder="Search a stock, index or crypto, like AAPL, Apple or Bitcoin"
  oninput="onSearchInput(this.value)"
  onfocus="showSearchHistory()"
  onblur="setTimeout(()=>{const d=document.getElementById('sdrop');if(d&&!d.matches(':hover'))d.style.display='none'},200)"
@@ -1465,6 +1715,11 @@ html{scroll-behavior:smooth}
  </div>
  <p style="font-size:.66rem;color:var(--text3);margin:0;max-width:480px;line-height:1.6">StockSight is for informational purposes only and does not constitute financial advice. Always do your own research before making investment decisions.</p>
  </footer>
+ </div>
+ </div>
+
+ <aside class="ss-rail" id="ssRail" aria-label="Your summary"></aside>
+</div>
 </div>
 
 <!-- ═══════════════════════════════
@@ -1475,13 +1730,7 @@ html{scroll-behavior:smooth}
 
  <!-- Logo -->
  <div class="ob-logo">
- <div class="logo-icon">
- <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
- <polyline points="1,13 5,8 8,10 12,4 17,6" stroke="#7c6ff7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
- <line x1="14" y1="12" x2="17" y2="12" stroke="#00cc88" stroke-width="1.5" stroke-linecap="round"/>
- <line x1="15.5" y1="10.5" x2="15.5" y2="13.5" stroke="#00cc88" stroke-width="1.5" stroke-linecap="round"/>
- </svg>
- </div>
+ <div class="logo-icon"><img src="/stocksight-logo-96.png" alt="StockSight" width="96" height="96"></div>
  <div class="logo-name">Stock<span>Sight</span></div>
  </div>
 
@@ -1606,7 +1855,7 @@ html{scroll-behavior:smooth}
  <div class="pt-card" style="position:relative">
  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
  <div>
- <div style="font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800"> Paper Trade</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.1rem;font-weight:800"> Paper Trade</div>
  <div style="font-size:.7rem;color:var(--text3);margin-top:2px">Virtual money · no real risk</div>
  </div>
  <button onclick="closePtModal()" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit;color:var(--text2);font-size:.8rem"></button>
@@ -1689,7 +1938,7 @@ html{scroll-behavior:smooth}
  <!-- Total -->
  <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.875rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
  <span style="font-size:.75rem;color:var(--text2)" id="ptTotalLabel">Estimated total</span>
- <span style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800" id="ptTotal">$0.00</span>
+ <span style="font-family:'Geist',sans-serif;font-size:1rem;font-weight:800" id="ptTotal">$0.00</span>
  </div>
 
  <div id="ptErr" style="font-size:.72rem;color:var(--red);margin-bottom:.75rem;display:none"></div>
@@ -1704,7 +1953,7 @@ html{scroll-behavior:smooth}
  <!-- Success screen (hidden until trade executes) -->
  <div id="ptSuccess" style="display:none;position:absolute;inset:0;background:var(--card);border-radius:18px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:2rem;text-align:center">
  <div id="ptSuccessIcon" style="width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0"></div>
- <div id="ptSuccessTitle" style="font-family:'Manrope',sans-serif;font-size:1.2rem;font-weight:800"></div>
+ <div id="ptSuccessTitle" style="font-family:'Geist',sans-serif;font-size:1.2rem;font-weight:800"></div>
  <div id="ptSuccessDetail" style="font-size:.8rem;color:var(--text2);line-height:1.6;max-width:280px"></div>
  <div id="ptSuccessNote" style="font-size:.68rem;color:var(--text3)"></div>
  </div>
@@ -1804,11 +2053,7 @@ html{scroll-behavior:smooth}
 <div id="S-profile" class="screen" style="display:none">
  <header>
  <div class="logo" onclick="show('app')">
- <div class="logo-icon">
- <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
- <polyline points="1,13 5,8 8,10 12,4 17,6" stroke="#7c6ff7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
- </svg>
- </div>
+ <div class="logo-icon"><img src="/stocksight-logo-96.png" alt="StockSight" width="96" height="96"></div>
  <div class="logo-name">Stock<span>Sight</span></div>
  </div>
  <div class="hdr-actions">
@@ -1851,7 +2096,7 @@ html{scroll-behavior:smooth}
  <div class="sg-lbl">INVESTOR PROFILE</div>
  <div class="sg-row" style="flex-direction:column;align-items:flex-start;gap:10px">
    <div id="ov-quiz-result" style="display:none;width:100%">
-     <div id="ov-quiz-type" style="font-size:.95rem;font-weight:800;font-family:'Manrope',sans-serif;margin-bottom:3px"></div>
+     <div id="ov-quiz-type" style="font-size:.95rem;font-weight:800;font-family:'Geist',sans-serif;margin-bottom:3px"></div>
      <div id="ov-quiz-desc" style="font-size:.75rem;color:var(--text2);line-height:1.6;margin-bottom:8px"></div>
      <button onclick="showP('quiz')" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 12px;font-family:inherit;font-size:.74rem;font-weight:600;cursor:pointer">Retake Quiz →</button>
    </div>
@@ -2247,21 +2492,21 @@ html{scroll-behavior:smooth}
  <div class="sg-row">
  <div><div class="sg-label">Stocks tab default</div><div class="sg-desc">Chart shown on Stocks homepage</div></div>
  <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:700;color:var(--accent2)" id="dashPickS"></span>
+ <span style="font-family:'Geist',sans-serif;font-size:.82rem;font-weight:700;color:var(--accent2)" id="dashPickS"></span>
  <button class="tog" onclick="changeDashStockSettings('s')">Change</button>
  </div>
  </div>
  <div class="sg-row">
  <div><div class="sg-label">Indexes tab default</div><div class="sg-desc">Chart shown on Indexes homepage</div></div>
  <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:700;color:var(--teal)" id="dashPickI"></span>
+ <span style="font-family:'Geist',sans-serif;font-size:.82rem;font-weight:700;color:var(--teal)" id="dashPickI"></span>
  <button class="tog" onclick="changeDashStockSettings('i')">Change</button>
  </div>
  </div>
  <div class="sg-row">
  <div><div class="sg-label">Crypto tab default</div><div class="sg-desc">Chart shown on Crypto homepage</div></div>
  <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:700;color:var(--gold)" id="dashPickC"></span>
+ <span style="font-family:'Geist',sans-serif;font-size:.82rem;font-weight:700;color:var(--gold)" id="dashPickC"></span>
  <button class="tog" onclick="changeDashStockSettings('c')">Change</button>
  </div>
  </div>
@@ -2294,7 +2539,7 @@ html{scroll-behavior:smooth}
   <div class="sg">
     <div class="sg-lbl">INVESTOR TYPE</div>
     <div id="quiz-result-banner" style="display:none;border-radius:12px;padding:1rem 1.1rem;border:1px solid var(--border2);margin-bottom:.5rem">
-      <div id="quiz-result-type" style="font-size:1.1rem;font-weight:800;font-family:'Manrope',sans-serif;margin-bottom:4px"></div>
+      <div id="quiz-result-type" style="font-size:1.1rem;font-weight:800;font-family:'Geist',sans-serif;margin-bottom:4px"></div>
       <div id="quiz-result-desc" style="font-size:.76rem;color:var(--text2);line-height:1.6;margin-bottom:.75rem"></div>
       <button onclick="openQuizModal()" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 12px;font-family:inherit;font-size:.74rem;font-weight:600;cursor:pointer">Retake Quiz →</button>
     </div>
@@ -2445,7 +2690,7 @@ html{scroll-behavior:smooth}
  <div class="modal-box">
  <button class="modal-close" onclick="closeModal()">&#x2715;</button>
  <div style="display:flex;align-items:center;gap:8px;margin-bottom:1.25rem">
- <div class="logo-icon" style="width:26px;height:26px"><svg width="13" height="13" viewBox="0 0 18 18" fill="none"><polyline points="1,13 5,8 8,10 12,4 17,6" stroke="#7c6ff7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+ <div class="logo-icon" style="width:26px;height:26px"><img src="/stocksight-logo-96.png" alt="StockSight" width="96" height="96"></div>
  <div class="logo-name" style="font-size:.93rem">Stock<span>Sight</span></div>
  </div>
  <!-- SIGNUP -->
@@ -2533,7 +2778,7 @@ html{scroll-behavior:smooth}
  <div id="fpStep2" style="display:none">
  <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px"> Account verified</div>
  <div id="fpStep2Subtitle" style="font-size:.72rem;color:var(--text3);margin-bottom:10px">Your reset code is below. Enter it and choose a new password.</div>
- <div id="fpCodeDisplay" style="font-family:'Manrope',sans-serif;font-size:2rem;font-weight:900;letter-spacing:.3em;color:var(--accent2);text-align:center;background:rgba(108,92,231,.1);border:1.5px dashed rgba(108,92,231,.4);border-radius:10px;padding:14px;margin-bottom:12px"></div>
+ <div id="fpCodeDisplay" style="font-family:'Geist',sans-serif;font-size:2rem;font-weight:900;letter-spacing:.3em;color:var(--accent2);text-align:center;background:rgba(108,92,231,.1);border:1.5px dashed rgba(108,92,231,.4);border-radius:10px;padding:14px;margin-bottom:12px"></div>
  <div class="field" style="margin-bottom:8px"><label>CODE</label><input id="fp-code" type="text" placeholder="123456" maxlength="6" style="letter-spacing:.2em;font-size:1.1rem!important;text-align:center"/></div>
  <div class="field" style="margin-bottom:8px"><label>NEW PASSWORD</label><input id="fp-newpw" type="password" placeholder="At least 6 characters"/></div>
  <div class="field" style="margin-bottom:8px"><label>CONFIRM PASSWORD</label><input id="fp-confirmpw" type="password" placeholder="Re-enter your new password"/></div>
@@ -2743,8 +2988,8 @@ async function renderTopSearches(containerId) {
  if (error || !data?.length) { el.innerHTML = '<span style="font-size:.75rem;color:var(--text3)">No searches recorded yet today</span>'; return; }
  el.innerHTML = data.map((row, i) => `
  <div onclick="lookupTicker('${escapeHTML(row.ticker)}')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r2);background:var(--card2);border:1px solid var(--border);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
- <span style="font-family:'Manrope',sans-serif;font-size:.75rem;font-weight:800;color:var(--text3);width:18px">${i+1}</span>
- <span style="font-family:'Manrope',sans-serif;font-size:.85rem;font-weight:800;color:var(--text);flex:1">${escapeHTML(row.ticker)}</span>
+ <span style="font-family:'Geist',sans-serif;font-size:.75rem;font-weight:800;color:var(--text3);width:18px">${i+1}</span>
+ <span style="font-family:'Geist',sans-serif;font-size:.85rem;font-weight:800;color:var(--text);flex:1">${escapeHTML(row.ticker)}</span>
  <span style="font-size:.65rem;color:var(--text3)">${row.search_count} search${row.search_count!==1?'es':''}</span>
  </div>`).join('');
  } catch {
@@ -3126,7 +3371,7 @@ const PICKS = {
 /* ════════════════════════════════
  STATE
 ════════════════════════════════ */
-let user = null, tab = 's', theme = 'dark', mode = 'simple', marketFilter = 's';
+let user = null, tab = 's', theme = 'light', mode = 'simple', marketFilter = 's';
 
 function staggerCards(container) {
  if (!container) return;
@@ -3306,6 +3551,7 @@ const saveWL=()=>{
  if(!user?.email) return;
  ss('ss3_wl_'+user.email, watchlist);
  sb.from('users').update({ watchlist }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveWL sync failed'); });
+ renderRail();
 };
 const saveH=()=>{
  if(!user?.email) return;
@@ -3504,7 +3750,7 @@ function showSignupNudge(message, isFeatureGate) {
  <button onclick="${!isFeatureGate ? 'nudgeDismissed=true;' : 'switchTab(\'s\');'}document.getElementById('signupNudge').remove()"
  style="position:absolute;top:12px;right:14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:.85rem;color:var(--text3);display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1">&#x2715;</button>
  <div style="text-align:center;margin-bottom:1.5rem">
- <div style="font-family:'Manrope',sans-serif;font-size:1.15rem;font-weight:800;margin-bottom:.5rem">Unlock the full StockSight experience</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.15rem;font-weight:800;margin-bottom:.5rem">Unlock the full StockSight experience</div>
  <div style="font-size:.82rem;color:var(--text2);line-height:1.65">${message}</div>
  </div>
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:1.5rem;padding:1rem;background:var(--card2);border-radius:12px;border:1px solid var(--border)">
@@ -4010,7 +4256,7 @@ function renderFearGreed(containerId) {
  // "Fear" left end · "Greed" right end — at arc baseline level
  const endLabelY = cy + Math.round(W_css * 0.06); // just below arc bottom
  const endFs = Math.max(8, Math.round(W_css * 0.042));
- ctx.font = `${endFs}px Inter,system-ui,sans-serif`;
+ ctx.font = `${endFs}px Geist,system-ui,sans-serif`;
  ctx.fillStyle = dark?'rgba(200,200,220,.45)':'rgba(80,80,120,.4)';
  ctx.textAlign = 'left'; ctx.fillText('Fear', cx-r+2, endLabelY);
  ctx.textAlign = 'right'; ctx.fillText('Greed', cx+r-2, endLabelY);
@@ -4018,7 +4264,7 @@ function renderFearGreed(containerId) {
  // Score number — large, centred, below arc centre
  const scoreY = cy + Math.round(W_css * 0.14);
  const scoreFs = Math.max(16, Math.round(W_css * 0.13));
- ctx.font = `800 ${scoreFs}px Manrope,system-ui,sans-serif`;
+ ctx.font = `800 ${scoreFs}px Geist,system-ui,sans-serif`;
  ctx.textAlign = 'center';
  ctx.fillStyle = color;
  ctx.fillText(rounded.toString(), cx, scoreY);
@@ -4026,7 +4272,7 @@ function renderFearGreed(containerId) {
  // Sentiment label (e.g. "Neutral") — below score
  const sentY = scoreY + Math.round(W_css * 0.1);
  const sentFs = Math.max(10, Math.round(W_css * 0.058));
- ctx.font = `600 ${sentFs}px Inter,system-ui,sans-serif`;
+ ctx.font = `600 ${sentFs}px Geist,system-ui,sans-serif`;
  ctx.textAlign = 'center';
  ctx.fillStyle = color;
  ctx.fillText(label, cx, sentY);
@@ -4524,12 +4770,12 @@ function renderStockSightScore(containerId) {
  style="transition:stroke-dashoffset 1s cubic-bezier(.16,1,.3,1)"/>
  </svg>
  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
- <div style="font-family:'Manrope',sans-serif;font-size:1.3rem;font-weight:800;color:${color};line-height:1">${score}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.3rem;font-weight:800;color:${color};line-height:1">${score}</div>
  <div style="font-size:.52rem;color:var(--text3);letter-spacing:.05em">/ 100</div>
  </div>
  </div>
  <div style="flex:1;min-width:160px">
- <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;color:${color};margin-bottom:3px">${label}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1rem;font-weight:800;color:${color};margin-bottom:3px">${label}</div>
  <div style="font-size:.76rem;color:var(--text2);line-height:1.6;margin-bottom:.5rem">${tip}</div>
  <div style="display:flex;flex-direction:column;gap:3px">
  ${[
@@ -4631,15 +4877,15 @@ function runWhatIf(ticker) {
  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:.875rem">
  <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.75rem;text-align:center">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.08em;margin-bottom:4px">YOU PAID (EST.)</div>
- <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800">$${Math.round(thenValue).toLocaleString()}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1rem;font-weight:800">$${Math.round(thenValue).toLocaleString()}</div>
  </div>
  <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.75rem;text-align:center">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.08em;margin-bottom:4px">WORTH TODAY (EST.)</div>
- <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;color:${isPos?'var(--green)':'var(--red)'}">$${Math.round(amount).toLocaleString()}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1rem;font-weight:800;color:${isPos?'var(--green)':'var(--red)'}">$${Math.round(amount).toLocaleString()}</div>
  </div>
  <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.75rem;text-align:center">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.08em;margin-bottom:4px">TOTAL ${isPos?'GAIN':'LOSS'}</div>
- <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;color:${isPos?'var(--green)':'var(--red)'}">${isPos?'+':''}$${Math.abs(Math.round(growthAmt)).toLocaleString()}<br><span style="font-size:.7rem">(${isPos?'+':''}${growthPct}%)</span></div>
+ <div style="font-family:'Geist',sans-serif;font-size:1rem;font-weight:800;color:${isPos?'var(--green)':'var(--red)'}">${isPos?'+':''}$${Math.abs(Math.round(growthAmt)).toLocaleString()}<br><span style="font-size:.7rem">(${isPos?'+':''}${growthPct}%)</span></div>
  </div>
  </div>
  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:4px">
@@ -5299,6 +5545,7 @@ function switchTab(t, skipRender=false) {
  setTimeout(() => {
  tab = t;
  currentAsset = null;
+ renderRail();
  ['s','w','cmp','port','screen','pt','day'].forEach(id => {
  const b = document.getElementById('tab-'+id);
  if (b) b.className = 'tab' + (id===t ? ' on-'+id : '');
@@ -5400,9 +5647,9 @@ function doSearch() {
 const BEGINNER_LABELS = {
  's': '📈 Markets', 'i': '🌍 Indexes', 'c': '₿ Crypto',
  'w': '⭐ My List', 'cmp': '⚖️ Compare', 'port': '💼 My Money', 'screen': '🔍 Find Stocks', 'pt': '🎮 Practice',
- 'search_ph_s': 'Search for a company — like Apple or Tesla...',
- 'search_ph_i': 'Search for a market — like S&P 500...',
- 'search_ph_c': 'Search for a coin — like Bitcoin or Ethereum...',
+ 'search_ph_s': 'Search for a company, like Apple or Tesla',
+ 'search_ph_i': 'Search for a market, like the S&P 500',
+ 'search_ph_c': 'Search for a coin, like Bitcoin or Ethereum',
  'go_btn_s': 'Look it up →',
  'go_btn_i': 'Look it up →',
  'go_btn_c': 'Look it up →',
@@ -5411,9 +5658,9 @@ const BEGINNER_LABELS = {
 const SIMPLE_LABELS = {
  's': 'Markets', 'i': 'Indexes', 'c': 'Crypto',
  'w': 'Watchlist', 'cmp': 'Compare', 'port': 'Portfolio', 'screen': 'Screener', 'pt': 'Paper Trade',
- 'search_ph_s': 'Type a company name — e.g. Apple, Tesla, Google...',
- 'search_ph_i': 'Type a market index — e.g. S&P 500, Dow Jones...',
- 'search_ph_c': 'Type a cryptocurrency — e.g. Bitcoin, Ethereum...',
+ 'search_ph_s': 'Search a company: Apple, Tesla, Google',
+ 'search_ph_i': 'Search an index: S&P 500, Dow Jones',
+ 'search_ph_c': 'Search a coin: Bitcoin, Ethereum',
  'go_btn_s': 'Analyze →',
  'go_btn_i': 'Research →',
  'go_btn_c': 'Analyze →',
@@ -5422,9 +5669,9 @@ const SIMPLE_LABELS = {
 const ADV_LABELS = {
  's': 'Markets', 'i': 'Indexes', 'c': 'Crypto',
  'w': 'Watchlist', 'cmp': 'Compare', 'port': 'Portfolio', 'screen': 'Screener', 'pt': 'Paper Trade',
- 'search_ph_s': 'Ticker or name — AAPL, MSFT, S&P 500, BTC...',
- 'search_ph_i': 'Index symbol — SPX, IXIC, DJI, VIX...',
- 'search_ph_c': 'Crypto — BTC, ETH, SOL, DOGE...',
+ 'search_ph_s': 'Ticker or name: AAPL, MSFT, SPX, BTC',
+ 'search_ph_i': 'Index symbol: SPX, IXIC, DJI, VIX',
+ 'search_ph_c': 'Crypto: BTC, ETH, SOL, DOGE',
  'go_btn_s': 'Analyze →',
  'go_btn_i': 'Research →',
  'go_btn_c': 'Analyze →',
@@ -5537,7 +5784,7 @@ function renderHome(t) {
  ${isSimple ? `
  <!-- SIMPLE MODE: Clean, friendly, no clutter -->
  <div style="margin-bottom:1rem;background:linear-gradient(135deg,rgba(108,92,231,.1),rgba(0,180,216,.06));border:1px solid rgba(108,92,231,.2);border-radius:14px;padding:1rem 1.25rem">
- <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;margin-bottom:4px"> What would you like to do today?</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1rem;font-weight:800;margin-bottom:4px"> What would you like to do today?</div>
  <div id="wyl-buttons" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:.75rem">
  <button onclick="document.getElementById('si').focus()" style="background:var(--card);border:2px solid var(--accent);color:var(--accent2);border-radius:10px;padding:8px 16px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer"> Look up a stock</button>
  <button onclick="switchTab('port')" style="background:var(--card);border:2px solid var(--border2);color:var(--text2);border-radius:10px;padding:8px 16px;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer"> Portfolio</button>
@@ -5561,7 +5808,7 @@ function renderHome(t) {
 
  <!-- Customize panel (hidden by default) -->
  <div id="customizePanel" class="customize-panel" style="display:none">
- <div style="font-family:'Manrope',sans-serif;font-size:.88rem;font-weight:800;margin-bottom:.5rem"> Pin Stocks to Homepage</div>
+ <div style="font-family:'Geist',sans-serif;font-size:.88rem;font-weight:800;margin-bottom:.5rem"> Pin Stocks to Homepage</div>
  <div style="font-size:.74rem;color:var(--text2);margin-bottom:1rem">Pin up to 6 stocks for one-click access. Click any stock below to pin/unpin it.</div>
  <div style="display:flex;gap:6px;flex-wrap:wrap" id="pinPickerChips">
  ${PICKS.s.concat(PICKS.c.slice(0,3)).map(t2=>{
@@ -5733,16 +5980,16 @@ function renderAsset(ticker, name, type, overrideSym) {
  <div style="display:flex;gap:.75rem;flex-wrap:wrap">
  <div style="background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:.875rem 1.25rem;text-align:center;min-width:110px">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.1em;margin-bottom:4px">AI VERDICT</div>
- <div style="font-family:'Manrope',sans-serif;font-size:1.05rem;font-weight:800;color:${verdictColor}">${verdictText}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.05rem;font-weight:800;color:${verdictColor}">${verdictText}</div>
  </div>
  <div style="background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:.875rem 1.25rem;text-align:center;min-width:110px">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.1em;margin-bottom:4px">AI CONFIDENCE</div>
- <div style="font-family:'Manrope',sans-serif;font-size:1.3rem;font-weight:800;color:${confColor}">${aiConf}%</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.3rem;font-weight:800;color:${confColor}">${aiConf}%</div>
  <div style="height:4px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden"><div style="height:100%;width:${aiConf}%;background:${confColor};border-radius:2px;transition:width 1s ease"></div></div>
  </div>
  ${aiData[1] ? `<div style="background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:.875rem 1.25rem;text-align:center;min-width:110px">
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.1em;margin-bottom:4px">RISK LEVEL</div>
- <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800;color:${aiData[1]>=70?'var(--red)':aiData[1]>=40?'var(--gold)':'var(--green)'}">${aiData[1]>=70?'Very High':aiData[1]>=40?'Moderate':'Lower'}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1rem;font-weight:800;color:${aiData[1]>=70?'var(--red)':aiData[1]>=40?'var(--gold)':'var(--green)'}">${aiData[1]>=70?'Very High':aiData[1]>=40?'Moderate':'Lower'}</div>
  <div style="font-size:.6rem;color:var(--text3);margin-top:2px">~${aiData[1]}% annual vol</div>
  </div>` : ''}
  </div>
@@ -6243,7 +6490,7 @@ function drawWatchlistChart(container, ticker, vol, growth5yr) {
  ctx.setLineDash([]);
 
  // Labels
- ctx.font = '9px Inter, sans-serif';
+ ctx.font = '9px Geist, sans-serif';
  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)';
  ctx.fillText('6mo', 2, H - 2);
  ctx.fillStyle = predColor;
@@ -6274,7 +6521,7 @@ function drawAssetForecast(container, ticker, vol, growth5yr) {
  const tip = document.createElement('div');
  tip.style.cssText = [
  'position:absolute;background:var(--card);border:1px solid var(--border2)',
- 'border-radius:10px;padding:8px 13px;font-size:12px;font-family:Inter,sans-serif',
+ 'border-radius:10px;padding:8px 13px;font-size:12px;font-family:Geist,sans-serif',
  'color:var(--text);pointer-events:none;display:none;white-space:nowrap',
  'box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:10'
  ].join(';');
@@ -6343,7 +6590,7 @@ function drawAssetForecast(container, ticker, vol, growth5yr) {
  const fontSize = Math.max(11, Math.round(W_css * 0.011)); // scales with width, min 11px
 
  // ── Measure widest Y-label to set PAD_L dynamically ──
- ctx.font = `${fontSize}px Inter,system-ui,sans-serif`;
+ ctx.font = `${fontSize}px Geist,system-ui,sans-serif`;
  const yLevels = [0.2, 0.4, 0.6, 0.8];
  let maxLabelW = 0;
  yLevels.forEach(f => {
@@ -6372,7 +6619,7 @@ function drawAssetForecast(container, ticker, vol, growth5yr) {
  ctx.fill();
 
  // ── Y-axis grid + labels ──
- ctx.font = `${fontSize}px Inter,system-ui,sans-serif`;
+ ctx.font = `${fontSize}px Geist,system-ui,sans-serif`;
  ctx.lineWidth = 1;
  yLevels.forEach(f => {
  const v = minV + (maxV - minV) * f;
@@ -6390,7 +6637,7 @@ function drawAssetForecast(container, ticker, vol, growth5yr) {
  // ── X-axis month labels ──
  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
  const now = new Date();
- ctx.fillStyle = textCol; ctx.textAlign = 'center'; ctx.font = `${fontSize}px Inter,system-ui,sans-serif`;
+ ctx.fillStyle = textCol; ctx.textAlign = 'center'; ctx.font = `${fontSize}px Geist,system-ui,sans-serif`;
  for(let i=0;i<=total;i+=4){
  if(i===0||i===histWeeks) continue;
  const d=new Date(now); d.setDate(d.getDate()+(i-histWeeks)*7);
@@ -6444,7 +6691,7 @@ function drawAssetForecast(container, ticker, vol, growth5yr) {
 
  // "TODAY" label pill
  const lblTxt='TODAY';
- ctx.font=`bold ${fontSize}px Inter,system-ui,sans-serif`;
+ ctx.font=`bold ${fontSize}px Geist,system-ui,sans-serif`;
  const tw=ctx.measureText(lblTxt).width;
  const pillW=tw+16, pillH=fontSize+8;
  const pillX=divX-pillW/2, pillY=PAD_T-pillH-4;
@@ -6456,7 +6703,7 @@ function drawAssetForecast(container, ticker, vol, growth5yr) {
  ctx.textAlign='center'; ctx.fillText(lblTxt, divX, pillY+fontSize+1);
 
  // Section labels at bottom
- ctx.font=`${fontSize}px Inter,system-ui,sans-serif`;
+ ctx.font=`${fontSize}px Geist,system-ui,sans-serif`;
  ctx.fillStyle=isDark?'rgba(255,255,255,0.35)':'rgba(0,0,0,0.35)';
  ctx.textAlign='left';
  ctx.fillText('← 1 year history', PAD_L+6, PAD_T+chartH-6);
@@ -6470,7 +6717,7 @@ function drawAssetForecast(container, ticker, vol, growth5yr) {
  const legendItems=[[histColor,'Historical'],[predColor,'AI Forecast']];
  let lx=W_css-PAD_R;
  legendItems.slice().reverse().forEach(([col,lbl])=>{
- ctx.font=`${fontSize}px Inter,system-ui,sans-serif`;
+ ctx.font=`${fontSize}px Geist,system-ui,sans-serif`;
  const tw2=ctx.measureText(lbl).width;
  lx -= tw2+30;
  ctx.fillStyle=col; ctx.fillRect(lx, PAD_T/2-3, 18, 3);
@@ -6530,7 +6777,7 @@ function drawAssetForecast(container, ticker, vol, growth5yr) {
  tip.style.top='10px';
  tip.innerHTML=`
  <div style="font-size:11px;color:${textCol2};margin-bottom:3px">${weekLabel}</div>
- <div style="font-size:15px;font-weight:800;font-family:'Manrope',sans-serif;color:${isFc?'#a78bfa':val>=100?'#00c97a':'#ff3860'}">${Number(pctChg)>=0?'+':''}${pctChg}%</div>
+ <div style="font-size:15px;font-weight:800;font-family:'Geist',sans-serif;color:${isFc?'#a78bfa':val>=100?'#00c97a':'#ff3860'}">${Number(pctChg)>=0?'+':''}${pctChg}%</div>
  <div style="font-size:10px;color:${textCol2};margin-top:1px">${isFc?' AI projected':' Historical'}</div>`;
  }
  function onLeave(){ state=render(); tip.style.display='none'; }
@@ -6976,11 +7223,11 @@ function buildAICard(el, ticker, profile) {
  <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:.75rem;margin-bottom:.75rem">
  <div>
  <div style="font-size:.58rem;color:var(--text3);letter-spacing:.1em;margin-bottom:4px">${isSimple?'WHAT SHOULD I DO?':'AI VERDICT'}</div>
- <div style="font-family:'Manrope',sans-serif;font-size:${isSimple?'.95rem':'1.15rem'};font-weight:800;color:${profile.color};line-height:1.2">${verdictLabel}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:${isSimple?'.95rem':'1.15rem'};font-weight:800;color:${profile.color};line-height:1.2">${verdictLabel}</div>
  </div>
  <div style="text-align:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.5rem .875rem;min-width:80px">
  <div style="font-size:.56rem;color:var(--text3);letter-spacing:.08em;margin-bottom:2px">${isSimple?'CONFIDENCE':'CONVICTION'}</div>
- <div style="font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800;color:${scoreColor}">${scoreLabel}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.1rem;font-weight:800;color:${scoreColor}">${scoreLabel}</div>
  </div>
  </div>
 
@@ -7901,7 +8148,7 @@ function renderWatchlist() {
  const textByType = {s:'var(--accent2)',i:'var(--teal)',c:'var(--gold)'};
 
  mc.innerHTML = `
- <div style="font-family:'Manrope',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:.875rem;color:var(--text2)">${watchlist.length} saved asset${watchlist.length!==1?'s':''}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:.875rem;color:var(--text2)">${watchlist.length} saved asset${watchlist.length!==1?'s':''}</div>
  <div class="wl-grid">
  ${watchlist.map((w,i) => `
  <div class="wl-card" style="border-color:${accentByType[w.type]||'rgba(108,92,231,.35)'}">
@@ -8016,7 +8263,7 @@ function runCmp() {
  <div class="two-col" style="margin-bottom:1rem">
  <div class="card" style="margin:0;border-top:3px solid var(--accent2)">
  <div style="padding:1rem;text-align:center">
- <div style="font-family:'Manrope',sans-serif;font-size:1.2rem;font-weight:800;color:var(--accent2)">${rA.t}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.2rem;font-weight:800;color:var(--accent2)">${rA.t}</div>
  <div style="font-size:.72rem;color:var(--text2);margin:.25rem 0">${rA.n||rA.t}</div>
  ${aiA.verdict?`<div style="font-size:.8rem;font-weight:700;color:${aiA.color||'var(--text)'};margin-top:.5rem">${aiA.verdict}</div>`:''}
  <div style="font-size:.88rem;font-weight:700;margin-top:.5rem">$${priceA.toLocaleString()}</div>
@@ -8024,7 +8271,7 @@ function runCmp() {
  </div>
  <div class="card" style="margin:0;border-top:3px solid #3d9bff">
  <div style="padding:1rem;text-align:center">
- <div style="font-family:'Manrope',sans-serif;font-size:1.2rem;font-weight:800;color:#3d9bff">${rB.t}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.2rem;font-weight:800;color:#3d9bff">${rB.t}</div>
  <div style="font-size:.72rem;color:var(--text2);margin:.25rem 0">${rB.n||rB.t}</div>
  ${aiB.verdict?`<div style="font-size:.8rem;font-weight:700;color:${aiB.color||'var(--text)'};margin-top:.5rem">${aiB.verdict}</div>`:''}
  <div style="font-size:.88rem;font-weight:700;margin-top:.5rem">$${priceB.toLocaleString()}</div>
@@ -8126,12 +8373,12 @@ function renderPortfolio() {
  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.25rem">
  <div class="card" style="margin:0;padding:1rem">
  <div style="font-size:.6rem;color:var(--text3);letter-spacing:.08em;margin-bottom:4px">POSITIONS</div>
- <div style="font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;color:var(--accent2)">${holdings.length}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.5rem;font-weight:800;color:var(--accent2)">${holdings.length}</div>
  <div style="font-size:.65rem;color:var(--text3)">active holdings</div>
  </div>
  <div class="card" style="margin:0;padding:1rem">
  <div style="font-size:.6rem;color:var(--text3);letter-spacing:.08em;margin-bottom:4px">TOTAL INVESTED</div>
- <div id="portTotalCost" style="font-family:'Manrope',sans-serif;font-size:1.3rem;font-weight:800">$0.00</div>
+ <div id="portTotalCost" style="font-family:'Geist',sans-serif;font-size:1.3rem;font-weight:800">$0.00</div>
  <div style="font-size:.65rem;color:var(--text3)">cost basis</div>
  </div>
  </div>
@@ -8207,7 +8454,7 @@ function renderPortfolio() {
  </div>
 
  <!-- Live charts grid -->
- <div style="font-family:'Manrope',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:.75rem;color:var(--text2)">Live Charts</div>
+ <div style="font-family:'Geist',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:.75rem;color:var(--text2)">Live Charts</div>
  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1rem">
  ${holdings.map((_,i)=>`<div class="card" style="margin:0">
  <div class="card-hdr"><div class="card-hdr-title" id="pct-${i}"></div></div>
@@ -8272,11 +8519,11 @@ function renderPortfolio() {
 
  // Center label
  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#eeeef8';
- ctx.font = 'bold 11px Inter,sans-serif';
+ ctx.font = 'bold 11px Geist,sans-serif';
  ctx.textAlign = 'center';
  ctx.textBaseline = 'middle';
  ctx.fillText(holdings.length + ' pos', cx, cy - 6);
- ctx.font = '10px Inter,sans-serif';
+ ctx.font = '10px Geist,sans-serif';
  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text2').trim() || 'rgba(238,238,248,0.52)';
  ctx.fillText('$' + total.toLocaleString('en-US',{maximumFractionDigits:0}), cx, cy + 9);
 
@@ -8404,7 +8651,7 @@ function showP(name) {
  alertList.innerHTML = entries.map(([t, price])=>`
  <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
  <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Manrope',sans-serif;font-weight:700;color:var(--accent2)">${t}</span>
+ <span style="font-family:'Geist',sans-serif;font-weight:700;color:var(--accent2)">${t}</span>
  <span style="font-size:.72rem;color:var(--text2)">Alert at <strong>$${Number(price).toLocaleString()}</strong></span>
  </div>
  <button onclick="delete priceAlerts['${t}'];_syncAlerts();showP('notif')"
@@ -9556,12 +9803,12 @@ function renderStockOfDay(containerId) {
  <div style="padding:1rem;cursor:pointer;flex:1;display:flex;flex-direction:column" onclick="goAsset('${ticker}','${found.k}')">
  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
  <div>
- <div style="font-family:'Manrope',sans-serif;font-size:1.4rem;font-weight:800;color:var(--accent2)">${ticker}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.4rem;font-weight:800;color:var(--accent2)">${ticker}</div>
  <div style="font-size:.72rem;color:var(--text2);margin-top:2px">${found.n}</div>
  </div>
  <div style="text-align:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.5rem .875rem">
  <div style="font-size:.56rem;color:var(--text3);letter-spacing:.08em;margin-bottom:2px">AI VERDICT</div>
- <div style="font-family:'Manrope',sans-serif;font-size:.88rem;font-weight:800;color:${verdictColor}">${verdict}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:.88rem;font-weight:800;color:${verdictColor}">${verdict}</div>
  </div>
  </div>
 
@@ -9896,6 +10143,7 @@ function getPtPortfolio() {
 }
 function savePtPortfolio(pt) {
  try { localStorage.setItem('ss_pt_'+(user?.email||''), JSON.stringify(pt)); } catch {}
+ renderRail();
  if (user?.email) {
  const prefs = safeParse('ss3_p_'+user.email, {});
  sb.from('users').update({ portfolio: { holdings: holdings||[], paper_trade: pt, prefs } }).eq('email', user.email)
@@ -10367,7 +10615,7 @@ function renderPaperPortfolio(containerId) {
  const plPct = ((curPrice - avgCost) / avgCost * 100);
  const plColor = pl >= 0 ? 'var(--green)' : 'var(--red)';
  return `<div style="display:flex;align-items:center;gap:10px;padding:.625rem .875rem;background:var(--card2);border:1px solid var(--border);border-radius:9px">
- <div style="font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2);font-size:.88rem;width:60px">${t}</div>
+ <div style="font-family:'Geist',sans-serif;font-weight:800;color:var(--accent2);font-size:.88rem;width:60px">${t}</div>
  <div style="flex:1;font-size:.75rem;color:var(--text2)">${shares.toFixed(4)} shares<br><span style="font-size:.65rem;color:var(--text3)">avg $${avgCost.toFixed(2)}</span></div>
  <div style="text-align:right">
  <div style="font-size:.82rem;font-weight:700">$${val.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
@@ -10438,34 +10686,34 @@ function sharePtCard() {
  ctx.stroke();
  // Logo text
  ctx.fillStyle = '#eeeef8';
- ctx.font = '700 22px Manrope, Inter, sans-serif';
+ ctx.font = '700 22px Geist, Geist, sans-serif';
  ctx.fillText('Stock', 100, 68);
  ctx.fillStyle = '#a89cff';
  ctx.fillText('Sight', 148, 68);
 
  // "PAPER TRADING" label
  ctx.fillStyle = 'rgba(255,255,255,0.25)';
- ctx.font = '600 11px Inter, sans-serif';
+ ctx.font = '600 11px Geist, sans-serif';
  ctx.letterSpacing = '0.12em';
  ctx.fillText('PAPER TRADING', 100, 84);
 
  // Big return number
  const retStr = (isUp ? '+' : '') + totalReturnPct.toFixed(2) + '%';
  ctx.fillStyle = accentColor;
- ctx.font = '900 112px Manrope, Inter, sans-serif';
+ ctx.font = '900 112px Geist, Geist, sans-serif';
  ctx.fillText(retStr, 48, 260);
 
  // Return label
  ctx.fillStyle = 'rgba(238,238,248,0.45)';
- ctx.font = '500 18px Inter, sans-serif';
+ ctx.font = '500 18px Geist, sans-serif';
  ctx.fillText('total return from $10,000 starting capital', 52, 296);
 
  // Portfolio value
  ctx.fillStyle = '#eeeef8';
- ctx.font = '700 32px Manrope, Inter, sans-serif';
+ ctx.font = '700 32px Geist, Geist, sans-serif';
  ctx.fillText('$' + portfolioValue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}), 52, 352);
  ctx.fillStyle = 'rgba(238,238,248,0.4)';
- ctx.font = '500 15px Inter, sans-serif';
+ ctx.font = '500 15px Geist, sans-serif';
  ctx.fillText('portfolio value', 52, 374);
 
  // Divider
@@ -10482,7 +10730,7 @@ function sharePtCard() {
 
  if (topHoldings.length > 0) {
  ctx.fillStyle = 'rgba(238,238,248,0.3)';
- ctx.font = '600 11px Inter, sans-serif';
+ ctx.font = '600 11px Geist, sans-serif';
  ctx.fillText('TOP POSITIONS', 52, 436);
  topHoldings.forEach(([t, h], i) => {
  const shares = typeof h === 'object' ? h.shares : h;
@@ -10499,28 +10747,28 @@ function sharePtCard() {
  roundRect(ctx, x, 448, 228, 72, 10);
  ctx.stroke();
  ctx.fillStyle = '#a89cff';
- ctx.font = '800 18px Manrope, Inter, sans-serif';
+ ctx.font = '800 18px Geist, Geist, sans-serif';
  ctx.fillText(t, x + 16, 472);
  ctx.fillStyle = plColor;
- ctx.font = '700 14px Manrope, Inter, sans-serif';
+ ctx.font = '700 14px Geist, Geist, sans-serif';
  ctx.fillText((pl >= 0 ? '+' : '') + pl.toFixed(1) + '%', x + 16, 496);
  ctx.fillStyle = 'rgba(238,238,248,0.3)';
- ctx.font = '500 12px Inter, sans-serif';
+ ctx.font = '500 12px Geist, sans-serif';
  ctx.fillText(shares + ' shares', x + 80, 496);
  });
  } else {
  ctx.fillStyle = 'rgba(238,238,248,0.25)';
- ctx.font = '500 15px Inter, sans-serif';
+ ctx.font = '500 15px Geist, sans-serif';
  ctx.fillText('No positions yet — just holding $' + pt.cash.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' cash', 52, 460);
  }
 
  // Bottom right watermark
  ctx.fillStyle = 'rgba(238,238,248,0.2)';
- ctx.font = '500 14px Inter, sans-serif';
+ ctx.font = '500 14px Geist, sans-serif';
  ctx.textAlign = 'right';
  ctx.fillText('stocksightai.com', W - 48, H - 32);
  ctx.fillStyle = 'rgba(238,238,248,0.12)';
- ctx.font = '500 12px Inter, sans-serif';
+ ctx.font = '500 12px Geist, sans-serif';
  ctx.fillText('Paper trading · not financial advice', W - 48, H - 14);
 
  // Download
@@ -10727,7 +10975,7 @@ function renderPaperTradeTab() {
  <!-- Header -->
  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
  <div>
- <div style="font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.02em"> Paper Trading</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.02em"> Paper Trading</div>
  <div style="font-size:.8rem;color:var(--text2);margin-top:4px">Practice investing with $10,000 of virtual money — no real risk</div>
  </div>
  <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -10770,7 +11018,7 @@ function renderPaperTradeTab() {
  <div style="background:${sideBg};border:1px solid ${sideBdr};border-radius:7px;padding:4px 10px;font-size:.72rem;font-weight:800;color:${sideColor};flex-shrink:0;text-transform:uppercase">${o.side}</div>
  <div style="flex:1;min-width:0">
  <div style="display:flex;align-items:baseline;gap:6px">
- <span style="font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2);font-size:.88rem">${o.ticker}</span>
+ <span style="font-family:'Geist',sans-serif;font-weight:800;color:var(--accent2);font-size:.88rem">${o.ticker}</span>
  <span style="font-size:.75rem;color:var(--text)">${o.shares.toFixed(4)} shares</span>
  <span style="font-size:.72rem;color:var(--text2)">@ $${o.price.toLocaleString()}</span>
  </div>
@@ -10810,7 +11058,7 @@ function renderPaperTradeTab() {
  <div class="card">
  <div style="padding:3rem;text-align:center">
  <div style="font-size:3rem;margin-bottom:1rem"></div>
- <div style="font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:8px">No paper trades yet</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:8px">No paper trades yet</div>
  <div style="font-size:.82rem;color:var(--text2);margin-bottom:1.5rem;line-height:1.65">Search for any stock and click the <strong style="color:var(--teal)"> Paper Trade</strong> button to place your first virtual trade.</div>
  <button class="pt-btn" onclick="switchTab('s');setTimeout(()=>toast('Search for a stock and click Paper Trade','info',3000),100)">
  Start Trading →
@@ -10849,7 +11097,7 @@ function renderPaperTradeTab() {
  return `<tr style="border-bottom:1px solid var(--border);transition:background .15s" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background='transparent'">
  <td style="padding:.875rem .5rem">
  <div style="cursor:pointer" onclick="goAsset('${t}','s')">
- <div style="font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2)">${t}</div>
+ <div style="font-family:'Geist',sans-serif;font-weight:800;color:var(--accent2)">${t}</div>
  <div style="font-size:.65rem;color:var(--text3)">${found.n}</div>
  </div>
  </td>
@@ -10950,7 +11198,7 @@ function renderPaperTradeTab() {
  const plCell=e.side==='BUY'?'<span style="color:var(--text3)">—</span>':`<span style="color:${e.pl>=0?'var(--green)':'var(--red)'};font-weight:600">${e.pl>=0?'+':''}$${Math.abs(e.pl).toFixed(2)}</span>`;
  return `<tr style="border-bottom:1px solid var(--border)">
  <td style="padding:.5rem .5rem;color:var(--text3);font-size:.7rem;white-space:nowrap">${d}</td>
- <td style="padding:.5rem .5rem;font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2)">${e.ticker}</td>
+ <td style="padding:.5rem .5rem;font-family:'Geist',sans-serif;font-weight:800;color:var(--accent2)">${e.ticker}</td>
  <td style="padding:.5rem .5rem;text-align:center"><span style="background:${sideBg};color:${sideColor};border-radius:5px;padding:2px 8px;font-size:.65rem;font-weight:800">${e.side}</span></td>
  <td style="padding:.5rem .5rem;text-align:right">${(+e.shares).toFixed(4)}</td>
  <td style="padding:.5rem .5rem;text-align:right">$${(+e.price).toLocaleString()}</td>
@@ -11338,7 +11586,7 @@ function renderAnalystTargets(ticker, curPrice) {
  ${upside !== null ? `
  <div style="text-align:center;margin-bottom:1rem;padding:.75rem;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
  <div style="font-size:.65rem;color:var(--text3);margin-bottom:3px">${isBeginner ? (upside > 0 ? '🚀 EXPERTS THINK IT COULD GO UP BY' : '⚠️ EXPERTS THINK IT MIGHT DROP BY') : 'ANALYST CONSENSUS UPSIDE'}</div>
- <div style="font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;color:${upsideColor}">${upside > 0 ? '+' : ''}${upside}%</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.5rem;font-weight:800;color:${upsideColor}">${upside > 0 ? '+' : ''}${upside}%</div>
  <div style="font-size:.65rem;color:var(--text3);margin-top:2px">${isBeginner ? `compared to what it costs right now · from ${d.firm}` : `vs current price · per ${d.firm}`}</div>
  </div>` : ''}
 
@@ -11582,7 +11830,7 @@ function renderQuizStep() {
 
   const selected = _quizAnswers[_quizStep];
   wrap.innerHTML = `
-    <div style="font-size:.95rem;font-weight:700;font-family:'Manrope',sans-serif;color:var(--text);line-height:1.45;margin-bottom:1rem">${q.q}</div>
+    <div style="font-size:.95rem;font-weight:700;font-family:'Geist',sans-serif;color:var(--text);line-height:1.45;margin-bottom:1rem">${q.q}</div>
     <div style="display:flex;flex-direction:column;gap:9px">
       ${q.opts.map((o, i) => `
         <button onclick="quizSelect(${i})" id="qopt-${i}" style="text-align:left;background:${selected===i?'var(--accent)':'var(--card2)'};border:1.5px solid ${selected===i?'var(--accent)':'var(--border2)'};color:${selected===i?'#fff':'var(--text)'};border-radius:12px;padding:13px 16px;font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .15s;line-height:1.4">
@@ -11689,7 +11937,7 @@ function renderRiskOptions() {
       style="display:flex;align-items:center;gap:12px;background:var(--card2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;transition:all .15s;width:100%;font-family:inherit">
       <span style="font-size:1.2rem;flex-shrink:0">${o.icon}</span>
       <div style="flex:1;min-width:0">
-        <div style="font-size:.82rem;font-weight:700;color:var(--text);font-family:'Manrope',sans-serif">${o.label}</div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--text);font-family:'Geist',sans-serif">${o.label}</div>
         <div style="font-size:.7rem;color:var(--text3);margin-top:1px">${o.desc}</div>
       </div>
     </button>`).join('');
@@ -11736,7 +11984,7 @@ function renderStyleOptions() {
       style="display:flex;align-items:center;gap:12px;background:var(--card2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;transition:all .15s;width:100%;font-family:inherit">
       <span style="font-size:1.2rem;flex-shrink:0">${o.icon}</span>
       <div style="flex:1;min-width:0">
-        <div style="font-size:.82rem;font-weight:700;color:var(--text);font-family:'Manrope',sans-serif">${o.label}</div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--text);font-family:'Geist',sans-serif">${o.label}</div>
         <div style="font-size:.7rem;color:var(--text3);margin-top:1px">${o.desc}</div>
       </div>
     </button>`).join('');
@@ -11966,7 +12214,7 @@ function renderStocksForYou() {
       const found = TICKERS.find(e=>e.t===t);
       const tp = ['BTC','ETH','SOL','BNB','XRP'].includes(t) ? 'c' : 's';
       return `<button onclick="goAsset('${t}','${tp}')" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-family:inherit;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'">
-        <div style="font-size:.78rem;font-weight:800;color:var(--accent2);font-family:'Manrope',sans-serif">${t}</div>
+        <div style="font-size:.78rem;font-weight:800;color:var(--accent2);font-family:'Geist',sans-serif">${t}</div>
         ${found ? `<div style="font-size:.65rem;color:var(--text3);margin-top:1px">${found.n.slice(0,16)}</div>` : ''}
       </button>`;
     }).join('')}
@@ -11985,7 +12233,7 @@ function renderReferralSection(containerId) {
  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.875rem">
  <div style="font-size:1.4rem"></div>
  <div>
- <div style="font-family:'Manrope',sans-serif;font-size:.9rem;font-weight:800">Invite Friends</div>
+ <div style="font-family:'Geist',sans-serif;font-size:.9rem;font-weight:800">Invite Friends</div>
  <div style="font-size:.68rem;color:var(--text2);margin-top:1px">Share your code — both of you unlock a special badge</div>
  </div>
  </div>
@@ -12083,7 +12331,7 @@ function renderOnboardingChecklist(containerId) {
  <div class="ob-check-card">
  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem">
  <div>
- <div style="font-family:'Manrope',sans-serif;font-size:.92rem;font-weight:800"> Getting Started</div>
+ <div style="font-family:'Geist',sans-serif;font-size:.92rem;font-weight:800"> Getting Started</div>
  <div style="font-size:.68rem;color:var(--text2);margin-top:2px">${done.size} of ${CHECKLIST_ITEMS.length} done</div>
  </div>
  <div style="text-align:right">
@@ -12175,7 +12423,7 @@ function showKeyboardShortcuts() {
  el.style.cssText = 'position:fixed;inset:0;z-index:9100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(4px)';
  el.innerHTML = `<div style="background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:1.75rem;max-width:380px;width:calc(100%-2rem);box-shadow:0 24px 64px rgba(0,0,0,.5)">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
- <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800"> Keyboard Shortcuts</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1rem;font-weight:800"> Keyboard Shortcuts</div>
  <button onclick="document.getElementById('kbShortcutsModal').remove()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:1.1rem"></button>
  </div>
  ${[['S','Focus search bar'],['H','Go to homepage'],['P','Open portfolio'],['W','Open watchlist'],['T','Paper trading'],['Esc','Go back / close stock page'],['?','Show this help']]
@@ -12393,7 +12641,7 @@ function renderCryptoFearGreed(containerId) {
  <line x1="100" y1="100" x2="${100+75*Math.cos((deg-180)*Math.PI/180).toFixed(3)}" y2="${100+75*Math.sin((deg-180)*Math.PI/180).toFixed(3)}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
  <circle cx="100" cy="100" r="5" fill="${color}"/>
  </svg>
- <div style="font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;color:${color};margin-top:-.25rem">${val}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.5rem;font-weight:800;color:${color};margin-top:-.25rem">${val}</div>
  <div style="font-size:.8rem;font-weight:700;color:${color}">${label}</div>
  <div style="font-size:.62rem;color:var(--text3);margin-top:4px">Crypto-specific · BTC momentum, volatility & social volume</div>
  </div>`;
@@ -12426,7 +12674,7 @@ function renderAIRecommendations(containerId) {
  const f=TICKERS.find(t=>t.t===r.ticker)||{n:r.ticker}; const type=f.k||'s';
  const ai=AI_PROFILES[r.ticker]; const verdict=ai?.verdict||''; const vc=ai?.color||'var(--text2)';
  return `<button onclick="goAsset('${r.ticker}','${type}')" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:.75rem 1rem;background:var(--card2);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:left;transition:all .18s;flex:1;min-width:120px" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none'">
- <div style="font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2)">${r.ticker}</div>
+ <div style="font-family:'Geist',sans-serif;font-weight:800;color:var(--accent2)">${r.ticker}</div>
  <div style="font-size:.62rem;color:var(--text3)">${f.n.slice(0,18)}</div>
  <div style="font-size:.58rem;padding:1px 5px;border-radius:5px;background:rgba(108,92,231,.1);color:var(--text2);margin-top:2px">${r.sector}</div>
  ${verdict?`<div style="font-size:.62rem;font-weight:700;color:${vc};margin-top:2px">${verdict}</div>`:''}
@@ -12452,7 +12700,7 @@ function renderRebalancingTool(containerId) {
  const color=Math.abs(diff)<5?'var(--green)':Math.abs(diff)<15?'var(--gold)':'var(--red)';
  return `<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.875rem">
  <div style="font-size:.6rem;color:var(--text3);font-weight:600;margin-bottom:3px">${cat.toUpperCase()}</div>
- <div style="font-family:'Manrope',sans-serif;font-size:1rem;font-weight:800">${cp.toFixed(1)}%</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1rem;font-weight:800">${cp.toFixed(1)}%</div>
  <div style="font-size:.6rem;color:var(--text3)">target: ${t}%</div>
  <div style="font-size:.63rem;font-weight:700;color:${color};margin-top:3px">${diff>5?'▲ Over ':diff<-5?'▼ Under ':' '}${Math.abs(diff).toFixed(1)}%</div>
  <div style="height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden"><div style="height:100%;width:${Math.min(100,cp/t*100)}%;background:${color};border-radius:2px"></div></div>
@@ -12480,7 +12728,7 @@ function renderPortfolioWhatIf(containerId) {
  return `<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.875rem;text-align:center">
  <div style="font-size:.6rem;color:var(--text3);margin-bottom:3px">${p.label.toUpperCase()}</div>
  <div style="font-size:.72rem;color:var(--text3)">Cost: $${Math.round(pastVal).toLocaleString()}</div>
- <div style="font-family:'Manrope',sans-serif;font-size:.95rem;font-weight:800;color:${c};margin-top:3px">${gain>=0?'+':''}$${Math.round(gain).toLocaleString()}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:.95rem;font-weight:800;color:${c};margin-top:3px">${gain>=0?'+':''}$${Math.round(gain).toLocaleString()}</div>
  <div style="font-size:.65rem;color:${c}">${pct>=0?'+':''}${pct.toFixed(1)}%</div>
  </div>`;
  }).join('')}
@@ -12554,7 +12802,7 @@ function openNotificationCenter() {
  panel.style.cssText = 'position:fixed;top:56px;right:12px;width:320px;max-width:calc(100vw - 24px);background:var(--card);border:1px solid var(--border2);border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,.4);z-index:9200;max-height:420px;overflow-y:auto';
  panel.innerHTML = `
  <div style="padding:.875rem 1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--card)">
- <div style="font-family:'Manrope',sans-serif;font-size:.88rem;font-weight:800"> Notifications</div>
+ <div style="font-family:'Geist',sans-serif;font-size:.88rem;font-weight:800"> Notifications</div>
  <button onclick="document.getElementById('notifPanel')?.remove()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:.85rem">&#x2715;</button>
  </div>
  ${notifs.length === 0 ? `<div style="padding:2rem;text-align:center;font-size:.78rem;color:var(--text3)">No notifications yet.<br>Price alerts, badges, and milestones will appear here.</div>` :
@@ -13055,19 +13303,19 @@ function shareDayCard() {
  ctx.beginPath();
  ctx.moveTo(58, 76); ctx.lineTo(64, 66); ctx.lineTo(70, 70); ctx.lineTo(78, 58); ctx.lineTo(82, 62);
  ctx.stroke();
- ctx.fillStyle = INK; ctx.font = '700 22px Manrope, Inter, sans-serif';
+ ctx.fillStyle = INK; ctx.font = '700 22px Geist, Geist, sans-serif';
  ctx.fillText('Stock', 100, 68);
  // Measure rather than hardcode the offset, or the two halves overlap
  ctx.fillStyle = '#a89cff';
  ctx.fillText('Sight', 100 + ctx.measureText('Stock').width, 68);
- ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.font = '600 11px Inter, sans-serif';
+ ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.font = '600 11px Geist, sans-serif';
  ctx.fillText('TRADING REPORT CARD', 100, 86);
 
  // Hero: expectancy, the number most traders can't name
  const exp = (s.expectancy >= 0 ? '+$' : '-$') + Math.abs(s.expectancy).toFixed(2);
- ctx.fillStyle = accent; ctx.font = '900 116px Manrope, Inter, sans-serif';
+ ctx.fillStyle = accent; ctx.font = '900 116px Geist, Geist, sans-serif';
  ctx.fillText(exp, 48, 236);
- ctx.fillStyle = MUTE; ctx.font = '500 19px Inter, sans-serif';
+ ctx.fillStyle = MUTE; ctx.font = '500 19px Geist, sans-serif';
  ctx.fillText('expectancy: what one average trade is worth', 52, 274);
 
  ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1;
@@ -13079,9 +13327,9 @@ function shareDayCard() {
  roundRect(ctx, x, y, w, h, 12); ctx.fill();
  ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1;
  roundRect(ctx, x, y, w, h, 12); ctx.stroke();
- ctx.fillStyle = color || INK; ctx.font = '800 30px Manrope, Inter, sans-serif';
+ ctx.fillStyle = color || INK; ctx.font = '800 30px Geist, Geist, sans-serif';
  ctx.fillText(value, x + 18, y + 46);
- ctx.fillStyle = 'rgba(238,238,248,0.32)'; ctx.font = '600 11px Inter, sans-serif';
+ ctx.fillStyle = 'rgba(238,238,248,0.32)'; ctx.font = '600 11px Geist, sans-serif';
  ctx.fillText(label, x + 18, y + 70);
  };
 
@@ -13115,16 +13363,16 @@ function shareDayCard() {
  : good
  ? `Positive expectancy over ${s.n} trades. That edge is the whole game.`
  : `Negative expectancy over ${s.n} trades. The size of your losses is the problem.`;
- ctx.fillStyle = INK; ctx.font = '600 21px Inter, sans-serif';
+ ctx.fillStyle = INK; ctx.font = '600 21px Geist, sans-serif';
  ctx.fillText(verdict, 72, 600);
- ctx.fillStyle = MUTE; ctx.font = '500 16px Inter, sans-serif';
+ ctx.fillStyle = MUTE; ctx.font = '500 16px Geist, sans-serif';
  ctx.fillText(d.topSetup ? `Best setup: ${d.topSetup.s}` : 'Tag your setups to see which ones actually pay', 72, 630);
 
  // Watermark
  ctx.textAlign = 'right';
- ctx.fillStyle = 'rgba(238,238,248,0.28)'; ctx.font = '600 16px Inter, sans-serif';
+ ctx.fillStyle = 'rgba(238,238,248,0.28)'; ctx.font = '600 16px Geist, sans-serif';
  ctx.fillText('stocksightai.com', W - 48, H - 44);
- ctx.fillStyle = 'rgba(238,238,248,0.14)'; ctx.font = '500 13px Inter, sans-serif';
+ ctx.fillStyle = 'rgba(238,238,248,0.14)'; ctx.font = '500 13px Geist, sans-serif';
  ctx.fillText('Free trade journal & day trading simulator', W - 48, H - 22);
  ctx.textAlign = 'left';
 
@@ -13480,7 +13728,7 @@ function renderDayTradeTab() {
  <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:.875rem">
  <div>
  <div style="display:flex;align-items:baseline;gap:12px">
- <span id="dtPriceEl" style="font-family:'Manrope',sans-serif;font-size:2rem;font-weight:800"></span>
+ <span id="dtPriceEl" style="font-family:'Geist',sans-serif;font-size:2rem;font-weight:800"></span>
  <span id="dtChgEl" style="font-size:.9rem;font-weight:700"></span>
  </div>
  <div style="font-size:.68rem;color:var(--text3);margin-top:3px">
@@ -13488,7 +13736,7 @@ function renderDayTradeTab() {
  </div>
  </div>
  <div style="text-align:right">
- <div id="dtEquityEl" style="font-family:'Manrope',sans-serif;font-size:1.3rem;font-weight:800"></div>
+ <div id="dtEquityEl" style="font-family:'Geist',sans-serif;font-size:1.3rem;font-weight:800"></div>
  <div style="font-size:.6rem;color:var(--text3);letter-spacing:.07em">ACCOUNT EQUITY</div>
  </div>
  </div>
@@ -13618,11 +13866,11 @@ function dtRenderOrderPanel() {
  <div style="background:${win ? 'rgba(0,201,122,.08)' : 'rgba(255,56,96,.07)'};border:1px solid ${win ? 'rgba(0,201,122,.3)' : 'rgba(255,56,96,.3)'};border-radius:12px;padding:1rem;margin-bottom:.875rem">
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
  <div>
- <span style="font-family:'Manrope',sans-serif;font-weight:800;font-size:1rem">${q.shares} ${dtS.ticker}</span>
+ <span style="font-family:'Geist',sans-serif;font-weight:800;font-size:1rem">${q.shares} ${dtS.ticker}</span>
  <span style="font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:6px;margin-left:8px;background:${q.dir === 'long' ? 'rgba(0,201,122,.15)' : 'rgba(255,56,96,.15)'};color:${q.dir === 'long' ? 'var(--green)' : 'var(--red)'}">${q.dir.toUpperCase()}</span>
  </div>
  <div style="text-align:right">
- <div style="font-family:'Manrope',sans-serif;font-size:1.2rem;font-weight:800;color:${win ? 'var(--green)' : 'var(--red)'}">${win ? '+' : ''}$${u.toFixed(2)}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.2rem;font-weight:800;color:${win ? 'var(--green)' : 'var(--red)'}">${win ? '+' : ''}$${u.toFixed(2)}</div>
  ${rNow != null ? `<div style="font-size:.6rem;color:var(--text3)">${rNow >= 0 ? '+' : ''}${rNow.toFixed(2)}R</div>` : ''}
  </div>
  </div>
@@ -13679,7 +13927,7 @@ function dtDrawChart() {
  ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
  ctx.beginPath(); ctx.moveTo(PL, y(day.prevClose)); ctx.lineTo(W - PR, y(day.prevClose)); ctx.stroke();
  ctx.setLineDash([]);
- ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'left';
+ ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.font = '10px Geist, sans-serif'; ctx.textAlign = 'left';
  ctx.fillText('prev close', W - PR + 6, y(day.prevClose) + 3);
 
  // Price path
@@ -13702,7 +13950,7 @@ function dtDrawChart() {
  // Live price dot + label
  const lx = x(seen.length - 1), ly = y(last);
  ctx.beginPath(); ctx.arc(lx, ly, 4, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
- ctx.fillStyle = col; ctx.font = '700 11px Inter, sans-serif';
+ ctx.fillStyle = col; ctx.font = '700 11px Geist, sans-serif';
  ctx.fillText('$' + dtRound(last).toFixed(2), Math.min(lx + 8, W - PR + 4), ly + 3);
 
  // Position overlays
@@ -13712,7 +13960,7 @@ function dtDrawChart() {
  ctx.strokeStyle = c; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2;
  ctx.beginPath(); ctx.moveTo(PL, y(v)); ctx.lineTo(W - PR, y(v)); ctx.stroke();
  ctx.setLineDash([]);
- ctx.fillStyle = c; ctx.font = '600 10px Inter, sans-serif';
+ ctx.fillStyle = c; ctx.font = '600 10px Geist, sans-serif';
  ctx.fillText(label, W - PR + 6, y(v) + 3);
  };
  line(q.entry, 'rgba(168,156,255,.9)', 'entry');
@@ -13723,7 +13971,7 @@ function dtDrawChart() {
  }
 
  // Session clock ticks
- ctx.fillStyle = 'rgba(255,255,255,.28)'; ctx.font = '9px Inter, sans-serif'; ctx.textAlign = 'center';
+ ctx.fillStyle = 'rgba(255,255,255,.28)'; ctx.font = '9px Geist, sans-serif'; ctx.textAlign = 'center';
  [0, 90, 180, 270, 389].forEach(i => ctx.fillText(dtClock(i).replace(':00', ''), x(i), H - 6));
  ctx.textAlign = 'left';
 }
@@ -13956,7 +14204,7 @@ function renderScreenerTable(filtered, el) {
  const verdict = s.verdict || AI_PROFILES[s.t]?.verdict || '—';
  const vColor = verdict==='Buy'||verdict==='Strong Buy' ? 'var(--green)' : verdict==='Sell' ? 'var(--red)' : 'var(--gold)';
  return `<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="goAsset('${s.t}','${s.k || 's'}')" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background=''">
- <td style="padding:.625rem .875rem;font-family:'Manrope',sans-serif;font-weight:800;color:var(--accent2)">${s.t}</td>
+ <td style="padding:.625rem .875rem;font-family:'Geist',sans-serif;font-weight:800;color:var(--accent2)">${s.t}</td>
  <td style="padding:.625rem .875rem;color:var(--text2)">${s.name}</td>
  <td style="padding:.625rem .875rem;text-align:center;color:var(--text3);font-size:.72rem">${s.sector||''}</td>
  <td style="padding:.625rem .875rem;text-align:center">${s.beta}x</td>
@@ -14054,7 +14302,7 @@ function renderEarningsCalendar(containerId) {
  const color = diff <= 3 ? 'var(--red)' : soon ? 'var(--gold)' : 'var(--text2)';
  const badge = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `In ${diff}d`;
  return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="goAsset('${e.ticker}','s')">
- <div style="width:38px;height:38px;border-radius:8px;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;font-size:.65rem;font-weight:800;color:var(--accent2);flex-shrink:0">${e.ticker}</div>
+ <div style="width:38px;height:38px;border-radius:8px;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Geist',sans-serif;font-size:.65rem;font-weight:800;color:var(--accent2);flex-shrink:0">${e.ticker}</div>
  <div style="flex:1;min-width:0">
  <div style="font-size:.8rem;font-weight:600">${e.name}</div>
  <div style="font-size:.63rem;color:var(--text3);margin-top:1px">${e.est} · ${e.dateObj.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
@@ -14114,7 +14362,7 @@ function renderNotFound(ticker, name, type, reason, privateInfo, suggestions) {
  <button onclick="currentAsset=null;var _s=document.getElementById('searchSection');if(_s)_s.style.display='block';renderHome(tab);" style="background:none;border:none;color:var(--text2);font-family:inherit;font-size:.82rem;cursor:pointer;padding:0;margin-bottom:1.5rem;display:inline-flex;align-items:center;gap:5px;transition:color .15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text2)'">← Back</button>
  <div style="text-align:center;padding:3rem 1rem">
  <div style="font-size:3.5rem;margin-bottom:1rem">${isPrivate ? '🔒' : '🔍'}</div>
- <div style="font-family:'Manrope',sans-serif;font-size:1.3rem;font-weight:800;color:${color};margin-bottom:.5rem">${isPrivate ? 'Private Company' : 'Stock Not Found'}</div>
+ <div style="font-family:'Geist',sans-serif;font-size:1.3rem;font-weight:800;color:${color};margin-bottom:.5rem">${isPrivate ? 'Private Company' : 'Stock Not Found'}</div>
  <div style="font-size:.88rem;color:var(--text2);margin-bottom:1rem">
  ${isPrivate ? `<strong>${name}</strong> is privately held.<br><span style="font-size:.78rem;color:var(--text3)">${privateInfo||''}</span>` : `We couldn't find a stock with the symbol <strong style="color:var(--accent2)">${ticker}</strong>.`}
  </div>
@@ -14163,6 +14411,178 @@ function renderNewsCards(containerId, ticker, name) {
  </div>`;
  el.appendChild(section);
 }
+
+/* ════════════════════════════════
+ RIGHT RAIL — practice portfolio, watchlist quotes, market news
+════════════════════════════════ */
+const NEWS_TOPIC_IMAGES = [
+ [/nvidia|chip|semiconductor|\bamd\b|intel|tsmc|broadcom|\bai\b|openai/i, 'chips'],
+ [/bitcoin|crypto|ether|coinbase|blockchain|tokeni/i, 'crypto'],
+ [/\bfed\b|powell|interest rate|rate cut|inflation|treasur|yield|\bcpi\b|jobs|economy|tariff/i, 'fed'],
+ [/\boil\b|opec|crude|energy|natural gas|exxon|chevron/i, 'energy'],
+ [/tesla|\bev\b|electric vehicle|\bford\b|\bgm\b|automak/i, 'autos'],
+ [/retail|walmart|target|amazon|consumer|shopp|costco|spending/i, 'retail'],
+ [/earnings|revenue|profit|guidance|quarter|\bceo\b|merger|acquisition|\bdeal\b|\bipo\b/i, 'earnings'],
+ [/wall street|\bdow\b|s&p|nasdaq|stocks|market/i, 'wall-street'],
+];
+const NEWS_FALLBACK_IMAGES = ['markets', 'markets-2', 'bull', 'mobile-trading'];
+const RAIL_POPULAR = [
+ {ticker:'AAPL', name:'Apple', type:'s'}, {ticker:'NVDA', name:'NVIDIA', type:'s'},
+ {ticker:'MSFT', name:'Microsoft', type:'s'}, {ticker:'TSLA', name:'Tesla', type:'s'},
+ {ticker:'BTC', name:'Bitcoin', type:'c'},
+];
+let _railNews = null, _railNewsLoading = false, _railWlKey = '';
+
+function newsImageFor(title, i) {
+ const hit = NEWS_TOPIC_IMAGES.find(([re]) => re.test(title));
+ return `/images/news/${hit ? hit[1] : NEWS_FALLBACK_IMAGES[i % NEWS_FALLBACK_IMAGES.length]}.jpg`;
+}
+
+function railTimeAgo(ms) {
+ if (!ms) return '';
+ const m = Math.max(1, Math.round((Date.now() - ms) / 60000));
+ if (m < 60) return `${m}m ago`;
+ const h = Math.round(m / 60);
+ return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
+}
+
+function railMoney(n, signed=false) {
+ const s = Math.abs(n).toLocaleString('en-US', {style:'currency', currency:'USD'});
+ if (!signed) return n < 0 ? '-' + s : s;
+ return (n >= 0 ? '+' : '-') + s;
+}
+
+function railVisible() {
+ const el = document.getElementById('ssRail');
+ return !!el && el.offsetParent !== null;
+}
+
+function renderRail() {
+ const el = document.getElementById('ssRail');
+ if (!el) return;
+ if (!el.dataset.ready) {
+  el.innerHTML = `
+  <section class="rail-sec" id="railPort"></section>
+  <section class="rail-sec">
+   <div class="rail-h"><h3 id="railWlTitle">Watchlist</h3><button type="button" class="rail-link" id="railWlLink" onclick="switchTab('w')">View all</button></div>
+   <div id="railWl" class="rail-wl"></div>
+  </section>
+  <section class="rail-sec">
+   <div class="rail-h"><h3>Market news</h3></div>
+   <div id="railNews" class="rail-news"></div>
+  </section>`;
+  el.dataset.ready = '1';
+ }
+ renderRailPortfolio();
+ if (!railVisible()) return;
+ renderRailWatchlist();
+ renderRailNews();
+}
+
+function renderRailPortfolio() {
+ const box = document.getElementById('railPort');
+ if (!box) return;
+ if (!user) {
+  box.innerHTML = `
+  <div class="rail-h"><h3>Practice portfolio</h3></div>
+  <p class="rail-muted">Make a free account to paper trade with $10,000 of pretend money and follow how you do.</p>
+  <button type="button" class="rail-cta" onclick="openModal('signup')">Create free account</button>`;
+  return;
+ }
+ const pt = getPtPortfolio();
+ const rows = Object.entries(pt.holdings || {})
+  .filter(([, h]) => h && h.shares > 0)
+  .map(([t, h]) => {
+   const p = ptDailyPrice(t);
+   return { t, value: h.shares * p, day: h.shares * (p - ptDailyPrice_yesterday(t)) };
+  })
+  .sort((a, b) => b.value - a.value);
+ const cash = Number(pt.cash) || 0;
+ const invested = rows.reduce((s, r) => s + r.value, 0);
+ const total = cash + invested;
+ const pl = total - 10000;
+ const day = rows.reduce((s, r) => s + r.day, 0);
+
+ const slices = rows.slice(0, 4).map((r, i) => ({ label: r.t, value: r.value, cls: 'd' + (i + 1) }));
+ const other = rows.slice(4).reduce((s, r) => s + r.value, 0);
+ if (other > 0) slices.push({ label: 'Other', value: other, cls: 'd5' });
+ if (cash > 0) slices.push({ label: 'Cash', value: cash, cls: 'dc' });
+ const C = 2 * Math.PI * 30;
+ let offset = 0;
+ const arcs = slices.map(s => {
+  const len = total > 0 ? (s.value / total) * C : 0;
+  const arc = `<circle class="${s.cls}" cx="38" cy="38" r="30" fill="none" stroke-width="10" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}"/>`;
+  offset += len;
+  return arc;
+ }).join('');
+
+ box.innerHTML = `
+ <div class="rail-h"><h3>Practice portfolio</h3><button type="button" class="rail-link" onclick="switchTab('pt')">Open</button></div>
+ <div class="rail-port">
+  <div>
+   <div class="rail-label">Total value</div>
+   <div class="rail-big">${railMoney(total)}</div>
+   <div class="rail-delta ${pl >= 0 ? 'up' : 'dn'}">${railMoney(pl, true)} (${(pl / 100).toFixed(2)}%) all time</div>
+  </div>
+  <svg class="rail-donut" width="76" height="76" viewBox="0 0 76 76" role="img" aria-label="Portfolio allocation">
+   <circle class="dbg" cx="38" cy="38" r="30" fill="none" stroke-width="10"/>${arcs}
+  </svg>
+ </div>
+ <div class="rail-legend">${slices.map(s => `<span><i class="${s.cls}"></i>${escapeHTML(s.label)} ${total > 0 ? Math.round(s.value / total * 100) : 0}%</span>`).join('')}</div>
+ <div class="rail-stats">
+  <div><span>Invested</span><b>${railMoney(invested)}</b></div>
+  <div><span>Cash</span><b>${railMoney(cash)}</b></div>
+  <div><span>Today</span><b class="${day >= 0 ? 'up' : 'dn'}">${railMoney(day, true)}</b></div>
+  <div><span>Positions</span><b>${rows.length}</b></div>
+ </div>`;
+}
+
+function renderRailWatchlist() {
+ const box = document.getElementById('railWl');
+ if (!box) return;
+ const mine = user && watchlist.length ? watchlist.slice(0, 8) : null;
+ const list = mine || RAIL_POPULAR;
+ document.getElementById('railWlTitle').textContent = mine ? 'Watchlist' : 'Popular right now';
+ document.getElementById('railWlLink').hidden = !mine;
+ const key = theme + '|' + list.map(w => w.ticker).join(',');
+ if (key === _railWlKey && box.childElementCount) return;
+ _railWlKey = key;
+ box.innerHTML = `<div id="railWlTv" style="height:${list.length * 46 + 52}px"></div>`;
+ injectTV('railWlTv', {
+  colorTheme: theme, isTransparent: true, locale: 'en', showSymbolLogo: true, height: '100%',
+  symbolsGroups: [{ name: mine ? 'Watchlist' : 'Popular', symbols: list.map(w => ({ name: tvSym(w.ticker, w.type || 's'), displayName: w.name || w.ticker })) }],
+ }, 'market-quotes');
+}
+
+function renderRailNews() {
+ const box = document.getElementById('railNews');
+ if (!box) return;
+ if (_railNews) { paintRailNews(box); return; }
+ if (_railNewsLoading) return;
+ _railNewsLoading = true;
+ box.innerHTML = Array.from({length: 4}, () => '<div class="rail-news-skel"><i></i><div><b></b><b></b></div></div>').join('');
+ fetch('/api/news')
+  .then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(d => { _railNews = (d.items || []).filter(n => /^https?:\/\//i.test(n.link)).slice(0, 6); paintRailNews(box); })
+  .catch(() => { box.innerHTML = '<p class="rail-muted">News is unavailable right now. Check back in a few minutes.</p>'; })
+  .finally(() => { _railNewsLoading = false; });
+}
+
+function paintRailNews(box) {
+ if (!_railNews.length) { box.innerHTML = '<p class="rail-muted">No headlines yet today.</p>'; return; }
+ box.innerHTML = _railNews.map((n, i) => {
+  const local = newsImageFor(n.title, i);
+  const img = /^https:\/\//i.test(n.image || '') ? n.image : local;
+  return `<a class="rail-news-item" href="${escapeHTML(n.link)}" target="_blank" rel="noopener noreferrer">
+   <img src="${escapeHTML(img)}" data-fallback="${local}" alt="" width="72" height="52" loading="lazy" onerror="if(!this.src.endsWith(this.dataset.fallback)){this.src=this.dataset.fallback}">
+   <div><div class="rail-news-title">${escapeHTML(n.title)}</div><div class="rail-news-meta">${escapeHTML(n.source)}<span>${railTimeAgo(n.published)}</span></div></div>
+  </a>`;
+ }).join('');
+}
+
+new MutationObserver(() => { _railWlKey = ''; if (railVisible()) renderRailWatchlist(); })
+ .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+matchMedia('(min-width:1280px)').addEventListener('change', e => { if (e.matches) renderRail(); });
 
 /* ════════════════════════════════
  TICKER TAPE
@@ -14459,9 +14879,9 @@ function restartTutorial() {
 
  <!-- Hero -->
  <div style="display:flex;align-items:center;gap:14px;margin:1rem 0 1.2rem">
- <div style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;font-weight:800;font-size:1.4rem;color:#fff;flex-shrink:0">S</div>
+ <div style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-family:'Geist',sans-serif;font-weight:800;font-size:1.4rem;color:#fff;flex-shrink:0">S</div>
  <div>
- <div style="font-size:1rem;font-weight:800;font-family:'Manrope',sans-serif;color:var(--text)">Shravan Appou</div>
+ <div style="font-size:1rem;font-weight:800;font-family:'Geist',sans-serif;color:var(--text)">Shravan Appou</div>
  <div style="font-size:.75rem;color:var(--text3);margin-top:2px">Student · Investor · Northern Virginia</div>
  <div style="font-size:.72rem;color:var(--text3);margin-top:2px">Tracking smarter investments, one chart at a time.</div>
  </div>
