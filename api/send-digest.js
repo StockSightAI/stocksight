@@ -5,14 +5,15 @@
  * Also callable manually via GET /api/send-digest?secret=<CRON_SECRET>
  *
  * Required env vars (set in Vercel dashboard):
- *   RESEND_API_KEY        — Resend API key (same one used by send-reset-email)
+ *   RESEND_API_KEY        — Resend API key (same one used for password reset emails)
  *   CRON_SECRET           — any random string; protects the endpoint from abuse
  *   SUPABASE_URL          — your Supabase project URL
  *   SUPABASE_SERVICE_KEY  — Supabase service role key (Settings → API → service_role)
  */
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://fgcjbdqvnjzafgnahwai.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY || 'sb_publishable_OfRLOYvNWFmq2x9qF5ix1g_7ynysTdY';
+// The users table is server-only, so this needs the service key (never the public one)
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 const FEATURED = [
   { ticker: 'NVDA',  name: 'NVIDIA',     verdict: 'BUY',  color: '#00c97a', note: 'AI infrastructure demand remains strong. Blackwell ramp accelerating into H2.' },
@@ -324,8 +325,8 @@ export default async function handler(req, res) {
 
   // API key must come from the environment, never from source code
   const resendKey = process.env.RESEND_API_KEY;
-  if (!resendKey) {
-    console.error('RESEND_API_KEY environment variable is not set');
+  if (!resendKey || !SUPABASE_KEY) {
+    console.error('RESEND_API_KEY and SUPABASE_SERVICE_KEY environment variables must be set');
     return res.status(500).json({ error: 'Server configuration error' });
   }
 
@@ -340,7 +341,7 @@ export default async function handler(req, res) {
   if (!sbRes.ok) {
     const err = await sbRes.text();
     console.error('Supabase fetch failed:', err);
-    return res.status(500).json({ error: 'Failed to fetch subscribers', detail: err });
+    return res.status(500).json({ error: 'Failed to fetch subscribers' });
   }
 
   const subscribers = await sbRes.json();

@@ -1637,6 +1637,7 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 .set-input{width:100%;height:40px;padding:0 12px;border:1px solid var(--border2);border-radius:10px;background:var(--card);font:inherit;font-size:.9rem;color:var(--text);outline:none}.set-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow2)}
 #ph-t::placeholder{text-transform:none}
 .set-pw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.set-pw.no-cur{grid-template-columns:repeat(2,1fr)}
 .set-field-lbl{display:block;font-size:.78rem;color:var(--text2);font-weight:550;margin:10px 0 6px}
 .set-msg{font-size:.82rem}.set-msg.ok{color:var(--green)}.set-msg.err{color:var(--red)}
 .set-danger-box{padding:14px;border-radius:12px;background:var(--red2)}
@@ -1692,7 +1693,7 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  .set-user,.prof-nav{grid-column:1/-1}.set-user{padding:4px 2px}
  .prof-nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}.prof-nav::-webkit-scrollbar{display:none}.pni{width:auto;white-space:nowrap;flex:none}
  body:not([data-screen="app"]) #mobileNav{display:none!important}
- .set-main{padding:20px 16px 40px}.set-grid,.set-hold,.set-pw,.set-includes{grid-template-columns:1fr}
+ .set-main{padding:20px 16px 40px}.set-grid,.set-hold,.set-pw,.set-pw.no-cur,.set-includes{grid-template-columns:1fr}
 }
 
 /* Paper trade header buttons */
@@ -3652,6 +3653,83 @@ const SUPABASE_URL = 'https://fgcjbdqvnjzafgnahwai.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_OfRLOYvNWFmq2x9qF5ix1g_7ynysTdY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+/* ── Account API ──
+ Sign-in runs on the server (/api/auth), and the user's own row is read and saved through /api/user
+ with a signed session token, so password hashes and reset codes never reach the browser. */
+const TOKEN_KEY = 'ss_tok';
+const getTok = () => { try { return localStorage.getItem(TOKEN_KEY) || ''; } catch { return ''; } };
+const setTok = t => { try { t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY); } catch {} };
+
+async function authApi(action, body = {}, withSession = false) {
+ try {
+ const headers = { 'Content-Type': 'application/json' };
+ if (withSession && getTok()) headers.Authorization = 'Bearer ' + getTok();
+ const r = await fetch('/api/auth', { method: 'POST', headers, body: JSON.stringify({ action, ...body }) });
+ const d = await r.json().catch(() => ({}));
+ if (r.status === 401 && withSession) await sessionExpired();
+ if (!r.ok) return { ok: false, status: r.status, code: d.code, error: d.error || 'Something went wrong. Please try again.' };
+ return { ok: true, ...d };
+ } catch {
+ return { ok: false, status: 0, error: 'Could not reach StockSight. Check your connection and try again.' };
+ }
+}
+
+async function accountApi(method, body) {
+ if (!getTok()) return { data: null, error: { message: 'Not signed in' } };
+ try {
+ const r = await fetch('/api/user', {
+ method,
+ headers: { Authorization: 'Bearer ' + getTok(), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+ body: body ? JSON.stringify(body) : undefined,
+ });
+ const d = await r.json().catch(() => ({}));
+ if (r.status === 401) { await sessionExpired(); return { data: null, error: { message: 'Signed out' } }; }
+ if (!r.ok) return { data: null, error: { message: d.error || 'Request failed' } };
+ return { data: d, error: null };
+ } catch (e) { return { data: null, error: { message: e.message } }; }
+}
+
+// Stand-in for usersTable() with the same chaining (select/update/upsert/eq/single/maybeSingle).
+// It always reads or saves the signed-in user's own row.
+function usersTable() {
+ let patch = null;
+ const run = async () => {
+ if (!patch) { const { data, error } = await accountApi('GET'); return { data: data?.user || null, error }; }
+ const { email, ...rest } = patch;
+ const { error } = await accountApi('POST', { patch: rest });
+ return { data: null, error };
+ };
+ const q = {
+ select: () => q, eq: () => q, single: () => q, maybeSingle: () => q,
+ update: p => { patch = p; return q; }, upsert: p => { patch = p; return q; },
+ then: (res, rej) => run().then(res, rej),
+ };
+ return q;
+}
+
+// The session token is missing, expired or revoked (e.g. password changed on another device)
+let _sessionEnding = false;
+async function sessionExpired(msg) {
+ if (_sessionEnding || !user) return;
+ _sessionEnding = true;
+ try { await logout(); } finally { _sessionEnding = false; }
+ setTimeout(() => toast(msg || 'Your session ended. Please sign in again.', 'info', 5000), 400);
+}
+
+// Starts the session from a successful /api/auth response
+async function startSession(d) {
+ setTok(d.token);
+ const u = { name: d.user.name || '', email: d.user.email, mode: d.user.mode || 'simple', createdAt: d.user.createdAt || new Date().toISOString(), hasPassword: d.user.hasPassword !== false };
+ const users = await getU();
+ users[u.email] = { name: u.name, email: u.email, mode: u.mode, createdAt: u.createdAt };
+ await setU(users);
+ await setSess(u);
+ resetSessionData();
+ document.getElementById('signupNudge')?.remove();
+ user = u;
+ return u;
+}
+
 /* ── Supabase user helpers ── */
 
 // Sync local user data up to Supabase (called on login + signup)
@@ -3666,13 +3744,11 @@ async function syncUserToSupabase(u) {
  const alerts = safeParse('ss_alerts_'+e, []);
  const notes = safeParse('ss_notes_'+e, {});
  const streakData = safeParse('ss_streak_'+e, {});
- const phash = (() => { try { const users = JSON.parse(localStorage.getItem('ss3_u')||'{}'); return users[e]?.phash||''; } catch { return ''; } })();
 
  const avatar = localStorage.getItem('ss_avatar_'+e) || '';
  const payload = {
  email: e,
  name: u.name || '',
- phash: phash,
  watchlist: watchlistData,
  portfolio: { holdings: holdingsData, paper_trade: pt, prefs },
  alerts: alerts,
@@ -3683,37 +3759,12 @@ async function syncUserToSupabase(u) {
  avatar: avatar
  };
 
- // Upsert — insert if new, update if exists
- await sb.from('users').upsert(payload, { onConflict: 'email' });
+ await usersTable().update(payload);
  } catch(err) {
  console.warn('Supabase sync failed (non-critical):', err.message);
  }
 }
 
-// Pull user data from Supabase and merge into localStorage
-async function pullUserFromSupabase(email) {
- try {
- const { data, error } = await sb.from('users').select('*').eq('email', email).single();
- if (error || !data) return false;
-
- const e = email;
- if (data.watchlist?.length) await ss('ss3_wl_'+e, data.watchlist);
- if (data.portfolio?.holdings) await ss('ss3_h_'+e, data.portfolio.holdings);
- if (data.portfolio?.prefs) await ss('ss3_p_'+e, data.portfolio.prefs);
- if (data.portfolio?.paper_trade) {
- try { localStorage.setItem('ss_pt_'+e, JSON.stringify(data.portfolio.paper_trade)); } catch {}
- }
- if (data.alerts?.length) { try { localStorage.setItem('ss_alerts_'+e, JSON.stringify(data.alerts)); } catch {} }
- if (data.notes) { try { localStorage.setItem('ss_notes_'+e, JSON.stringify(data.notes)); } catch {} }
- if (data.streak_count || data.streak_last_date) {
- try { localStorage.setItem('ss_streak_'+e, JSON.stringify({ count: data.streak_count, lastDate: data.streak_last_date })); } catch {}
- }
- return true;
- } catch(err) {
- console.warn('Supabase pull failed (non-critical):', err.message);
- return false;
- }
-}
 
 // trackSearch is defined in the TRENDING ON STOCKSIGHT section below
 // (records locally for badges + inserts into Supabase for community trending)
@@ -4274,7 +4325,7 @@ async function sd(k) {
  }
  } catch {}
 }
-// ── User account store — Supabase primary, localStorage fallback ──
+// ── Accounts used on this device ──
 async function getU() {
  try {
  const local = await sg('ss3_u').then(r=>r||{});
@@ -4282,19 +4333,8 @@ async function getU() {
  } catch { return {}; }
 }
 async function setU(users) {
- // Save to localStorage
+ // Accounts used on this device (names only; passwords are checked on the server)
  await ss('ss3_u', users);
- // Also upsert each user to Supabase
- try {
- for (const [email, u] of Object.entries(users)) {
- if (!u?.phash) continue;
- await sb.from('users').upsert({
- email,
- name: u.name || '',
- phash: u.phash || '',
- }, { onConflict: 'email' });
- }
- } catch(err) { console.warn('setU Supabase sync failed:', err.message); }
 }
 const getSess=()=>sg('ss3_s');
 const setSess=u=>ss('ss3_s',u);
@@ -4305,7 +4345,12 @@ async function loadUserData(){
 
  // Try Supabase first
  try {
- const { data, error } = await sb.from('users').select('*').eq('email', e).maybeSingle();
+ const { data, error } = await usersTable().select('*').eq('email', e).maybeSingle();
+ if (!user) return; // session ended while loading
+ if (data && typeof data.has_password === 'boolean' && user.hasPassword !== data.has_password) {
+ user.hasPassword = data.has_password;
+ setSess(user);
+ }
  if (data && !error) {
  // Restore watchlist
  if (data.watchlist?.length) { watchlist = data.watchlist; await ss('ss3_wl_'+e, watchlist); }
@@ -4368,20 +4413,20 @@ async function loadUserData(){
 const saveWL=()=>{
  if(!user?.email) return;
  ss('ss3_wl_'+user.email, watchlist);
- sb.from('users').update({ watchlist }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveWL sync failed'); });
+ usersTable().update({ watchlist }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveWL sync failed'); });
  renderRail();
 };
 const saveH=()=>{
  if(!user?.email) return;
  ss('ss3_h_'+user.email, holdings);
  const _prefs = safeParse('ss3_p_'+user.email, {});
- sb.from('users').update({ portfolio: { holdings, paper_trade: safeParse('ss_pt_'+user.email,{}), prefs: _prefs } }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveH sync failed'); });
+ usersTable().update({ portfolio: { holdings, paper_trade: safeParse('ss_pt_'+user.email,{}), prefs: _prefs } }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveH sync failed'); });
 };
 const saveP=()=>{
  if(!user?.email) return;
  const prefs = {theme, mode, accentColor, chartStyle, chartInterval, currency, compactMode, nameDisplay, dashPick, darkSchedule, portfolioName};
  ss('ss3_p_'+user.email, prefs);
- sb.from('users').update({ settings: prefs }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveP sync failed'); });
+ usersTable().update({ settings: prefs }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveP sync failed'); });
 };
 
 /* ════════════════════════════════
@@ -4396,9 +4441,17 @@ window.addEventListener('DOMContentLoaded', async () => {
 
  try {
  const sess = await getSess();
- if (sess) {
+ if (sess && !getTok()) {
+ // Signed in before sign-in moved to the server: sign in once more
+ await delSess();
+ applyTheme(false);
+ updateGateUserCount();
+ show('gate');
+ setTimeout(() => toast('We upgraded account security. Please sign in again.', 'info', 6000), 600);
+ } else if (sess) {
  user = sess;
  await loadUserData();
+ if (!user) return;
  setTimeout(captureWlLoginSnapshot, 300);
  bootApp();
  } else {
@@ -4603,6 +4656,7 @@ function showSignupNudge(message, isFeatureGate) {
 }
 async function logout() {
  await delSess();
+ setTok('');
  user = null;
  if (clockTick) clearInterval(clockTick);
  // Reset any active state
@@ -4802,7 +4856,7 @@ function loadNotes() {
 }
 function _syncNotes() {
  if (user?.email) {
- sb.from('users').update({ notes: stockNotes }).eq('email', user.email)
+ usersTable().update({ notes: stockNotes }).eq('email', user.email)
  .then(({error}) => { if(error) console.warn('saveNote sync failed'); });
  }
 }
@@ -4825,7 +4879,7 @@ function loadAlerts() {
 function _syncAlerts() {
  try { localStorage.setItem('ss_alerts_'+(user?.email||''), JSON.stringify(priceAlerts)); } catch {}
  if (user?.email) {
- sb.from('users').update({ alerts: priceAlerts }).eq('email', user.email)
+ usersTable().update({ alerts: priceAlerts }).eq('email', user.email)
  .then(({error}) => { if(error) console.warn('syncAlerts failed'); });
  }
 }
@@ -5168,13 +5222,9 @@ async function subscribeDigest() {
  if(!inp) return;
  const email = inp.value.trim();
  if(!validEmail(email)) { toast('Enter a valid email address first.','error'); return; }
- // Save to Supabase — upsert so existing users just get digest=true added
- try {
- await sb.from('users').upsert(
-  { email, digest: true },
-  { onConflict: 'email', ignoreDuplicates: false }
- );
- } catch(e) { console.warn('Digest upsert:', e); }
+ if (!user || email.toLowerCase() !== user.email) { toast('Sign in with this email to get the digest.', 'info'); return; }
+ const { error } = await usersTable().update({ digest: true });
+ if (error) { toast('Could not subscribe. Please try again.', 'error'); return; }
  try { localStorage.setItem('ss_digest_'+email, '1'); } catch {}
  if(ok) ok.style.display='block';
  toast('Subscribed to weekly digest!', 'success', 4000);
@@ -5187,13 +5237,8 @@ async function subscribeNotif() {
  if(err) err.style.display='none';
  const email = user?.email || '';
  if(!validEmail(email)) { if(err) err.style.display='block'; return; }
- // Save to Supabase
- try {
- await sb.from('users').upsert(
-  { email, name: user?.name || '', digest: true },
-  { onConflict: 'email', ignoreDuplicates: false }
- );
- } catch(e) { console.warn('Digest upsert:', e); }
+ const { error } = await usersTable().update({ digest: true });
+ if (error) { toast('Could not subscribe. Please try again.', 'error'); return; }
  try { localStorage.setItem('ss_digest_'+email, '1'); } catch {}
  if(ok) ok.style.display='block';
  toast('Subscribed to weekly AI market briefing!', 'success', 4000);
@@ -5793,7 +5838,7 @@ function hideForgotPassword() {
  if (panel) panel.style.display = 'none';
 }
 
-let _fpEmail = '', _fpCode = '', _fpExpiry = 0;
+let _fpEmail = '';
 async function sendResetCode() {
  const emailEl = document.getElementById('fp-email');
  const email = emailEl?.value?.trim().toLowerCase();
@@ -5804,58 +5849,19 @@ async function sendResetCode() {
  btn.disabled = true; btn.textContent = 'Sending...';
  errEl.style.display = 'none';
 
- try {
- // Check Supabase first, then fall back to localStorage
- let { data: sbData } = await sb.from('users').select('email,name').eq('email', email).maybeSingle();
- let userName = sbData?.name || '';
- if (!sbData) {
- // Try localStorage
- const localUsers = await getU();
- const localUser = localUsers?.[email];
- if (!localUser) {
- errEl.textContent = 'No account found with that email.';
- errEl.style.display = 'block';
+ // The server creates the code, keeps only a hash of it and emails it
+ const r = await authApi('reset-request', { email });
  btn.disabled = false; btn.textContent = 'Send Code';
- return;
- }
- userName = localUser.name || '';
- // Upsert the user into Supabase so the token can be stored there
- await sb.from('users').upsert({ email, name: userName, phash: localUser.phash || localUser.ph || '', mode: localUser.mode || 'simple' }, { onConflict: 'email' });
- }
-
- // Generate 6-digit code, store in Supabase with 15-min expiry
- const code = String(Math.floor(100000 + Math.random() * 900000));
- const expiry = Date.now() + 15 * 60 * 1000;
- _fpCode = code; _fpExpiry = expiry; // also keep in memory as fallback
- const { error: updateErr } = await sb.from('users').update({ reset_token: code, reset_token_expiry: expiry }).eq('email', email);
- if (updateErr) throw updateErr;
-
- // Send code via email (Vercel serverless → Resend)
- const resp = await fetch('/api/send-reset-email', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ email, code, name: userName })
- });
- if (!resp.ok) {
- const r = await resp.json().catch(() => ({}));
- throw new Error(r.error || 'Email delivery failed');
- }
+ if (!r.ok) { errEl.textContent = r.error; errEl.style.display = 'block'; return; }
 
  _fpEmail = email;
  document.getElementById('fpStep1').style.display = 'none';
  document.getElementById('fpStep2').style.display = 'block';
- // Hide the on-screen code display — user gets it via email now
  const codeDisplay = document.getElementById('fpCodeDisplay');
  if (codeDisplay) codeDisplay.style.display = 'none';
  const subtitleEl = document.getElementById('fpStep2Subtitle');
  if (subtitleEl) subtitleEl.textContent = 'Check your email for the 6-digit code and enter it below.';
  showToast('Code sent! Check your email ', 'success');
- } catch(err) {
- console.error('sendResetCode error:', err);
- errEl.textContent = 'Something went wrong. Please try again.';
- errEl.style.display = 'block';
- }
- btn.disabled = false; btn.textContent = 'Send Code';
 }
 
 async function verifyResetCode() {
@@ -5866,68 +5872,25 @@ async function verifyResetCode() {
  const errEl = document.getElementById('fp-err2');
  errEl.style.display = 'none';
 
- if (!code || code.length !== 6) { errEl.textContent = 'Enter the 6-digit code.'; errEl.style.display = 'block'; return; }
+ if (!code || !/^\d{6}$/.test(code)) { errEl.textContent = 'Enter the 6-digit code.'; errEl.style.display = 'block'; return; }
  if (!newPw || newPw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
  if (newPw !== confirmPw) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
 
- btn.disabled = true; btn.textContent = 'Verifying...';
-
- // Fallback: if _fpEmail was lost (e.g. variable reset), read from the input
  const lookupEmail = _fpEmail || document.getElementById('fp-email')?.value?.trim().toLowerCase();
- if (!lookupEmail) { errEl.textContent = 'Session expired. Please start over.'; errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Reset Password'; return; }
+ if (!lookupEmail) { errEl.textContent = 'Session expired. Please start over.'; errEl.style.display = 'block'; return; }
 
- try {
- const { data } = await sb.from('users').select('reset_token,reset_token_expiry,name,email,mode,created_at').eq('email', lookupEmail).maybeSingle();
-
- // Verify token — prefer Supabase data, fall back to in-memory _fpCode
- let tokenMatch, notExpired;
- if (data) {
- tokenMatch = String(data.reset_token).trim() === String(code).trim();
- notExpired = Date.now() <= Number(data.reset_token_expiry);
- } else if (_fpCode) {
- // Supabase query failed but we have the code in memory
- tokenMatch = String(_fpCode).trim() === String(code).trim();
- notExpired = Date.now() <= _fpExpiry;
- } else {
- tokenMatch = false; notExpired = false;
- }
-
- if (!tokenMatch || !notExpired) {
- errEl.textContent = !tokenMatch ? 'Incorrect code. Check your email.' : 'Code expired. Request a new one.';
- errEl.style.display = 'block';
+ btn.disabled = true; btn.textContent = 'Verifying...';
+ const r = await authApi('reset-confirm', { email: lookupEmail, code, password: newPw });
+ if (!r.ok) {
+ errEl.textContent = r.error; errEl.style.display = 'block';
  btn.disabled = false; btn.textContent = 'Reset Password';
  return;
  }
-
- // Hash new password and save
- const newHash = await hashPassword(newPw);
- // Update Supabase (upsert in case the row only just got created)
- await sb.from('users').update({ phash: newHash, reset_token: null, reset_token_expiry: null }).eq('email', lookupEmail);
-
- // Always update localStorage
- const users = await getU();
- if (users[lookupEmail]) { users[lookupEmail].phash = newHash; await setU(users); }
-
- // Build session from Supabase data or localStorage fallback
- const localUsers2 = await getU();
- const localU = localUsers2?.[lookupEmail];
- const uName = data?.name || localU?.name || '';
- const uMode = data?.mode || localU?.mode || 'simple';
- const uCreated = data?.created_at || localU?.createdAt || '';
- _fpCode = ''; _fpExpiry = 0;
-
+ _fpEmail = '';
  document.getElementById('fp-ok').style.display = 'block';
  btn.textContent = ' Done!';
-
- const u = { name: uName, email: lookupEmail, mode: uMode, createdAt: uCreated };
- await setSess(u); user = u;
+ await startSession(r);
  setTimeout(() => { hideForgotPassword(); closeModal(); bootApp(); loadUserData(); }, 1800);
- } catch(err) {
- errEl.textContent = 'Something went wrong. Try again.';
- errEl.style.display = 'block';
- console.warn('verifyResetCode error:', err);
- btn.disabled = false; btn.textContent = 'Reset Password';
- }
 }
 function updateThemeBtn(){
  const b=document.getElementById('themeBtn');
@@ -10125,6 +10088,7 @@ async function rmHolding(i) { holdings.splice(i,1); await saveH(); renderPortfol
  PROFILE PAGE
 ════════════════════════════════ */
 function loadProfilePage() {
+ syncSecurityUI();
  if (!user) return;
  document.getElementById('profAv').textContent = user.name[0].toUpperCase();
  document.getElementById('profUN').textContent = user.name;
@@ -10184,21 +10148,42 @@ async function changePassword() {
  const cur = curEl.value;
  const nw = newEl.value;
  const nw2 = new2El.value;
+ const hadPassword = user?.hasPassword !== false;
 
- if(!cur) { errEl.textContent='Enter your current password.'; errEl.style.display='block'; return; }
+ if(hadPassword && !cur) { errEl.textContent='Enter your current password.'; errEl.style.display='block'; return; }
  if(nw.length < 6) { errEl.textContent='New password must be at least 6 characters.'; errEl.style.display='block'; return; }
  if(nw !== nw2) { errEl.textContent='New passwords do not match.'; errEl.style.display='block'; return; }
 
- const users = await getU();
- const stored = users[user.email];
- if(!stored || stored.ph !== hp(cur)) { errEl.textContent='Current password is incorrect.'; errEl.style.display='block'; return; }
-
- // Update password hash
- users[user.email].ph = hp(nw);
- await setU(users);
+ const r = await authApi('change-password', { current: cur, password: nw }, true);
+ if (!r.ok) {
+ if (r.status !== 401) { errEl.textContent = r.error; errEl.style.display='block'; }
+ return;
+ }
+ // New token for this device; every other device is signed out
+ setTok(r.token);
+ if (user) { user.hasPassword = true; await setSess(user); }
  curEl.value=''; newEl.value=''; new2El.value='';
+ okEl.textContent = hadPassword ? 'Password changed. Other devices were signed out.' : 'Password added. You can now also log in with your email.';
  okEl.style.display='block';
- setTimeout(()=>{ okEl.style.display='none'; }, 3000);
+ syncSecurityUI();
+ setTimeout(()=>{ okEl.style.display='none'; }, 4000);
+}
+
+// Google-only accounts have no password yet, so Settings offers to add one
+function syncSecurityUI() {
+ const noPw = user?.hasPassword === false;
+ const cur = document.getElementById('pw-cur');
+ if (cur) cur.style.display = noPw ? 'none' : '';
+ cur?.parentElement?.classList.toggle('no-cur', noPw);
+ const row = cur?.closest('.sg-row');
+ const lbl = row?.querySelector('.sg-label'), desc = row?.querySelector('.sg-desc'), btn = row?.querySelector('.set-btn-main');
+ if (lbl) lbl.textContent = noPw ? 'Add a password' : 'Change password';
+ if (desc) desc.textContent = noPw ? 'You sign in with Google. Add a password to also log in with your email.' : 'Use at least 6 characters. Other devices get signed out.';
+ if (btn) btn.textContent = noPw ? 'Add password' : 'Update password';
+ const delPw = document.getElementById('deletePasswordInput');
+ const delLbl = document.querySelector('label[for="deletePasswordInput"]');
+ if (delPw) delPw.style.display = noPw ? 'none' : '';
+ if (delLbl) delLbl.style.display = noPw ? 'none' : '';
 }
 
 function showP(name) {
@@ -10485,7 +10470,7 @@ function closeModal(){
  const fpPw = document.getElementById('fp-newpw'); if (fpPw) fpPw.value = '';
  const fpCPw = document.getElementById('fp-confirmpw'); if (fpCPw) fpCPw.value = '';
  const fpOk = document.getElementById('fp-ok'); if (fpOk) fpOk.style.display = 'none';
- _fpEmail = ''; _fpCode = ''; _fpExpiry = 0;
+ _fpEmail = '';
 }
 function switchModal(which){
  document.getElementById('f-signup').style.display = which==='signup'?'block':'none';
@@ -10518,16 +10503,16 @@ async function doSignup(){
  if(!ok) return;
  const name = firstName;
  const btn=document.getElementById('suBtn'); btn.disabled=true; btn.textContent='Creating...';
- const users=await getU();
- if(users[email]){ document.getElementById('su-ex').classList.add('on'); btn.disabled=false; btn.textContent='Create account'; return; }
- const u={name, email, mode:'simple', createdAt:new Date().toISOString()};
- users[email]={...u, phash: await hashPassword(pass)}; // SHA-256; legacy 'ph' field not set for new accounts
- await setU(users); await setSess(u);
- resetSessionData();
- // Remove any guest nudge banner
- document.getElementById('signupNudge')?.remove();
+ const r = await authApi('signup', { name, email, password: pass });
+ if (!r.ok) {
+ btn.disabled=false; btn.textContent='Create account';
+ if (r.code === 'exists') { document.getElementById('su-ex').classList.add('on'); return; }
+ const ee = document.getElementById('su-ee');
+ ee.textContent = r.error; ee.classList.add('on');
+ return;
+ }
+ const u = await startSession(r);
  document.getElementById('su-ok').classList.add('on'); btn.textContent=' Done!';
- user=u;
  setTimeout(()=>{
  closeModal();
  bootApp();
@@ -10559,16 +10544,7 @@ function clickGoogleSignIn() {
  showToast('Google sign-in failed: ' + tokenResponse.error, 'error', '');
  return;
  }
- try {
- const resp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
- headers: { Authorization: 'Bearer ' + tokenResponse.access_token }
- });
- const info = await resp.json();
- await handleGoogleUserInfo(info);
- } catch(e) {
- console.error('Google userinfo fetch failed:', e);
- showToast('Google sign-in failed. Please try again.', 'error', '');
- }
+ await googleSignIn({ accessToken: tokenResponse.access_token });
  }
  });
  tokenClient.requestAccessToken({ prompt: 'select_account' });
@@ -10579,53 +10555,20 @@ function clickGoogleSignIn() {
  }
 }
 
-async function handleGoogleUserInfo({ sub: googleId, email: rawEmail, name, given_name }) {
- try {
- const email = rawEmail.toLowerCase();
- const displayName = given_name || (name || '').split(' ')[0] || 'User';
-
- let { data: existing } = await sb.from('users').select('*').eq('email', email).maybeSingle();
-
- if (!existing) {
- const localUsers = await getU();
- if (localUsers?.[email]) {
- await sb.from('users').upsert({ email, name: localUsers[email].name || displayName, google_id: googleId, phash: localUsers[email].phash || '', mode: localUsers[email].mode || 'simple' }, { onConflict: 'email' });
- } else {
- await sb.from('users').insert({ email, name: displayName, google_id: googleId, phash: '', mode: 'simple' });
- }
- const { data: fresh } = await sb.from('users').select('*').eq('email', email).maybeSingle();
- existing = fresh;
- } else if (!existing.google_id) {
- await sb.from('users').update({ google_id: googleId }).eq('email', email);
- }
-
- const localUsers = await getU();
- if (!localUsers[email]) {
- localUsers[email] = { name: existing?.name || displayName, email, mode: existing?.mode || 'simple', phash: existing?.phash || '', createdAt: existing?.created_at || new Date().toISOString() };
- await setU(localUsers);
- }
-
- const u = { name: existing?.name || displayName, email, mode: existing?.mode || 'simple', createdAt: existing?.created_at || new Date().toISOString() };
- await setSess(u); user = u;
+// The server checks the Google token was issued to StockSight, then signs in or creates the account
+async function googleSignIn(tokens) {
+ const r = await authApi('google', tokens);
+ if (!r.ok) { toast(r.error || 'Google sign-in failed. Please try again.', 'error'); return; }
+ await startSession(r);
  closeModal();
  toast('Signed in with Google!', 'success');
  bootApp(); loadUserData();
- } catch(err) {
- console.error('Google sign-in error:', err);
- toast('Google sign-in failed. Please try again.', 'error');
- }
 }
 
-// Legacy ID-token callback (kept for One Tap / fallback)
+// ID-token callback (One Tap / fallback)
 async function handleGoogleCredential(response) {
- try {
- const base64 = response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
- const payload = JSON.parse(atob(base64));
- await handleGoogleUserInfo(payload);
- } catch(err) {
- console.error('Google credential error:', err);
- toast('Google sign-in failed. Please try again.', 'error');
- }
+ if (!response?.credential) { toast('Google sign-in failed. Please try again.', 'error'); return; }
+ await googleSignIn({ idToken: response.credential });
 }
 
 // Init GSI once the script is loaded
@@ -10648,42 +10591,22 @@ async function doLogin(){
  }
 
  btn.disabled=true; btn.textContent='Logging in...';
- const users=await getU(); let stored=users[email];
- const inputHash = await hashPassword(pass);
- const legacyHash = hp(pass);
-
- // ── Supabase account recovery (browser data was cleared) ──
- if (!stored) {
- try {
- btn.textContent = 'Recovering account...';
- const { data: sbUser } = await sb.from('users').select('*').eq('email', email).maybeSingle();
- if (sbUser && sbUser.phash && sbUser.phash === inputHash) {
- stored = { name: sbUser.name, email: sbUser.email, phash: sbUser.phash,
- mode: sbUser.mode || 'simple', createdAt: sbUser.created_at || new Date().toISOString() };
- users[email] = stored;
- await setU(users);
+ let r = await authApi('login', { email, password: pass });
+ // An account that only ever lived in this browser moves to the server on its first sign-in
+ if (!r.ok && r.code === 'no_account') {
+ const local = (await getU())[email];
+ const matches = local && ((local.phash && (local.phash === await hashPassword(pass) || local.phash === hp(pass))) || (local.ph && local.ph === hp(pass)));
+ if (matches) r = await authApi('signup', { name: local.name || email.split('@')[0], email, password: pass });
  }
- } catch {}
- btn.textContent = 'Logging in...';
+ if (!r.ok) {
+ const err = document.getElementById('li-err');
+ err.textContent = r.code === 'no_account' || r.code === 'wrong' ? 'Incorrect email or password.' : r.error;
+ err.classList.add('on');
+ btn.disabled=false; btn.textContent='Log in';
+ return;
  }
-
- // Auth: check SHA-256 hash first (new accounts), fall back to legacy djb2 hash, then migrate
- const hashMatch = stored && (
- (stored.phash && stored.phash === inputHash) || // SHA-256 match
- (!stored.phash && stored.ph && stored.ph === legacyHash) // legacy djb2 match
- );
- if(!stored || !hashMatch){document.getElementById('li-err').classList.add('on');btn.disabled=false;btn.textContent='Log in';return;}
- // Migrate legacy accounts to SHA-256 on next successful login
- if (!stored.phash && stored.ph) { stored.phash = inputHash; delete stored.ph; }
- // Always sync phash to Supabase on login
- stored.phash = stored.phash || inputHash;
- users[email] = stored;
- await setU(users);
- const u={name:stored.name,email:stored.email,mode:stored.mode||'simple',createdAt:stored.createdAt};
- await setSess(u); resetSessionData();
- document.getElementById('signupNudge')?.remove();
+ const u = await startSession(r);
  document.getElementById('li-ok').classList.add('on'); btn.textContent=' Welcome back!';
- user=u;
  closeModal();
  setTimeout(()=>{
  bootApp();
@@ -10769,7 +10692,7 @@ function saveBroker() {
  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
  try { localStorage.setItem('ss_broker_'+(user?.email||''), selectedBroker); } catch {}
  if (user?.email) {
- sb.from('users').update({ broker: selectedBroker }).eq('email', user.email)
+ usersTable().update({ broker: selectedBroker }).eq('email', user.email)
  .then(({error}) => {
  if(error) console.warn('broker sync failed');
  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Preference'; }
@@ -11118,7 +11041,7 @@ function skipTutorial() {
  document.getElementById('tutorialOverlay').style.display = 'none';
  try { localStorage.setItem('ss_tutorial_done_'+(user?.email||''), '1'); } catch {}
  if (user?.email) {
- sb.from('users').update({ tutorial_done: true }).eq('email', user.email)
+ usersTable().update({ tutorial_done: true }).eq('email', user.email)
  .then(({error}) => { if(error) console.warn('tutorial sync failed'); });
  }
  // Step 3: broker (only if not already set and not dismissed)
@@ -11219,7 +11142,7 @@ function finishOnboarding() {
  const onboardingData = { ...obAnswers, completedAt: new Date().toISOString() };
  localStorage.setItem('ss_onboarding_'+(user?.email||''), JSON.stringify(onboardingData));
  if (user?.email) {
- sb.from('users').update({ onboarding_done: true }).eq('email', user.email)
+ usersTable().update({ onboarding_done: true }).eq('email', user.email)
  .then(({error}) => { if(error) console.warn('onboarding sync failed'); });
  }
  if (obAnswers.experience === 'beginner' || obAnswers.experience === 'some') {
@@ -11249,6 +11172,7 @@ function checkShowOnboarding() {
  DELETE ACCOUNT
 ════════════════════════════════ */
 function showDeleteConfirm() {
+ syncSecurityUI();
  document.getElementById('deleteStep1').style.display = 'none';
  document.getElementById('deleteStep2').style.display = 'block';
  document.getElementById('deleteConfirmInput').value = '';
@@ -11269,7 +11193,7 @@ function validateDeleteInputs() {
  const pass = document.getElementById('deletePasswordInput')?.value;
  const btn = document.getElementById('deleteConfirmBtn');
  const err = document.getElementById('deleteErr');
- const ready = word === 'DELETE' && pass.length > 0;
+ const ready = word === 'DELETE' && (pass.length > 0 || user?.hasPassword === false);
  btn.disabled = !ready;
  btn.style.opacity = ready ? '1' : '.5';
  if (err) { err.style.display = 'none'; err.textContent = ''; }
@@ -11287,49 +11211,31 @@ async function deleteAccount() {
  err.style.display = 'block'; return;
  }
 
- // Verify password against stored hash (supports both SHA-256 and legacy djb2)
- const users = await getU();
- const stored = users[user.email];
- const inputHash = await hashPassword(pass);
- const legacyHash = hp(pass);
- const hashMatch = stored && (
- (stored.phash && stored.phash === inputHash) ||
- (!stored.phash && stored.ph && stored.ph === legacyHash)
- );
-
- // Also allow verification against Supabase if localStorage is missing
- let sbVerified = false;
- if (!hashMatch) {
- try {
- const { data: sbUser } = await sb.from('users').select('phash').eq('email', user.email).maybeSingle();
- if (sbUser?.phash && sbUser.phash === inputHash) sbVerified = true;
- } catch {}
- }
-
- if (!hashMatch && !sbVerified) {
- err.textContent = 'Incorrect password. Please try again.';
+ btn.textContent = 'Deleting...'; btn.disabled = true; btn.style.opacity = '.7';
+ const r = await authApi('delete', { password: pass, confirm: word }, true);
+ if (!r.ok) {
+ btn.textContent = 'Yes, delete my account'; btn.disabled = false; btn.style.opacity = '1';
+ if (r.status === 401) return;
+ err.textContent = r.error;
  err.style.display = 'block';
- document.getElementById('deletePasswordInput').style.borderColor = 'var(--red)';
+ if (r.status === 403) document.getElementById('deletePasswordInput').style.borderColor = 'var(--red)';
  return;
  }
 
- btn.textContent = 'Deleting...'; btn.disabled = true; btn.style.opacity = '.7';
-
  try {
- // Remove from Supabase first
- await sb.from('users').delete().eq('email', user.email);
- // Remove from users DB
+ const users = await getU();
  delete users[user.email];
  await setU(users);
  // Clear all localStorage keys for this user
  const email = user.email;
  ['ss_notes_','ss_alerts_','ss_searchhist_','ss_streak',
  'ss_broker_','ss_broker_prompted_','ss_tutorial_done_',
- 'ss_watchlist_','ss_holdings_','ss_poll_'].forEach(k => {
+ 'ss_watchlist_','ss_holdings_','ss_poll_','ss_lb_opt_'].forEach(k => {
  localStorage.removeItem(k + email);
  localStorage.removeItem(k);
  });
  await delSess();
+ setTok('');
  user = null;
  guestSearchCount = 0;
  nudgeDismissed = false;
@@ -11641,16 +11547,8 @@ async function upsertLeaderboard(pt, portfolioValue) {
  if (!optedIn) return;
  const returnPct = (portfolioValue - 10000) / 10000 * 100;
  const holdingsCount = Object.keys(pt.holdings || {}).length;
- try {
- await sb.from('pt_leaderboard').upsert({
- email: user.email,
- display_name: lbDisplayName(user.email),
- value: parseFloat(portfolioValue.toFixed(2)),
- return_pct: parseFloat(returnPct.toFixed(2)),
- holdings_count: holdingsCount,
- updated_at: new Date().toISOString()
- }, { onConflict: 'email' });
- } catch(e) { console.warn('Leaderboard upsert failed', e); }
+ const { error } = await accountApi('POST', { leaderboard: { value: portfolioValue, return_pct: returnPct, holdings_count: holdingsCount } });
+ if (error) console.warn('Leaderboard update failed:', error.message);
 }
 
 function toggleLeaderboardOpt() {
@@ -11672,7 +11570,7 @@ function toggleLeaderboardOpt() {
  toast('You\'re on the leaderboard! ', 'success');
  } else {
  // Remove from leaderboard
- sb.from('pt_leaderboard').delete().eq('email', user.email).then(() => loadLeaderboard());
+ accountApi('POST', { leaderboard: null }).then(() => loadLeaderboard());
  toast('Removed from leaderboard', 'info');
  }
 }
@@ -11772,7 +11670,7 @@ function savePtPortfolio(pt) {
  renderRail();
  if (user?.email) {
  const prefs = safeParse('ss3_p_'+user.email, {});
- sb.from('users').update({ portfolio: { holdings: holdings||[], paper_trade: pt, prefs } }).eq('email', user.email)
+ usersTable().update({ portfolio: { holdings: holdings||[], paper_trade: pt, prefs } }).eq('email', user.email)
  .then(({error}) => { if(error) console.warn('savePT sync failed'); });
  // Update leaderboard if opted in
  let portfolioValue = pt.cash;
@@ -11788,7 +11686,7 @@ function getPtPendingOrders() {
 function savePtPendingOrders(orders) {
  try { localStorage.setItem('ss_pt_pending_'+(user?.email||''), JSON.stringify(orders)); } catch {}
  if (user?.email) {
- sb.from('users').update({ pending_orders: orders }).eq('email', user.email)
+ usersTable().update({ pending_orders: orders }).eq('email', user.email)
  .then(({error}) => { if(error) console.warn('savePending sync failed'); });
  }
 }
@@ -12538,7 +12436,7 @@ function renderPaperTradeTab() {
  // Re-sync from Supabase on first open so cross-device data is fresh
  if (user?.email && !renderPaperTradeTab._synced && !renderPaperTradeTab._syncing) {
   renderPaperTradeTab._syncing = true;
-  sb.from('users').select('portfolio').eq('email', user.email).single()
+  usersTable().select('portfolio').eq('email', user.email).single()
    .then(({data}) => {
     const sbPt = data?.portfolio?.paper_trade;
     renderPaperTradeTab._syncing = false;
@@ -13436,7 +13334,7 @@ function finishQuiz() {
   if (user) {
     user.investor_profile = profileIdx;
     localStorage.setItem('ss_investor_profile_' + user.email, profileIdx);
-    sb.from('users').update({ investor_profile: profileIdx }).eq('email', user.email).then(()=>{});
+    usersTable().update({ investor_profile: profileIdx }).eq('email', user.email).then(()=>{});
   }
 
   closeQuizModal();
@@ -13514,7 +13412,7 @@ function selectRisk(v) {
   if (!user) return;
   user.risk_tolerance = v;
   localStorage.setItem('ss_risk_' + user.email, v);
-  if (sb) sb.from('users').update({ risk_tolerance: v }).eq('email', user.email).then(()=>{});
+  if (sb) usersTable().update({ risk_tolerance: v }).eq('email', user.email).then(()=>{});
   toast('Risk tolerance saved', 'success');
 }
 function loadRiskTolerance() {
@@ -13561,7 +13459,7 @@ function selectStyle(v) {
   if (!user) return;
   user.invest_style = v;
   localStorage.setItem('ss_divgrow_' + user.email, v);
-  if (sb) sb.from('users').update({ invest_style: v }).eq('email', user.email).then(()=>{});
+  if (sb) usersTable().update({ invest_style: v }).eq('email', user.email).then(()=>{});
   toast('Investment style saved', 'success');
 }
 function loadDivGrow() {
@@ -13656,7 +13554,7 @@ async function saveGoals() {
   const checked = [...document.querySelectorAll('#goals-list input[type=checkbox]:checked')].map(c => c.dataset.goal);
   user.investment_goals = checked;
   localStorage.setItem('ss_goals_' + user.email, JSON.stringify(checked));
-  if (sb) await sb.from('users').update({ investment_goals: JSON.stringify(checked) }).eq('email', user.email);
+  if (sb) await usersTable().update({ investment_goals: JSON.stringify(checked) }).eq('email', user.email);
   toast('Goals saved', 'success');
 }
 function loadGoals() {
@@ -13707,7 +13605,7 @@ async function saveSectors() {
   const selected = [...document.querySelectorAll('#sectors-list button.sector-on')].map(b => b.dataset.sector);
   user.preferred_sectors = selected;
   localStorage.setItem('ss_sectors_' + user.email, JSON.stringify(selected));
-  if (sb) await sb.from('users').update({ preferred_sectors: JSON.stringify(selected) }).eq('email', user.email);
+  if (sb) await usersTable().update({ preferred_sectors: JSON.stringify(selected) }).eq('email', user.email);
   const msg = document.getElementById('sector-save-msg');
   if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 2000); }
 }
@@ -14310,7 +14208,7 @@ function setAvatar(av) {
  localStorage.setItem('ss_avatar_'+(user?.email||''), av);
  // Sync avatar to Supabase so it persists across devices
  if (user.email) {
- sb.from('users').update({ avatar: av }).eq('email', user.email)
+ usersTable().update({ avatar: av }).eq('email', user.email)
  .then(({error}) => { if(error) console.warn('avatar sync failed'); });
  }
  // Update all avatar displays
@@ -14343,7 +14241,7 @@ function updateStreak() {
  data.lastVisit = today;
  localStorage.setItem(key, JSON.stringify(data));
  if (user?.email) {
- sb.from('users').update({ streak_count: data.streak, streak_last_date: today }).eq('email', user.email)
+ usersTable().update({ streak_count: data.streak, streak_last_date: today }).eq('email', user.email)
  .then(({error}) => { if(error) console.warn('streak sync failed'); });
  }
  if (data.streak >= 7) checkMilestones();
