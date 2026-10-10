@@ -7,14 +7,14 @@ import { SYMBOL_RE, quoteSummary } from './_yahoo.js';
 
 const FULL = ['price', 'assetProfile', 'summaryDetail', 'financialData', 'defaultKeyStatistics', 'recommendationTrend',
   'earningsHistory', 'calendarEvents', 'upgradeDowngradeHistory', 'earningsTrend', 'earnings', 'fundProfile', 'topHoldings'];
-const LITE = ['price', 'summaryDetail', 'financialData', 'defaultKeyStatistics', 'earningsHistory', 'calendarEvents', 'assetProfile', 'fundProfile'];
+export const LITE = ['price', 'summaryDetail', 'financialData', 'defaultKeyStatistics', 'earningsHistory', 'calendarEvents', 'assetProfile', 'fundProfile'];
 
 const raw = v => (v && typeof v === 'object' && 'raw' in v ? v.raw : v);
 const num = v => { const x = raw(v); return typeof x === 'number' && Number.isFinite(x) ? x : null; };
 const str = v => (typeof v === 'string' && v.trim() ? v.trim() : null);
 
-// Flat facts the verdict model scores; identical for the stock page and the screener
-function facts(r) {
+// Flat facts the verdict model scores; identical for the stock page, the screener and the weekly digest
+export function facts(r) {
   const p = r.price || {}, sd = r.summaryDetail || {}, fd = r.financialData || {}, ks = r.defaultKeyStatistics || {};
   const ap = r.assetProfile || {}, fp = r.fundProfile || {}, ce = r.calendarEvents?.earnings || {};
   const hist = (r.earningsHistory?.history || []).filter(h => num(h.epsActual) != null && num(h.epsEstimate) != null);

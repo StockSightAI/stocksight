@@ -3275,20 +3275,22 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
    <div class="sg">
     <div class="sg-lbl">Weekly market digest</div>
     <div class="sg-row">
-     <div><div class="sg-label">Monday email briefing</div><div class="sg-desc">Your portfolio, the week's top movers, the fear and greed shift and what to watch next.</div></div>
+     <div><div class="sg-label">Monday email briefing</div><div class="sg-desc">A real-data recap of the week, built around your own portfolio and watchlist.</div></div>
      <button id="notif-btn" type="button" class="set-btn set-btn-main" onclick="subscribeNotif()">Subscribe</button>
     </div>
-    <div id="notif-ok" class="set-msg ok sg-pad" style="display:none">Subscribed. Your first digest arrives next Monday.</div>
+    <div id="notif-ok" class="set-msg ok sg-pad" style="display:none">You're subscribed. The digest arrives Monday mornings.</div>
     <div id="notif-err" class="set-msg err sg-pad" style="display:none">Please log in to subscribe.</div>
     <div class="set-includes">
-     <div><b>Portfolio performance</b><span>How your holdings moved this week</span></div>
-     <div><b>Fear and greed</b><span>Whether sentiment shifted</span></div>
-     <div><b>Top movers</b><span>Biggest gainers and losers</span></div>
-     <div><b>Stock of the day</b><span>One pick with its AI verdict</span></div>
-     <div><b>Trending</b><span>What the community searched</span></div>
-     <div><b>Paper trading recap</b><span>How your practice trades did</span></div>
-     <div><b>AI pick of the week</b><span>A stock our model is watching</span></div>
-     <div><b>Next week</b><span>Earnings dates and economic events</span></div>
+     <div><b>Your portfolio</b><span>Value and weekly change of your holdings</span></div>
+     <div><b>Your watchlist</b><span>How every stock you follow moved</span></div>
+     <div><b>Scoreboard and sectors</b><span>Indexes, yields, gold, oil, bitcoin and all 11 sectors</span></div>
+     <div><b>Biggest movers</b><span>Top gainers and losers among popular stocks</span></div>
+     <div><b>Market mood</b><span>Fear and greed for stocks and crypto vs. last week</span></div>
+     <div><b>Pick of the week</b><span>A top-rated stock in StockSight's model, with reasons</span></div>
+     <div><b>The week ahead</b><span>Earnings reports and economic events, explained</span></div>
+     <div><b>Paper trading recap</b><span>Your practice account's value and return</span></div>
+     <div><b>Trending on StockSight</b><span>The most-searched tickers this week</span></div>
+     <div><b>Term of the week</b><span>One investing idea in plain English</span></div>
     </div>
    </div>
 
@@ -4375,6 +4377,7 @@ async function loadUserData(){
  if (data.tutorial_done) { try { localStorage.setItem('ss_tutorial_done_'+e, '1'); } catch {} }
  if (data.onboarding_done){ try { localStorage.setItem('ss_onboarding_'+e, '1'); } catch {} }
  if (data.avatar) { try { localStorage.setItem('ss_avatar_'+e, data.avatar); } catch {} }
+ if (typeof data.digest === 'boolean') { try { data.digest ? localStorage.setItem('ss_digest_'+e, '1') : localStorage.removeItem('ss_digest_'+e); } catch {} }
  // Restore settings/prefs
  const p = data.settings || data.portfolio?.prefs || {};
  if(p.theme) theme=p.theme;
@@ -4539,6 +4542,7 @@ function bootApp() {
  switchTab('s');
  setTimeout(applyModeLabels, 100);
  setTimeout(checkWatchlistNotifications, 2000);
+ openDeepLink();
 
  const isNewUser = !localStorage.getItem('ss_onboarding_'+(user?.email||''));
  const tutDone = !!localStorage.getItem('ss_tutorial_done_'+(user?.email||''));
@@ -4554,6 +4558,19 @@ function bootApp() {
  // Has done everything except set broker — respect "don't ask me again"
  if (!localStorage.getItem('ss_broker_dismiss_'+(user?.email||''))) setTimeout(openBrokerModal, 600);
  }
+}
+
+// Links from the weekly digest open that stock's page: stocksightai.com/?stock=NVDA
+function openDeepLink() {
+ let t = '';
+ try { t = (new URLSearchParams(location.search).get('stock') || '').toUpperCase().trim(); } catch {}
+ if (!t || !/^[A-Z0-9][A-Z0-9.\-^=]{0,14}$/.test(t)) return;
+ try { history.replaceState(null, '', location.pathname + location.hash); } catch {}
+ const local = TICKERS.find(e => e.t === t);
+ setTimeout(() => {
+  if (local && ['s','i','c'].includes(local.k) && local.k !== tab) switchTab(local.k, true);
+  verifyTicker(t, local?.n || t, local?.k);
+ }, 400);
 }
 
 function goHome() {
@@ -5215,33 +5232,30 @@ function renderHomeSections(t) {
  },80);
 }
 
-/* Feature 6: Weekly digest subscription */
-async function subscribeDigest() {
- const inp = document.getElementById('digestEmail');
- const ok = document.getElementById('digestOk');
- if(!inp) return;
- const email = inp.value.trim();
- if(!validEmail(email)) { toast('Enter a valid email address first.','error'); return; }
- if (!user || email.toLowerCase() !== user.email) { toast('Sign in with this email to get the digest.', 'info'); return; }
- const { error } = await usersTable().update({ digest: true });
- if (error) { toast('Could not subscribe. Please try again.', 'error'); return; }
- try { localStorage.setItem('ss_digest_'+email, '1'); } catch {}
- if(ok) ok.style.display='block';
- toast('Subscribed to weekly digest!', 'success', 4000);
-}
+/* Feature 6: Weekly digest subscription (the email itself is built in api/_digest.js) */
 
-async function subscribeNotif() {
+const digestOn = () => !!user?.email && localStorage.getItem('ss_digest_'+user.email) === '1';
+function syncDigestUI() {
+ const btn = document.getElementById('notif-btn');
  const ok = document.getElementById('notif-ok');
+ const on = digestOn();
+ if (btn) { btn.textContent = on ? 'Unsubscribe' : 'Subscribe'; btn.classList.toggle('set-btn-main', !on); }
+ if (ok) ok.style.display = on ? 'block' : 'none';
+}
+async function subscribeNotif() {
  const err = document.getElementById('notif-err');
- if(ok) ok.style.display='none';
  if(err) err.style.display='none';
  const email = user?.email || '';
  if(!validEmail(email)) { if(err) err.style.display='block'; return; }
- const { error } = await usersTable().update({ digest: true });
- if (error) { toast('Could not subscribe. Please try again.', 'error'); return; }
- try { localStorage.setItem('ss_digest_'+email, '1'); } catch {}
- if(ok) ok.style.display='block';
- toast('Subscribed to weekly AI market briefing!', 'success', 4000);
+ const on = !digestOn();
+ const btn = document.getElementById('notif-btn');
+ if (btn) btn.disabled = true;
+ const { error } = await usersTable().update({ digest: on });
+ if (btn) btn.disabled = false;
+ if (error) { toast('Could not update the digest. Please try again.', 'error'); return; }
+ try { on ? localStorage.setItem('ss_digest_'+email, '1') : localStorage.removeItem('ss_digest_'+email); } catch {}
+ syncDigestUI();
+ toast(on ? 'Subscribed! Your first digest arrives Monday morning.' : 'Unsubscribed from the weekly digest.', on ? 'success' : 'info', 4000);
 }
 
 /* ════════════════════════════════
@@ -10196,6 +10210,7 @@ function showP(name) {
  if(nav) nav.classList.add('on');
  // Populate notifications section when opened
  if(name==='notif') {
+ syncDigestUI();
  const emailInp = document.getElementById('notif-email');
  if(emailInp && user?.email) emailInp.value = user.email;
  // Show active alerts

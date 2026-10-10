@@ -9,7 +9,7 @@ import { UA, getDaily } from './_yahoo.js';
 
 const rating = s => s < 25 ? 'Extreme fear' : s < 45 ? 'Fear' : s <= 55 ? 'Neutral' : s <= 75 ? 'Greed' : 'Extreme greed';
 
-async function cnn() {
+export async function cnn() {
   const r = await fetch('https://production.dataviz.cnn.io/index/fearandgreed/graphdata', {
     headers: { 'User-Agent': UA, Referer: 'https://www.cnn.com/', Origin: 'https://www.cnn.com', Accept: 'application/json, text/plain, */*', 'Accept-Language': 'en-US,en;q=0.9' },
   });
@@ -27,7 +27,7 @@ async function cnn() {
 }
 
 // Stand-in: where today sits within the past year on three of CNN's own ingredients
-async function computed() {
+export async function computed() {
   const [spx, vix] = await Promise.all([getDaily('^GSPC', '2y'), getDaily('^VIX', '2y')]);
   if (!spx || !vix) return null;
   const pct = (arr, v) => arr.filter(x => x <= v).length / arr.length * 100;
@@ -44,7 +44,7 @@ async function computed() {
   return { score, rating: rating(score), source: 'StockSight estimate from S&P 500 momentum, VIX and 52-week range', asOf: new Date().toISOString() };
 }
 
-async function crypto() {
+export async function crypto() {
   const r = await fetch('https://api.alternative.me/fng/?limit=8', { headers: { 'User-Agent': UA } });
   if (!r.ok) return null;
   const j = await r.json();
@@ -54,7 +54,7 @@ async function crypto() {
   return { score: v(d[0]), rating: d[0].value_classification, yesterday: v(d[1]), weekAgo: v(d[7]) || null, source: 'alternative.me', asOf: Number(d[0].timestamp) * 1000 };
 }
 
-async function econ() {
+export async function econ() {
   const weeks = await Promise.all(['thisweek', 'nextweek'].map(async w => {
     try {
       const r = await fetch(`https://nfs.faireconomy.media/ff_calendar_${w}.json`, { headers: { 'User-Agent': UA } });

@@ -127,6 +127,18 @@ export function readSession(req) {
     return { email: s.e, version: s.v || 0 };
   } catch { return null; }
 }
+/* ── Unsubscribe links in the weekly digest: the email plus a signature only the server can make ── */
+const unsubSig = email => b64u(crypto.createHmac('sha256', SESSION_SECRET()).update('unsub:' + email).digest()).slice(0, 32);
+export function unsubscribeUrl(email, base = 'https://stocksightai.com') {
+  return `${base}/api/unsubscribe?e=${b64u(email)}&s=${unsubSig(email)}`;
+}
+export function readUnsubscribe(e, s) {
+  if (!SESSION_SECRET()) return null;
+  let email = '';
+  try { email = Buffer.from(String(e || ''), 'base64url').toString(); } catch { return null; }
+  return EMAIL_RE.test(email) && same(unsubSig(email), String(s || '')) ? email : null;
+}
+
 // The session's row, or null if the session was revoked (password changed, account deleted)
 export async function sessionRow(req) {
   const s = readSession(req);
