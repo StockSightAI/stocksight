@@ -312,7 +312,22 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const resendKey = process.env.RESEND_API_KEY || 're_LQbFQ5NC_3DdusyUY7YToMoixpPARFor8';
+  // Only Vercel Cron (which sends "Authorization: Bearer <CRON_SECRET>") or someone holding the
+  // secret may trigger a send. Inactive until CRON_SECRET is set in Vercel, so the cron keeps working.
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret) {
+    const auth = req.headers?.authorization || '';
+    if (auth !== `Bearer ${cronSecret}` && req.query?.secret !== cronSecret) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  }
+
+  // API key must come from the environment, never from source code
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) {
+    console.error('RESEND_API_KEY environment variable is not set');
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
 
   // Fetch all users with digest = true
   const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/users?digest=eq.true&select=email,name`, {
