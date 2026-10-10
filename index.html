@@ -2118,6 +2118,11 @@ body.has-vh .pt-head > div:first-child{display:none}
  .tg-panel{top:auto;left:0;right:0;bottom:0;width:100%;max-height:88vh;border-radius:20px 20px 0 0;transform:translateY(100%)}
  .tg-foot{padding-bottom:max(12px,env(safe-area-inset-bottom))}
  .port-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .scr-table th:nth-child(2),.scr-table td:nth-child(2),.scr-table th:nth-child(3),.scr-table td:nth-child(3){display:none}
+ .scr-table th,.scr-table td{padding-left:.3rem!important;padding-right:.3rem!important;white-space:nowrap}
+ .scr-table td{font-size:.74rem!important}
+ .scr-table th{font-size:.54rem!important;letter-spacing:.02em!important}
+ .scr-table .scr-yrs{margin-left:2px;padding:1px 3px}
  .port-stats .card.port-stat{margin:0!important}
  .port-table-hdr{flex-wrap:wrap;row-gap:8px}
  .port-table-hdr > span:first-child{display:flex;align-items:center;white-space:nowrap}
@@ -2250,6 +2255,16 @@ html.theme-anim *,html.theme-anim *::before,html.theme-anim *::after{transition:
 
 
 .pt-live{display:inline-flex;align-items:center;gap:5px;margin-left:6px;padding:1px 8px;border-radius:20px;background:color-mix(in srgb,var(--green) 12%,transparent);color:var(--green);font-size:.68rem;font-weight:600;vertical-align:middle}
+
+.scr-src{display:inline-flex;align-items:center;margin-left:6px;padding:2px 8px;border-radius:20px;background:var(--card2);font-size:.66rem;font-weight:600;color:var(--text3);cursor:help}
+.scr-yrs{margin-left:4px;padding:1px 5px;border-radius:5px;background:var(--card2);font-size:.62rem;font-weight:600;color:var(--text3)}
+.at-stale{margin-bottom:1rem;padding:10px 12px;border-radius:10px;border:1px solid color-mix(in srgb,var(--gold) 35%,var(--border));background:color-mix(in srgb,var(--gold) 8%,var(--card));font-size:.78rem;line-height:1.55;color:var(--text2)}
+.at-stale b{color:var(--text);font-weight:600}
+.at-stale a{color:var(--accent2);font-weight:600}
+.scr-src.on{background:color-mix(in srgb,var(--green) 12%,transparent);color:var(--green)}
+.scr-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:240px;height:100%;padding:30px;text-align:center}
+.scr-loading b{font:600 .95rem 'Geist',sans-serif}
+.scr-loading small{max-width:380px;font-size:.8rem;line-height:1.5;color:var(--text3)}
 /* ══════════════════════════════════════════
    PHONE: same design as desktop, stacked into one column
    ══════════════════════════════════════════ */
@@ -4578,7 +4593,7 @@ function generatePortfolioSummary() {
  const sectorNote = techHeavy >= 3 ? ` It is heavily weighted towards technology (${techHeavy} tech positions).` : '';
 
  const avgBeta = holdings.reduce((s,h)=>{
- const d = ASSET_DATA[h.ticker]||[1,30,'Stock',10];
+ const d = assetData(h.ticker, [1,30,'Stock',10]);
  return s + d[0]*(h.shares*h.buyPrice/totalCost);
  },0).toFixed(1);
 
@@ -4599,7 +4614,7 @@ function getRiskScore() {
  const totalCost = holdings.reduce((s,h)=>s+h.shares*h.buyPrice,0);
  if (!totalCost) return null;
  const score = Math.min(95, Math.round(holdings.reduce((s,h)=>{
- const d = ASSET_DATA[h.ticker]||[1,30,'Stock',10];
+ const d = assetData(h.ticker, [1,30,'Stock',10]);
  const w = (h.shares*h.buyPrice)/totalCost;
  return s + (d[1]*0.6 + d[0]*10) * w;
  },0)));
@@ -4628,7 +4643,7 @@ function getSimilar(ticker) {
  #15 WHAT-IF SIMULATOR
 ════════════════════════════════ */
 function calcWhatIf(ticker, amount, yearsAgo) {
- const d = ASSET_DATA[ticker]||[1,25,'Stock',10];
+ const d = assetData(ticker, [1,25,'Stock',10]);
  const growth = d[3]/100;
  const initialVal = amount / Math.pow(1+growth, yearsAgo);
  const pct = ((amount - initialVal)/initialVal*100).toFixed(1);
@@ -4885,7 +4900,7 @@ function renderPortfolioChart(containerId) {
  const totalCost = holdings.reduce((s,h)=>s+h.shares*h.buyPrice,0);
  if (!totalCost) { el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text3)">Add holdings to see chart</div>'; return; }
  const avgGrowth = holdings.reduce((s,h)=>{
- const d=ASSET_DATA[h.ticker]||[1,25,'Stock',10];
+ const d=assetData(h.ticker, [1,25,'Stock',10]);
  return s+(d[3]/100)*(h.shares*h.buyPrice/totalCost);
  },0);
  const points=[];
@@ -5252,7 +5267,7 @@ function calcStockSightScore() {
  const cryptoPct = holdings.filter(h=>h.type==='c').reduce((s,h)=>s+h.shares*h.buyPrice,0)/totalCost;
  if(cryptoPct > 0.5) score -= 10;
  // High-volatility penalty
- const avgVol = holdings.reduce((s,h)=>{const d=ASSET_DATA[h.ticker]||[1,30];return s+d[1]*(h.shares*h.buyPrice/totalCost);},0);
+ const avgVol = holdings.reduce((s,h)=>{const d=assetData(h.ticker,[1,30]);return s+d[1]*(h.shares*h.buyPrice/totalCost);},0);
  if(avgVol > 60) score -= 8;
  else if(avgVol < 25) score += 5;
 
@@ -5300,7 +5315,7 @@ function renderStockSightScore(containerId) {
  <div style="display:flex;flex-direction:column;gap:3px">
  ${[
  ['Diversification', Math.min(100,holdings.length>=6?95:holdings.length*15)],
- ['Risk balance', Math.min(100,Math.max(10,100-Math.round((ASSET_DATA[holdings[0]?.ticker]||[1,30])[1]*0.8)))],
+ ['Risk balance', Math.min(100,Math.max(10,100-Math.round((holdings[0] ? assetData(holdings[0].ticker,[1,30]) : [1,30])[1]*0.8)))],
  ['Engagement', Math.min(100,(watchlist.length*8+holdings.length*6))],
  ].map(([lbl,pct])=>`
  <div style="display:flex;align-items:center;gap:8px">
@@ -6875,7 +6890,7 @@ function renderAsset(ticker, name, type, overrideSym) {
 
  // AI confidence for top display
  const aiProfile = AI_PROFILES[ticker];
- const aiData = ASSET_DATA[ticker] || [1,30,'Stock',10];
+ const aiData = assetData(ticker);
  const aiConf = Math.max(20, Math.min(92, Math.round(85 - aiData[1]*0.6 - aiData[0]*3)));
  const confColor = aiConf>=70?'var(--green)':aiConf>=45?'var(--gold)':'var(--red)';
  const verdictColor = aiProfile ? aiProfile.color : 'var(--text2)';
@@ -6935,7 +6950,7 @@ function renderAsset(ticker, name, type, overrideSym) {
   <div class="ah-ai">
    <div class="ah-stat"><span>AI verdict</span><b style="color:${verdictColor}">${verdictText}</b></div>
    <div class="ah-stat"><span>Confidence</span><b style="color:${confColor}">${aiConf}%</b><i><em style="width:${aiConf}%;background:${confColor}"></em></i></div>
-   ${aiData[1] ? `<div class="ah-stat"><span>Risk</span><b style="color:${riskColor}">${riskLabel}</b><small>~${aiData[1]}% swings a year</small></div>` : ''}
+   <div class="ah-stat" id="ahRisk">${ahRiskHTML(aiData[1], !!liveStats(ticker))}</div>
   </div>
   <div class="ah-actions">
    <button class="pt-btn" onclick="openPtModal('${ticker}','${name}')">Paper trade</button>
@@ -7079,6 +7094,13 @@ function renderAsset(ticker, name, type, overrideSym) {
    if (qk) qk.outerHTML = quickTargetsHTML(ticker, lp);
   });
   setTimeout(() => { if (currentAsset?.ticker === ticker) getHistory(ySym(ticker, type)).catch(() => {}); }, 1500);
+  const hadStats = !statsStale(ticker) && !!liveStats(ticker);
+  fetchStats([[ticker, type]]).then(q => {
+   if (!q[ticker] || currentAsset?.ticker !== ticker) return;
+   const r = document.getElementById('ahRisk');
+   if (r) r.innerHTML = ahRiskHTML(assetData(ticker)[1], true);
+   if (!hadStats) renderAIAnalysis(ticker, name, type);
+  });
   if (user) renderAlertsSection('alertSection_'+ticker, ticker);
   if (typeof renderMarketSessionBadge === 'function') renderMarketSessionBadge('mktSessionBadge_'+ticker);
  }, 200);
@@ -7210,6 +7232,61 @@ function getHistory(sym) {
  }
  return _histReq.get(sym);
 }
+
+
+/* ── Real risk and growth numbers (/api/stats, from 5 years of daily prices) ──
+ Volatility, beta, 5-year growth and RSI for the screener, stock pages and portfolio tools.
+ The hand-entered ASSET_DATA table is only a fallback, and still drives the practice simulations. */
+const LIVE_STATS = (() => { try { return JSON.parse(localStorage.getItem('ss_stats_cache') || '{}') || {}; } catch { return {}; } })();
+const STATS_TTL = 12 * 3600e3;
+function liveStats(t) { const st = LIVE_STATS[t]; return st && Date.now() - st.at < 7 * 86400e3 ? st : null; }
+function tickerKind(t) {
+ const e = TICKERS.find(x => x.t === t);
+ return e?.k || (Y_INDEX[t] ? 'i' : 's');
+}
+const _statsReq = new Map();
+const _statsMiss = {};   // tickers the data service had nothing for, so we don't keep asking
+function statsStale(t) {
+ if (_statsMiss[t] && Date.now() - _statsMiss[t] < 6 * 3600e3) return false;
+ return !LIVE_STATS[t] || Date.now() - LIVE_STATS[t].at > STATS_TTL;
+}
+async function fetchStats(items) {
+ const need = items.filter(([t]) => statsStale(t));
+ if (need.length) {
+  const map = {};
+  need.forEach(([t, k]) => { map[ySym(t, k || tickerKind(t))] = t; });
+  const syms = Object.keys(map).sort();
+  const chunks = [];
+  for (let i = 0; i < syms.length; i += 20) chunks.push(syms.slice(i, i + 20));
+  await Promise.all(chunks.map(async ch => {
+   const key = ch.join(',');
+   if (!_statsReq.has(key)) {
+    _statsReq.set(key, fetch('/api/stats?symbols=' + encodeURIComponent(key)).then(r => r.ok ? r.json() : null).catch(() => null));
+    setTimeout(() => _statsReq.delete(key), 30000);
+   }
+   const j = await _statsReq.get(key);
+   for (const [sym, st] of Object.entries(j?.stats || {})) if (map[sym]) LIVE_STATS[map[sym]] = { ...st, at: Date.now() };
+   if (j) ch.forEach(sym => { if (!j.stats?.[sym]) _statsMiss[map[sym]] = Date.now(); });
+  }));
+  try { localStorage.setItem('ss_stats_cache', JSON.stringify(LIVE_STATS)); } catch {}
+ }
+ return Object.fromEntries(items.map(([t]) => [t, liveStats(t)]));
+}
+// [beta, yearly volatility %, sector, 5-year growth %/yr]: real numbers when we have them
+function assetData(t, fallback) {
+ const base = ASSET_DATA[t] || fallback || [1, 30, tickerKind(t) === 'c' ? 'Crypto' : tickerKind(t) === 'i' ? 'Index' : 'Stock', 10];
+ const st = liveStats(t);
+ if (!st) return base;
+ return [
+  st.beta != null ? +st.beta.toFixed(2) : base[0],
+  st.vol != null ? Math.round(st.vol * 100) : base[1],
+  base[2],
+  st.cagr != null ? Math.round(st.cagr * 100) : base[3],
+ ];
+}
+// Same, but null for an asset we know nothing about (keeps "no data" UI working)
+function assetDataOrNull(t) { return ASSET_DATA[t] || liveStats(t) ? assetData(t) : null; }
+function fmtGrowth(g) { return `${g >= 0 ? '+' : ''}${g}%/yr`; }
 
 /* ════════════════════════════════
  FORECAST ENGINE
@@ -8021,7 +8098,7 @@ function renderAIAnalysis(ticker, name, type) {
  const profile = AI_PROFILES[ticker];
 
  if (!profile) {
- const d = ASSET_DATA[ticker];
+ const d = assetDataOrNull(ticker);
  if (d) {
  const [beta, vol, sector, growth] = d;
  // Generate a sector-aware verdict from the data we have
@@ -8070,7 +8147,7 @@ function buildAICard(el, ticker, profile) {
  const scoreColor = profile.score >= 75 ? 'var(--green)' : profile.score >= 55 ? 'var(--gold)' : 'var(--red)';
  const isSimple = mode === 'simple' || mode === 'beginner';
  const kbp = KB.profiles[ticker];
- const d = ASSET_DATA[ticker];
+ const d = assetDataOrNull(ticker);
 
  const simpleVerdict = {
  'Strong Buy': ' Great time to consider buying',
@@ -8148,14 +8225,14 @@ function buildAICard(el, ticker, profile) {
    <div><span>Sector</span><b>${sector}</b></div>
    <div><span>Beta</span><b>${beta}x</b></div>
    <div><span>Volatility</span><b>~${vol}%</b></div>
-   <div><span>5yr growth</span><b>+${growth}%/yr</b></div>
+   <div><span>5yr growth</span><b>${typeof growth === 'number' ? fmtGrowth(growth) : growth}</b></div>
   </div>` : ''}
   ${kbp ? `<section class="ai-moat"><h4>${isSimple?'Why it has an advantage':'Competitive moat'}</h4><p>${kbp.moat}</p></section>` : ''}
   ${d ? `<details class="ai-how"><summary>How we score this (${profile.score}/100)</summary>
    <div class="ai-how-body">
     ${[
      ['Analyst consensus', Math.min(100, profile.score >= 70 ? 82 : profile.score >= 55 ? 64 : 38), '30%', 'Buy, hold and sell ratings from Wall Street analysts'],
-     ['Revenue growth', Math.min(100, 40 + d[3]*1.5), '25%', `Estimated 5-year growth: about ${d[3]}% a year`],
+     ['Price growth', Math.max(5, Math.min(100, 40 + d[3]*1.5)), '25%', `Price growth over 5 years: about ${d[3]}% a year`],
      ['Risk and volatility', Math.max(10, 100 - d[1]*0.9), '25%', `Yearly swings about ${d[1]}%, beta ${d[0]}x the market`],
      ['Sector momentum', Math.min(100, profile.score >= 60 ? 70 : 50), '20%', `${d[2]} sector trend`],
     ].map(([lbl, pct, weight, note]) => `<div class="ai-how-row">
@@ -8217,8 +8294,8 @@ const CHAT_KB = {
  const rev={AAPL:'iPhone ~55% of revenue; growing Services segment (App Store, iCloud, Apple TV+) ~25%.',MSFT:'Azure cloud, Office 365 subscriptions, LinkedIn, Xbox, and Windows licenses.',GOOGL:'~80% advertising revenue — Google Search and YouTube ads. Remainder from Google Cloud.',TSLA:'EV sales, energy storage (Megapack/Powerwall), and a growing software/services stream.',NVDA:'Data center GPUs for AI training (~87% of revenue), gaming, automotive, and professional visualization.',META:'Advertising on Facebook, Instagram, and WhatsApp (~98% of revenue). Reality Labs burns ~$16B/yr.',AMZN:'AWS cloud (~55% of operating income), e-commerce, advertising ($46B+), and Prime subscriptions.',BTC:"Bitcoin has no earnings. Value comes from fixed 21M supply cap, network security, and store-of-value demand."};
  return rev[t] || p.desc; },
  'competitor':t => { const c={AAPL:'Samsung, Google (Pixel), Microsoft',MSFT:'Amazon AWS, Google Cloud, Salesforce',GOOGL:'Microsoft (Bing/Copilot), Meta (ads), Apple',TSLA:'BYD, Rivian, Ford EV, GM EV',NVDA:'AMD MI300X, Intel Gaudi, Google TPU',META:'TikTok, Snapchat, YouTube',AMZN:'Microsoft Azure, Google Cloud, Walmart',AMD:'NVIDIA, Intel',BTC:'Ethereum, gold (store of value)',ETH:'Solana, Avalanche, Cardano',SOL:'Ethereum, Avalanche'}; return c[t]?`${t}'s main competitors: ${c[t]}.`:`Use the Compare tab to see ${t} vs any competitor.`; },
- 'risk': t => { const d=ASSET_DATA[t]; const p=AI_PROFILES[t]; if(d){const[,vol]=d;return `${t} has ~${vol}% annual volatility — ${vol>=70?'very high risk':vol>=40?'moderate risk':'lower risk'} for its category.`;} return p?p.reason.split(/[Rr]isks?:/)[1]?.split('.')[0]||'See AI Analysis card.':'Research on Yahoo Finance.'; },
- 'volatility':t => { const d=ASSET_DATA[t]; return d?`${t} estimated annual volatility: ~${d[1]}%. S&P 500 averages ~16%; crypto 60–100%+.`:`Volatility shown in the Price Prediction card above.`; },
+ 'risk': t => { const d=assetDataOrNull(t); const p=AI_PROFILES[t]; if(d){const[,vol]=d;return `${t} has ~${vol}% annual volatility — ${vol>=70?'very high risk':vol>=40?'moderate risk':'lower risk'} for its category.`;} return p?p.reason.split(/[Rr]isks?:/)[1]?.split('.')[0]||'See AI Analysis card.':'Research on Yahoo Finance.'; },
+ 'volatility':t => { const d=assetDataOrNull(t); return d?`${t} estimated annual volatility: ~${d[1]}%. S&P 500 averages ~16%; crypto 60–100%+.`:`Volatility shown in the Price Prediction card above.`; },
  'dividend': t => { const pays=['AAPL','MSFT','JNJ','JPM','V','MA','WMT']; return `${pays.includes(t)?t+' pays a regular dividend.':t+' does not currently pay a dividend.'} Check Yahoo Finance → ${t} → Summary for current yield.`; },
 };
 
@@ -8538,7 +8615,7 @@ const KB = {
 function getChatReply(msg, ticker, name) {
  const m = msg.toLowerCase().trim();
  const p = AI_PROFILES[ticker];
- const d = ASSET_DATA[ticker];
+ const d = assetDataOrNull(ticker);
  const kbp = KB.profiles[ticker];
  const tk = TICKERS.find(e => e.t === ticker);
  const isCrypto = tk?.k === 'c';
@@ -9101,7 +9178,16 @@ function runCmp() {
  if (!rA.t || !rB.t || rA.t===rB.t) { toast('Enter two different assets.','info',2500); return; }
  const symA=tvSym(rA.t,rA.k), symB=tvSym(rB.t,rB.k);
  const aiA=AI_PROFILES[rA.t]||{}, aiB=AI_PROFILES[rB.t]||{};
- const dataA=ASSET_DATA[rA.t]||[1,30,'Stock',10], dataB=ASSET_DATA[rB.t]||[1,30,'Stock',10];
+ const dataA=assetData(rA.t), dataB=assetData(rB.t);
+ // Real numbers for this pair: fetch once, then redraw
+ const pairKey = rA.t + '|' + rB.t;
+ if (runCmp._fetched !== pairKey && (statsStale(rA.t) || statsStale(rB.t) || !LIVE_Q[rA.t] || !LIVE_Q[rB.t])) {
+  runCmp._fetched = pairKey;
+  const pair = [[rA.t, rA.k || tickerKind(rA.t)], [rB.t, rB.k || tickerKind(rB.t)]];
+  Promise.all([fetchStats(pair), fetchQuotes(pair)]).then(() => {
+   if (document.getElementById('cmpOut') && tab === 'cmp') runCmp();
+  });
+ }
  const targA=ANALYST_TARGETS[rA.t], targB=ANALYST_TARGETS[rB.t];
  const priceA=ptDailyPrice(rA.t), priceB=ptDailyPrice(rB.t);
 
@@ -9175,9 +9261,9 @@ function runCmp() {
  <td style="padding:.5rem .75rem;font-size:.78rem;font-weight:600;color:${dataB[3]>=dataA[3]?'var(--green)':'var(--text)'}">${dataB[3]}% /yr</td>
  </tr>
  ${targA||targB ? `<tr style="border-bottom:1px solid var(--border)">
- <td style="padding:.5rem .75rem;font-size:.78rem;font-weight:600;text-align:right">${targA?.avg?((targA.avg-priceA)/priceA*100).toFixed(1)+'%':'—'}</td>
+ <td style="padding:.5rem .75rem;font-size:.78rem;font-weight:600;text-align:right" ${targA?.avg && !targetsFresh(targA) ? 'title="Analyst targets on file are out of date"' : ''}>${targA?.avg && targetsFresh(targA)?((targA.avg-priceA)/priceA*100).toFixed(1)+'%':'—'}</td>
  <td style="padding:.5rem .75rem;font-size:.7rem;color:var(--text3);text-align:center">Analyst Upside</td>
- <td style="padding:.5rem .75rem;font-size:.78rem;font-weight:600">${targB?.avg?((targB.avg-priceB)/priceB*100).toFixed(1)+'%':'—'}</td>
+ <td style="padding:.5rem .75rem;font-size:.78rem;font-weight:600" ${targB?.avg && !targetsFresh(targB) ? 'title="Analyst targets on file are out of date"' : ''}>${targB?.avg && targetsFresh(targB)?((targB.avg-priceB)/priceB*100).toFixed(1)+'%':'—'}</td>
  </tr>` : ''}
  ${aiA.score||aiB.score ? `<tr>
  <td style="padding:.5rem .75rem;font-size:.78rem;font-weight:600;color:${(aiA.score||0)>=(aiB.score||0)?'var(--green)':'var(--text)'};text-align:right">${aiA.score?aiA.score+'/10':'—'}</td>
@@ -10688,7 +10774,7 @@ function renderStockOfDay(containerId) {
  const ticker = pool[dayIdx % pool.length];
  const found = TICKERS.find(e => e.t === ticker) || {t:ticker, n:ticker, k:'s'};
  const profile = AI_PROFILES[ticker];
- const data = ASSET_DATA[ticker] || [1, 25, 'Stock', 10];
+ const data = assetData(ticker, [1, 25, 'Stock', 10]);
  const verdict = profile?.verdict || 'Hold';
  const score = profile?.score || 50;
  const verdictColor = {'Strong Buy':'var(--green)','Buy':'var(--green)','Hold':'var(--gold)',
@@ -10918,6 +11004,7 @@ function refreshLivePrices() {
  (holdings || []).forEach(h => add(h.ticker, h.type));
  (watchlist || []).forEach(w => add(w.ticker, w.type));
  if (!set.size) return Promise.resolve();
+ fetchStats([...set.entries()]).catch(() => {});
  _liveRefreshing = fetchQuotes([...set.entries()]).then(() => {
   _liveRefreshing = null;
   const migrated = ptMigrateToLive();
@@ -11343,7 +11430,7 @@ function updatePtCoach(ticker, side) {
  const textEl = document.getElementById('ptCoachText');
  if (!panel || !textEl) return;
 
- const d = ASSET_DATA[ticker];
+ const d = assetDataOrNull(ticker);
  const ai = AI_PROFILES[ticker];
  const pt = getPtPortfolio();
 
@@ -11813,7 +11900,7 @@ function renderRiskLab(pt, entries) {
  entries.forEach(([t, h]) => {
  const shares = typeof h === 'object' ? h.shares : h;
  const val = shares * ptDailyPrice(t);
- const beta = ASSET_DATA[t]?.[0] || 1;
+ const beta = assetData(t)[0] ?? 1;
  weightedBeta += (val / (totalPortfolio || 1)) * beta;
  });
  // Cash contributes 0 beta
@@ -11845,7 +11932,7 @@ function renderRiskLab(pt, entries) {
  let newValue = pt.cash;
  entries.forEach(([t, h]) => {
  const shares = typeof h === 'object' ? h.shares : h;
- const beta = ASSET_DATA[t]?.[0] || 1;
+ const beta = assetData(t)[0] ?? 1;
  const currentVal = shares * ptDailyPrice(t);
  const stockDrop = Math.min(marketDrop * beta, 0.99);
  newValue += currentVal * (1 - stockDrop);
@@ -12547,6 +12634,12 @@ const ANALYST_TARGETS = {
  ETH: { low:2200,avg:4500,high:8000,buy:null,hold:null,sell:null,firm:'VanEck',updated:'Apr 2025'},
 };
 
+function ahRiskHTML(vol, live) {
+ const label = vol >= 70 ? 'Very high' : vol >= 40 ? 'Moderate' : 'Lower';
+ const color = vol >= 70 ? 'var(--red)' : vol >= 40 ? 'var(--gold)' : 'var(--green)';
+ return `<span>Risk</span><b style="color:${color}">${label}</b><small title="${live ? 'Typical yearly price swing, measured from the last year of real daily prices' : 'Estimate. Real numbers are still loading.'}">~${vol}% swings a year${live ? '' : ' (est.)'}</small>`;
+}
+
 function quickTargetsHTML(ticker, price) {
  if (!price) return '';
  const fmt = v => v >= 100 ? v.toFixed(0) : v >= 1 ? v.toFixed(2) : v.toPrecision(3);
@@ -12556,10 +12649,23 @@ function quickTargetsHTML(ticker, price) {
  }).join('')}</div>`;
 }
 
+// Months since the hand-entered analyst targets were collected (e.g. 'Apr 2025')
+function targetsAgeMonths(d) {
+ const m = /^([A-Za-z]{3})\w*\s+(\d{4})$/.exec(String(d?.updated || '').trim());
+ if (!m) return null;
+ const mi = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(m[1].toLowerCase());
+ if (mi < 0) return null;
+ const now = new Date();
+ return (now.getFullYear() - +m[2]) * 12 + (now.getMonth() - mi);
+}
+function targetsFresh(d) { const a = targetsAgeMonths(d); return a != null && a <= 6; }
+
 function renderAnalystTargets(ticker, curPrice) {
  const d = ANALYST_TARGETS[ticker];
  if (!d) return '';
- const upside = d.avg ? (((d.avg - curPrice) / curPrice) * 100).toFixed(1) : null;
+ const age = targetsAgeMonths(d), fresh = targetsFresh(d);
+ // Old targets against today's price would show a fake "upside", so only compare fresh ones
+ const upside = d.avg && fresh ? (((d.avg - curPrice) / curPrice) * 100).toFixed(1) : null;
  const upsideColor = upside > 0 ? 'var(--green)' : 'var(--red)';
  const totalRatings = (d.buy||0) + (d.hold||0) + (d.sell||0);
  const buyPct = totalRatings ? Math.round((d.buy||0)/totalRatings*100) : null;
@@ -12571,9 +12677,10 @@ function renderAnalystTargets(ticker, curPrice) {
  <div class="card" style="margin-bottom:1rem">
  <div class="card-hdr">
  <div class="card-hdr-title">${isBeginner ? '💰 What Do the Experts Think?' : ' Analyst Price Targets'}</div>
- <div class="card-hdr-sub">${isBeginner ? `Pro stock experts weighed in · ${d.updated}` : `Wall St consensus · ${d.updated}`}</div>
+ <div class="card-hdr-sub">${isBeginner ? `Pro stock experts weighed in · ${d.updated}` : `Wall St consensus · ${d.updated}`}${fresh ? '' : ' · out of date'}</div>
  </div>
  <div style="padding:1rem">
+ ${fresh ? '' : `<div class="at-stale"><b>These targets are from ${d.updated}${age != null ? `, about ${age} months ago` : ''}.</b> The price has moved since, so we don't measure upside against them. <a href="https://finance.yahoo.com/quote/${encodeURIComponent(ticker)}/analysis/" target="_blank" rel="noopener">See current targets on Yahoo Finance</a></div>`}
  ${isBeginner ? `<div style="font-size:.75rem;color:var(--text3);margin-bottom:.85rem;line-height:1.5">Stock experts study this company and predict where the price is going. Here's what they said 👇</div>` : ''}
  <!-- Price target bar -->
  <div style="position:relative;margin-bottom:1.25rem">
@@ -13764,7 +13871,7 @@ function renderPortfolioWhatIf(containerId) {
  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:.875rem">
  ${periods.map(p=>{
  let pastVal=0;
- holdings.forEach(h=>{const d=ASSET_DATA[h.ticker]||[1,30,'Stock',10];const pastP=ptDailyPrice(h.ticker)/Math.pow(1+d[3]/100,p.months/12);pastVal+=h.shares*pastP;});
+ holdings.forEach(h=>{const d=assetData(h.ticker,[1,30,'Stock',10]);const pastP=ptDailyPrice(h.ticker)/Math.pow(1+d[3]/100,p.months/12);pastVal+=h.shares*pastP;});
  const gain=currentVal-pastVal; const pct=(gain/pastVal*100); const c=gain>=0?'var(--green)':'var(--red)';
  return `<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.875rem;text-align:center">
  <div style="font-size:.6rem;color:var(--text3);margin-bottom:3px">${p.label.toUpperCase()}</div>
@@ -13989,14 +14096,11 @@ function applyNarrativeResults(rule) {
  const cnt = document.getElementById('scr-count');
  if (!el) return;
 
- const allStocks = Object.entries(ASSET_DATA).map(([t, d]) => {
- const found = TICKERS.find(tk => tk.t === t);
- return { t, name: found?.n || t, beta: d[0], vol: d[1], sector: d[2], growth: d[3], k: found?.k || 's' };
- });
+ const allStocks = Object.keys(ASSET_DATA).map(t => scrRow(t));
 
  let results = [];
  if (rule.tickers) {
- results = rule.tickers.map(t => allStocks.find(s => s.t === t) || { t, name: t, beta:1, vol:25, sector:'', growth:10, k:'s' });
+ results = rule.tickers.map(t => allStocks.find(s => s.t === t) || scrRow(t));
  } else {
  results = allStocks.filter(s => {
  if (rule.sectors && !rule.sectors.includes(s.sector)) return false;
@@ -15239,29 +15343,32 @@ function renderScreenerTable(filtered, el, page = 0) {
  </div>`; return;
  }
  el.innerHTML = `<div class="card" style="overflow:auto">
- <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+ <table class="scr-table" style="width:100%;border-collapse:collapse;font-size:.78rem">
  <thead><tr style="border-bottom:1px solid var(--border)">
  <th style="padding:.5rem .875rem;text-align:left;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">TICKER</th>
  <th style="padding:.5rem .875rem;text-align:left;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">NAME</th>
  <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">SECTOR</th>
- <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">BETA</th>
- <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">RSI</th>
- <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">GROWTH</th>
+ <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600" title="How much it moves compared with the S&amp;P 500 (2 years of weekly prices)">BETA</th>
+ <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600" title="Typical yearly price swing, from the last year of daily prices">VOLATILITY</th>
+ <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600" title="14-day RSI from real closing prices">RSI</th>
+ <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600" title="Average yearly price growth over the last 5 years">5Y GROWTH</th>
  <th style="padding:.5rem .875rem;text-align:center;color:var(--text3);font-size:.62rem;letter-spacing:.06em;font-weight:600">AI</th>
  </tr></thead>
  <tbody>${shown.map(s => {
- const rsi = s.rsi || scrSimRSI(s.t);
- const rsiColor = rsi < 35 ? 'var(--green)' : rsi > 65 ? 'var(--red)' : 'var(--text2)';
- const rsiLabel = rsi < 35 ? `${rsi} ↓` : rsi > 65 ? `${rsi} ↑` : `${rsi}`;
+ const rsi = s.rsi;
+ const rsiColor = rsi == null ? 'var(--text3)' : rsi < 35 ? 'var(--green)' : rsi > 65 ? 'var(--red)' : 'var(--text2)';
+ const rsiLabel = rsi == null ? '—' : rsi < 35 ? `${rsi} ↓` : rsi > 65 ? `${rsi} ↑` : `${rsi}`;
+ const volColor = s.vol >= 60 ? 'var(--red)' : s.vol >= 35 ? 'var(--gold)' : 'var(--text2)';
  const verdict = s.verdict || AI_PROFILES[s.t]?.verdict || '—';
  const vColor = verdict==='Buy'||verdict==='Strong Buy' ? 'var(--green)' : verdict==='Sell' ? 'var(--red)' : 'var(--gold)';
  return `<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="goAsset('${s.t}','${s.k || 's'}')" onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background=''">
- <td style="padding:.625rem .875rem;font-family:'Geist',sans-serif;font-weight:800;color:var(--accent2)">${s.t}</td>
+ <td style="padding:.625rem .875rem;font-family:'Geist',sans-serif;font-weight:800;color:var(--accent2);white-space:nowrap">${s.t}${s.live === false ? `<small class="scr-yrs" title="No real price data for this one yet, so these numbers are estimates">est.</small>` : ''}</td>
  <td style="padding:.625rem .875rem;color:var(--text2)">${s.name}</td>
  <td style="padding:.625rem .875rem;text-align:center;color:var(--text3);font-size:.72rem">${s.sector||''}</td>
- <td style="padding:.625rem .875rem;text-align:center">${s.beta}x</td>
- <td style="padding:.625rem .875rem;text-align:center;color:${rsiColor};font-weight:600">${rsiLabel}</td>
- <td style="padding:.625rem .875rem;text-align:center;color:${s.growth>=20?'var(--green)':s.growth>=10?'var(--gold)':'var(--text2)'}">+${s.growth}%/yr</td>
+ <td style="padding:.625rem .875rem;text-align:center;font-variant-numeric:tabular-nums">${s.beta}x</td>
+ <td style="padding:.625rem .875rem;text-align:center;color:${volColor};font-variant-numeric:tabular-nums">${s.vol}%</td>
+ <td style="padding:.625rem .875rem;text-align:center;color:${rsiColor};font-weight:600;font-variant-numeric:tabular-nums">${rsiLabel}</td>
+ <td style="padding:.625rem .875rem;text-align:center;font-variant-numeric:tabular-nums;color:${s.growth>=20?'var(--green)':s.growth>=10?'var(--gold)':s.growth<0?'var(--red)':'var(--text2)'}"${s.years && s.years < 4.5 ? ` title="Only ${s.years.toFixed(1)} years of price history so far"` : ''}>${fmtGrowth(s.growth)}${s.years && s.years < 4.5 ? `<small class="scr-yrs">${Math.max(1, Math.round(s.years))}y</small>` : ''}</td>
  <td style="padding:.625rem .875rem;text-align:center;font-size:.68rem;font-weight:700;color:${vColor}">${verdict}</td>
  </tr>`;
  }).join('')}</tbody>
@@ -15293,17 +15400,12 @@ function scrPage(delta) {
  if (last) renderScreenerTable(last.filtered, last.el, (renderScreenerTable._page || 0) + delta);
 }
 
-function scrSimRSI(ticker) {
- // Deterministic RSI simulation: seed from ticker chars + current day
- const day = Math.floor(Date.now() / 86400000);
- let seed = day * 31;
- for (let i = 0; i < ticker.length; i++) seed += ticker.charCodeAt(i) * (i + 7);
- const base = ((seed % 60) + 60) % 60; // 0-59
- const d = ASSET_DATA[ticker];
- // High-vol stocks tend toward extremes
- const vol = d?.[1] || 25;
- const rsi = Math.max(15, Math.min(85, base + (vol > 50 ? (seed % 3 === 0 ? 15 : -10) : 0)));
- return Math.round(rsi);
+// One screener row: real numbers when available, the hand-entered estimate otherwise
+function scrRow(t) {
+ const d = assetData(t), st = liveStats(t);
+ const found = TICKERS.find(tk => tk.t === t);
+ return { t, name: found?.n || t, beta: d[0], vol: d[1], sector: d[2], growth: d[3], k: found?.k || tickerKind(t),
+  rsi: st?.rsi != null ? Math.round(st.rsi) : null, ret1y: st?.ret1y ?? null, years: st?.years ?? null, live: !!st, verdict: AI_PROFILES[t]?.verdict || 'Hold' };
 }
 
 function applyScreener() {
@@ -15314,23 +15416,38 @@ function applyScreener() {
  const rsiFilter = document.getElementById('scr-rsi')?.value || 'all';
  const verdictFilter = document.getElementById('scr-verdict')?.value || 'all';
 
- const all = Object.entries(ASSET_DATA).map(([t, d]) => {
- const found = TICKERS.find(tk => tk.t === t);
- const rsi = scrSimRSI(t);
- const verdict = AI_PROFILES[t]?.verdict || 'Hold';
- return { t, name: found?.n || t, beta: d[0], vol: d[1], sector: d[2], growth: d[3], k: found?.k || 's', rsi, verdict };
- });
+ const universe = Object.keys(ASSET_DATA);
+ const liveCount = universe.filter(t => liveStats(t)).length;
+ const stale = universe.some(statsStale);
+ if (stale && !applyScreener._loading && Date.now() - (applyScreener._tried || 0) > 60000) {
+  applyScreener._loading = true;
+  applyScreener._tried = Date.now();
+  fetchStats(universe.map(t => [t, tickerKind(t)])).then(() => {
+   applyScreener._loading = false;
+   applyScreener._failed = !universe.some(t => liveStats(t));
+   if (document.getElementById('scr-results')) {
+    const q = document.getElementById('scr-narrative')?.value.trim();
+    q ? runNarrativeSearch() : applyScreener();
+   }
+  });
+ }
+ if (!liveCount && applyScreener._loading) {
+  el.innerHTML = `<div class="card scr-loading"><span class="fc-spark"></span><b>Crunching real prices</b><small>Working out volatility, beta, growth and RSI for ${universe.length} assets from 5 years of daily data</small></div>`;
+  const cnt0 = document.getElementById('scr-count'); if (cnt0) cnt0.textContent = '';
+  return;
+ }
+ const all = universe.map(t => scrRow(t));
 
  const filtered = all.filter(s =>
  (sector === 'all' || s.sector === sector) &&
  (risk === 'all' || (risk === 'low' ? s.beta < 1 : s.beta >= 1)) &&
- s.growth >= minGrow &&
- (rsiFilter === 'all' || (rsiFilter === 'oversold' ? s.rsi < 35 : rsiFilter === 'overbought' ? s.rsi > 65 : s.rsi >= 35 && s.rsi <= 65)) &&
+ (minGrow <= 0 || s.growth >= minGrow) &&
+ (rsiFilter === 'all' || (s.rsi != null && (rsiFilter === 'oversold' ? s.rsi < 35 : rsiFilter === 'overbought' ? s.rsi > 65 : s.rsi >= 35 && s.rsi <= 65))) &&
  (verdictFilter === 'all' || s.verdict === verdictFilter)
  ).sort((a,b) => b.growth - a.growth);
 
  const cnt = document.getElementById('scr-count');
- if (cnt) cnt.textContent = filtered.length + ' stocks found';
+ if (cnt) cnt.innerHTML = `${filtered.length} found <span class="scr-src ${liveCount ? 'on' : ''}" title="${liveCount ? 'Volatility, beta, growth and RSI are calculated from real daily prices (Yahoo Finance), refreshed every few hours' : 'Real numbers are unavailable right now, so these are estimates'}">${liveCount ? 'Real data' : applyScreener._failed ? 'Estimates' : 'Loading real data'}</span>`;
  renderScreenerTable(filtered, el);
 }
 
