@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
+<script>
+ // Theme before first paint: dark unless this device chose light (saved by setTheme)
+ try { if (localStorage.getItem('ss_theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}
+</script>
 <!-- Google Identity Services -->
 <script src="https://accounts.google.com/gsi/client" async></script>
 <!-- Google Analytics -->
@@ -22,7 +26,7 @@
 <meta name="keywords" content="stock dashboard, AI stock analysis, live stock charts, stock price prediction, portfolio tracker, paper trading, crypto tracker, free stock app, investment tracker, stock screener">
 <meta name="author" content="Shravan Appou">
 <meta name="robots" content="index, follow">
-<meta name="theme-color" content="#6c5ce7">
+<meta name="theme-color" content="#0f0f13">
 
 <!-- ── Open Graph (Facebook, LinkedIn, Discord, iMessage previews) ── -->
 <meta property="og:type" content="website">
@@ -994,6 +998,10 @@ html{scroll-behavior:smooth}
 body{font-family:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;letter-spacing:-.006em;font-variant-numeric:tabular-nums;font-feature-settings:'ss01'}
 html,body{overflow-x:clip}
 [data-theme="dark"] body::before{display:none}
+[data-theme="dark"]{color-scheme:dark}
+[data-theme="light"]{color-scheme:light}
+/* Embedded widgets (TradingView) draw their own theme on a transparent page; matching their scheme keeps the browser from painting a white backdrop behind them */
+[data-theme="dark"] iframe{color-scheme:light}
 ::selection{background:var(--glow2);color:var(--text)}
 ::-webkit-scrollbar-thumb:hover{background:var(--border3)}
 [data-tip]::after{font-family:'Geist',sans-serif;box-shadow:0 6px 20px var(--shadow)}
@@ -1035,6 +1043,8 @@ html,body{overflow-x:clip}
 .ss-theme{display:flex;align-items:center;gap:10px;margin-top:6px;padding:10px 12px;border:none;border-radius:10px;background:none;color:var(--text2);font:500 .86rem 'Geist',sans-serif;cursor:pointer;text-align:left}
 .ss-theme:hover{background:var(--card2);color:var(--text)}
 [data-theme="light"] .ss-ico-sun,[data-theme="light"] .ss-theme-light,[data-theme="dark"] .ss-ico-moon,[data-theme="dark"] .ss-theme-dark{display:none}
+.gate-theme{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border:1px solid var(--border2);border-radius:10px;background:var(--card);color:var(--text2);cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease}
+.gate-theme:hover{color:var(--text);border-color:var(--border3)}
 
 /* Top bar */
 header.ss-top{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:20px;margin:0;padding:12px 32px;min-height:64px;flex-wrap:nowrap;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
@@ -1323,6 +1333,8 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
 .g2-signin button:hover{text-decoration:underline;text-underline-offset:3px}
 .g2-shot{margin:56px 0 0;border:1px solid var(--border2);border-radius:18px;overflow:hidden;background:var(--card);box-shadow:0 2px 4px var(--shadow2),0 30px 70px -20px var(--shadow)}
 .g2-shot img{display:block;width:100%;height:auto}
+/* The preview matches the page: only the current theme's screenshot shows (and downloads) */
+[data-theme="dark"] .g2-shot .g2-shot-light,[data-theme="light"] .g2-shot .g2-shot-dark{display:none}
 .g2-grid{display:grid;grid-template-columns:1.25fr 1fr;grid-template-rows:auto auto;gap:16px;margin-top:20px}
 .g2-cell{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px}
 .g2-cell h2{font-size:1.25rem;font-weight:650;letter-spacing:-.025em;line-height:1.25;margin-bottom:10px;text-wrap:balance}
@@ -1847,11 +1859,12 @@ body .ss-side #tabBar .tab[class*="on-"]{font-weight:600}
  #mainContent[data-view="pt"]{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(340px,1fr);grid-template-rows:auto minmax(0,1fr);gap:14px 16px;align-content:stretch}
  #mainContent[data-view="pt"] > .pt-status{display:none!important}
  #mainContent[data-view="pt"] > .pt-head{grid-column:1;grid-row:1;margin:0!important;align-self:center}
- #mainContent[data-view="pt"] > #pt-stats-row{grid-column:2;grid-row:1;margin:0!important;gap:8px!important}
- #mainContent[data-view="pt"] .pt-stat{padding:10px 8px;display:flex;flex-direction:column;justify-content:center}
- #mainContent[data-view="pt"] .pt-stat-val{font-size:.98rem}
+ #mainContent[data-view="pt"] > #pt-stats-row{grid-column:2;grid-row:1;margin:0!important;gap:8px!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ #mainContent[data-view="pt"] .pt-stat{padding:10px 6px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+ #mainContent[data-view="pt"] .pt-stat-val{font-size:clamp(.8rem,1.15vw,.98rem);white-space:nowrap}
  #mainContent[data-view="pt"] > .pt-pos{grid-column:1;grid-row:2;margin:0!important;min-height:0;overflow:auto}
  #mainContent[data-view="pt"] > .ss-tabs{grid-column:2;grid-row:2}
+ #mainContent[data-view="pt"] > .ss-tabs .ss-tab{padding-left:8px;padding-right:8px;font-size:.82rem}
  #mainContent[data-view="pt"] > .pt-head > div:first-child > div:first-child{font-size:1.35rem!important}
 
  /* Day trade: simulator left, ticket and tools right */
@@ -2633,6 +2646,7 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
 
  #S-gate header{flex-wrap:wrap;gap:8px}
  #S-gate header .hdr-actions{flex:1 1 100%;gap:8px}
+ #S-gate header .gate-theme{width:38px;height:38px}
  #S-gate header .hdr-actions .btn{flex:1;text-align:center;padding:10px 8px}
  .btn-gate-main,.btn-gate-ghost{width:100%;text-align:center}
 }
@@ -2649,6 +2663,10 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
  <div class="logo-icon"><img src="/stocksight-logo-96.png" alt="StockSight" width="96" height="96"></div>
  <div class="logo-name">Stock<span>Sight</span></div>
  </div>
+ <button type="button" class="gate-theme" onclick="toggleTheme()" aria-label="Switch between light and dark mode" data-tip="Light / dark">
+ <svg class="ss-ico-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+ <svg class="ss-ico-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+ </button>
  <div class="hdr-actions">
  <button class="btn btn-outline" onclick="openModal('login')">Log in</button>
  <button class="btn btn-solid" onclick="openModal('signup')">Create free account</button>
@@ -2666,8 +2684,10 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
  </section>
 
  <figure class="g2-shot">
- <img src="/images/app-preview.jpg" alt="The StockSight Markets dashboard with live index tiles, an S&P 500 chart, a practice portfolio and a watchlist" width="1600" height="1000">
+ <img class="g2-shot-dark" src="/images/app-preview-dark.jpg" alt="The StockSight Markets dashboard with live index tiles, an S&P 500 chart, a practice portfolio and a watchlist" width="1600" height="1000" loading="lazy" decoding="async">
+ <img class="g2-shot-light" src="/images/app-preview.jpg" alt="The StockSight Markets dashboard with live index tiles, an S&P 500 chart, a practice portfolio and a watchlist" width="1600" height="1000" loading="lazy" decoding="async">
  </figure>
+ <script>try { document.querySelector('.g2-shot-' + document.documentElement.getAttribute('data-theme')).loading = 'eager'; } catch (e) {}</script>
 
  <section class="g2-grid" aria-label="What StockSight does">
  <article class="g2-cell g2-cell-photo">
@@ -4242,7 +4262,9 @@ const PICKS = {
 /* ════════════════════════════════
  STATE
 ════════════════════════════════ */
-let user = null, tab = 's', theme = 'light', mode = 'simple', marketFilter = 's';
+let user = null, tab = 's', theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark', mode = 'simple', marketFilter = 's';
+// The theme someone picked on purpose (null = never picked, so the dark default applies). Synced with the account.
+let themeChoice = null;
 
 function staggerCards(container) {
  if (!container) return;
@@ -4342,8 +4364,16 @@ const getSess=()=>sg('ss3_s');
 const setSess=u=>ss('ss3_s',u);
 const delSess=()=>sd('ss3_s');
 
+// Sign-in starts the app before the account's settings arrive, so put them on screen once they do
+function showLoadedSettings(prevTheme) {
+ if (document.body.dataset.screen !== 'app') return;
+ applyAllSettings(false);
+ if (theme !== prevTheme) setTimeout(reRenderCurrentView, 50);
+}
+
 async function loadUserData(){
  const e=user?.email||'';
+ const prevTheme = theme;
 
  // Try Supabase first
  try {
@@ -4380,7 +4410,7 @@ async function loadUserData(){
  if (typeof data.digest === 'boolean') { try { data.digest ? localStorage.setItem('ss_digest_'+e, '1') : localStorage.removeItem('ss_digest_'+e); } catch {} }
  // Restore settings/prefs
  const p = data.settings || data.portfolio?.prefs || {};
- if(p.theme) theme=p.theme;
+ if(p.themeChoice === 'light' || p.themeChoice === 'dark') { theme = themeChoice = p.themeChoice; try { localStorage.setItem('ss_theme', theme); } catch {} }
  if(p.mode) mode=p.mode;
  if(p.accentColor) accentColor=p.accentColor;
  if(p.chartStyle) chartStyle=p.chartStyle;
@@ -4391,6 +4421,7 @@ async function loadUserData(){
  if(p.dashPick) dashPick={...dashPick,...p.dashPick};
  if(p.darkSchedule!==undefined) darkSchedule=p.darkSchedule;
  if(p.portfolioName) portfolioName=p.portfolioName;
+ showLoadedSettings(prevTheme);
  return;
  }
  } catch(err) { console.warn('loadUserData Supabase failed, using localStorage:', err.message); }
@@ -4399,7 +4430,7 @@ async function loadUserData(){
  watchlist=await sg('ss3_wl_'+e)||[];
  holdings=await sg('ss3_h_'+e)||[];
  const p=await sg('ss3_p_'+e)||{};
- if(p.theme) theme=p.theme;
+ if(p.themeChoice === 'light' || p.themeChoice === 'dark') { theme = themeChoice = p.themeChoice; try { localStorage.setItem('ss_theme', theme); } catch {} }
  if(p.mode) mode=p.mode;
  if(p.accentColor) accentColor=p.accentColor;
  if(p.chartStyle) chartStyle=p.chartStyle;
@@ -4410,6 +4441,7 @@ async function loadUserData(){
  if(p.dashPick) dashPick={...dashPick,...p.dashPick};
  if(p.darkSchedule!==undefined) darkSchedule=p.darkSchedule;
  if(p.portfolioName) portfolioName=p.portfolioName;
+ showLoadedSettings(prevTheme);
 }
 
 // Save functions — write to localStorage AND sync to Supabase
@@ -4427,7 +4459,7 @@ const saveH=()=>{
 };
 const saveP=()=>{
  if(!user?.email) return;
- const prefs = {theme, mode, accentColor, chartStyle, chartInterval, currency, compactMode, nameDisplay, dashPick, darkSchedule, portfolioName};
+ const prefs = {theme, themeChoice, mode, accentColor, chartStyle, chartInterval, currency, compactMode, nameDisplay, dashPick, darkSchedule, portfolioName};
  ss('ss3_p_'+user.email, prefs);
  usersTable().update({ settings: prefs }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveP sync failed'); });
 };
@@ -5798,19 +5830,28 @@ function startClock() {
 ════════════════════════════════ */
 function applyTheme(save=true){
  document.documentElement.setAttribute('data-theme', theme);
+ document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#f6f6f9' : '#0f0f13');
  const d=document.getElementById('tD'), l=document.getElementById('tL');
  if(d){ d.className='tog'+(theme==='dark'?' on-a':''); l.className='tog'+(theme==='light'?' on-a':''); }
  updateThemeBtn();
  if(save) saveP();
 }
+// A choice the user made: remembered on this device (landing page, guest mode) and on their account
 function setTheme(t){
  const root = document.documentElement;
+ themeChoice = t;
+ try { localStorage.setItem('ss_theme', t); } catch {}
+ // Choosing by hand turns off the automatic evening switch so the two don't fight
+ if (darkSchedule) {
+  darkSchedule = false; applyDarkSchedule();
+  document.getElementById('dschOn')?.classList.remove('on-a'); document.getElementById('dschOff')?.classList.add('on-a');
+ }
  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
   root.classList.add('theme-anim');
   clearTimeout(window._themeAnimT);
   window._themeAnimT = setTimeout(() => root.classList.remove('theme-anim'), 520);
  }
- theme=t; applyTheme();
+ theme=t; applyTheme(!!user);
  // Refresh any already-loaded TradingView iframes to match new theme
  const tvTheme = t === 'light' ? 'light' : 'dark';
  document.querySelectorAll('iframe[src*="tradingview"]').forEach(f => {
@@ -13091,7 +13132,7 @@ const BADGES = [
  // ── MARKETS ──
  { id:'crypto_search', icon:'₿', name:'Crypto Curious', desc:'Searched for your first cryptocurrency', check: () => searchHistory.some(h=>h.k==='c') },
  { id:'index_search', icon:'📉', name:'Index Watcher', desc:'Looked up your first market index', check: () => searchHistory.some(h=>h.k==='i') },
- { id:'dark_mode', icon:'🌙', name:'Night Owl', desc:'Switched to dark mode', check: () => theme === 'dark' },
+ { id:'dark_mode', icon:'🌙', name:'Night Owl', desc:'Picked a theme on purpose', check: () => !!themeChoice },
  { id:'after_hours', icon:'🌃', name:'After Hours', desc:'Used StockSight outside market hours (before 9am or after 4pm)', check: () => { const h=new Date().getHours(); return h<9||h>=16; } },
  { id:'early_bird', icon:'🌅', name:'Early Bird', desc:'Used StockSight before 8am', check: () => new Date().getHours() < 8 },
  { id:'night_trader', icon:'🦉', name:'Night Trader', desc:'Used StockSight after midnight', check: () => new Date().getHours() < 4 },

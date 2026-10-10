@@ -5,9 +5,11 @@ import { readUnsubscribe, patchUser, fail } from './_auth.js';
 
 const page = (title, body, form = '') => `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} · StockSight</title>
+<script>try { if (localStorage.getItem('ss_theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}</script>
 <style>
-:root{--bg:#f3f2fa;--card:#fff;--ink:#17152b;--ink2:#4a4766;--line:#e8e6f3;--accent:#6c5ce7}
-@media (prefers-color-scheme:dark){:root{--bg:#0d0c18;--card:#17152b;--ink:#f3f2fa;--ink2:#b4b1cc;--line:#2a2742;--accent:#8f82ff}}
+/* Same theme as the site: dark unless this device picked light */
+:root{--bg:#0f0f13;--card:#16161c;--ink:#ececf1;--ink2:#a4a4b4;--line:rgba(255,255,255,.09);--accent:#8b5cf6;color-scheme:dark}
+:root[data-theme="light"]{--bg:#f6f6f9;--card:#fff;--ink:#15151d;--ink2:#585869;--line:#e8e8ef;--accent:#6d28d9;color-scheme:light}
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--ink);
  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;padding:0 16px}
 main{max-width:420px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px 28px;text-align:center}
