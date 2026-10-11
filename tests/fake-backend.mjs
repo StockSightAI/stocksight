@@ -111,9 +111,9 @@ const tables = {
   ],
   pt_leaderboard: [{ email: 'someone@test.dev', display_name: 'som***', value: 10500, return_pct: 5, holdings_count: 2, updated_at: now() }],
 };
-const DEFAULTS = { users: () => ({ created_at: now(), token_version: 0, reset_attempts: 0, mode: 'simple' }) };
+const DEFAULTS = { users: () => ({ created_at: now(), token_version: 0, reset_attempts: 0, mode: 'simple' }), client_errors: () => ({ at: now() }) };
 const UNIQUE = { users: ['email'], pt_leaderboard: ['email'], searches: ['ticker', 'date', 'ip_hash'], votes: ['ticker', 'voter_hash'] };
-const SERVICE_ONLY = new Set(['users', 'searches', 'votes', 'vote_counts']);
+const SERVICE_ONLY = new Set(['users', 'searches', 'votes', 'vote_counts', 'client_errors']);
 
 function filterRows(rows, params) {
   let out = rows;
@@ -121,6 +121,8 @@ function filterRows(rows, params) {
     if (['select', 'limit', 'order', 'on_conflict', 'offset'].includes(k)) continue;
     if (v.startsWith('eq.')) out = out.filter(r => String(r[k]) === decodeURIComponent(v.slice(3)));
     if (v.startsWith('gte.')) out = out.filter(r => String(r[k]) >= decodeURIComponent(v.slice(4)));
+    if (v.startsWith('lt.')) out = out.filter(r => String(r[k]) < decodeURIComponent(v.slice(3)));
+    if (v === 'not.is.null') out = out.filter(r => r[k] != null);
   }
   return out;
 }
@@ -195,7 +197,10 @@ http.createServer(async (req, res) => {
   if (url.pathname === '/__yahoo') { yahooDown = url.searchParams.get('down') === '1'; return res.end('yahoo down: ' + yahooDown); }
   if (url.pathname === '/__db') { res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify({ tables, codes, mail })); }
   if (url.pathname.startsWith('/fakesb/rest/v1/')) return fakeRest(req, res, url, body);
-  const api = url.pathname.match(/^\/api\/([a-z-]+)$/);
+  // vercel.json rewrite: /stock/:ticker -> /api/page?t=:ticker
+  const stockPage = url.pathname.match(/^\/stock\/([^/]+)\/?$/);
+  if (stockPage) url.searchParams.set('t', decodeURIComponent(stockPage[1]));
+  const api = stockPage ? [null, 'page'] : url.pathname.match(/^\/api\/([a-z-]+)$/);
   if (api && fs.existsSync(path.join(root, 'api', api[1] + '.js'))) {
     const { default: handler } = await import(pathToFileURL(path.join(root, 'api', api[1] + '.js')).href);
     req.query = Object.fromEntries(url.searchParams);

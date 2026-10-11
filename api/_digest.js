@@ -139,7 +139,7 @@ function weekMove(sym, q, now) {
 /* ── The verdict model, same weights and thresholds as scoreAsset in index.html (stocks only) ── */
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const avg = a => a.reduce((s, x) => s + x, 0) / a.length;
-function scoreStock(f) {
+export function scoreStock(f) {
   if (!f?.price) return null;
   const px = f.price, spRet = f.sp52w ?? 0.12, factors = [];
   const add = (key, weight, score) => { if (score != null && Number.isFinite(score)) factors.push({ key, weight, score: Math.round(clamp(score, 0, 100)) }); };

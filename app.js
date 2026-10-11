@@ -715,7 +715,9 @@ async function loadUserData(){
  // Restore pending orders
  if (data.pending_orders?.length) { try { localStorage.setItem('ss_pt_pending_'+e, JSON.stringify(data.pending_orders)); } catch {} }
  // Restore alerts
- if (data.alerts?.length) { try { localStorage.setItem('ss_alerts_'+e, JSON.stringify(data.alerts)); } catch {} }
+ if (data.alerts && normalizeAlerts(data.alerts).length) { try { localStorage.setItem('ss_alerts_'+e, JSON.stringify(normalizeAlerts(data.alerts))); } catch {} }
+ if (typeof data.alert_emails === 'boolean') { try { localStorage.setItem('ss_alertmail_'+e, data.alert_emails ? '1' : '0'); } catch {} }
+ loadAlerts();
  // Restore notes
  if (data.notes && Object.keys(data.notes).length) { try { localStorage.setItem('ss_notes_'+e, JSON.stringify(data.notes)); } catch {} }
  // Restore streak
@@ -807,6 +809,11 @@ window.addEventListener('DOMContentLoaded', async () => {
  if (!user) return;
  setTimeout(captureWlLoginSnapshot, 300);
  bootApp();
+ } else if (deepLinkTicker() && location.pathname.startsWith('/stock/')) {
+ // Someone opened stocksightai.com/stock/NVDA (from Google or a shared link): show the stock right away
+ applyTheme(false);
+ bootGuest();
+ openDeepLink();
  } else {
  applyTheme(false);
  updateGateUserCount();
@@ -827,6 +834,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 function show(name) {
  if (name === 'profile' && !requireAuth('Profile & Settings')) return;
  document.body.dataset.screen = name;
+ document.getElementById('seoStock')?.remove(); // the server-drawn summary on /stock/ pages, replaced by the real page
  if (name === 'app') setTimeout(moveNavPill, 30);
  const screens = ['gate','app','profile'];
  screens.forEach(n => {
@@ -910,12 +918,53 @@ function bootApp() {
  }
 }
 
-// Links from the weekly digest open that stock's page: stocksightai.com/?stock=NVDA
-function openDeepLink() {
+// Google Analytics events for the moments that matter (gtag is defined in index.html)
+function track(name, params) { try { gtag('event', name, params || {}); } catch {} }
+
+// Installing StockSight as an app: Chrome and Edge offer their own prompt; iPhone uses Share, Add to Home Screen
+let _installPrompt = null, _justInstalled = false;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); _installPrompt = e; syncInstallUI(); });
+addEventListener('appinstalled', () => { _installPrompt = null; _justInstalled = true; track('app_installed'); syncInstallUI(); });
+function isInstalledApp() { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }
+function syncInstallUI() {
+ const btn = document.getElementById('installBtn'), desc = document.getElementById('installDesc');
+ if (!btn || !desc) return;
+ const iphone = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+ btn.style.display = !isInstalledApp() && _installPrompt ? '' : 'none';
+ desc.textContent = isInstalledApp() ? "You're using the installed app."
+  : _justInstalled ? 'Installed. Open StockSight from your home screen or app list.'
+  : _installPrompt ? 'Opens full screen with its own icon, like any other app.'
+  : iphone ? 'In Safari, tap the Share button, then "Add to Home Screen".'
+  : 'In your browser menu, choose "Install app" or "Add to Home screen".';
+}
+async function installApp() {
+ if (!_installPrompt) return syncInstallUI();
+ _installPrompt.prompt();
+ try { await _installPrompt.userChoice; } catch {}
+ _installPrompt = null;
+ syncInstallUI();
+}
+
+// The address bar follows the stock being viewed (/stock/NVDA), so links can be copied and shared
+function syncStockUrl(ticker) {
+ try {
+  const want = ticker ? '/stock/' + encodeURIComponent(ticker) : '/';
+  if (location.pathname !== want) history.replaceState(history.state, '', want + location.hash);
+ } catch {}
+}
+function deepLinkTicker() {
  let t = '';
- try { t = (new URLSearchParams(location.search).get('stock') || '').toUpperCase().trim(); } catch {}
- if (!t || !/^[A-Z0-9][A-Z0-9.\-^=]{0,14}$/.test(t)) return;
- try { history.replaceState(null, '', location.pathname + location.hash); } catch {}
+ try {
+  const m = location.pathname.match(/^\/stock\/([^/?#]+)\/?$/i);
+  t = (m ? decodeURIComponent(m[1]) : new URLSearchParams(location.search).get('stock') || '').toUpperCase().trim();
+ } catch {}
+ return /^[A-Z0-9][A-Z0-9.\-^=]{0,14}$/.test(t) ? t : '';
+}
+
+// Links open a stock's page: stocksightai.com/stock/NVDA (or the older ?stock=NVDA)
+function openDeepLink() {
+ const t = deepLinkTicker();
+ if (!t) return;
  const local = TICKERS.find(e => e.t === t);
  setTimeout(() => {
   if (local && ['s','i','c'].includes(local.k) && local.k !== tab) switchTab(local.k, true);
@@ -926,6 +975,7 @@ function openDeepLink() {
 function goHome() {
  show('app');
  currentAsset = null;
+ syncStockUrl(null);
  const ss = document.getElementById('searchSection');
  if (ss) ss.style.display = '';
  switchTab('s', true);
@@ -1239,10 +1289,18 @@ function saveNote(ticker) {
 /* ════════════════════════════════
  #1 PRICE ALERTS
 ════════════════════════════════ */
-let priceAlerts = {};
-function loadAlerts() {
- try { priceAlerts = JSON.parse(localStorage.getItem('ss_alerts_'+(user?.email||''))||'{}'); } catch { priceAlerts={}; }
+/* ── Price alerts: [{ ticker, targetPrice, direction: 'above' | 'below', fired, createdAt, firedAt, emailedAt }] ──
+ One list, used by the stock page, Settings, the in-app check and the daily alert email (api/_daily.js).
+ Older saves were { TICKER: price } with no direction; they become alerts whose direction is set from the next
+ price check, so they wait for the price to actually cross the target. */
+let priceAlerts = [];
+function normalizeAlerts(raw) {
+ if (Array.isArray(raw)) return raw.filter(a => a && typeof a.ticker === 'string' && Number(a.targetPrice) > 0).map(a => ({ ...a, targetPrice: Number(a.targetPrice) }));
+ if (raw && typeof raw === 'object') return Object.entries(raw).filter(([, p]) => Number(p) > 0).map(([ticker, p]) => ({ ticker, targetPrice: Number(p), direction: null, fired: false, createdAt: Date.now() }));
+ return [];
 }
+function loadAlerts() { priceAlerts = normalizeAlerts(safeParse('ss_alerts_' + (user?.email || ''), [])); }
+function getAlerts() { return priceAlerts.map(a => ({ ...a })); }
 function _syncAlerts() {
  try { localStorage.setItem('ss_alerts_'+(user?.email||''), JSON.stringify(priceAlerts)); } catch {}
  if (user?.email) {
@@ -1250,19 +1308,27 @@ function _syncAlerts() {
  .then(({error}) => { if(error) console.warn('syncAlerts failed'); });
  }
 }
+function saveAlerts(a) { priceAlerts = normalizeAlerts(a); _syncAlerts(); }
+// The stock page's "Set alert": the direction comes from where the price is now
 function saveAlert(ticker) {
+ if (!requireAuth('Price Alerts')) return;
  const el = document.getElementById('alertInp_'+ticker);
  if(!el||!el.value) return;
  const price = parseFloat(el.value);
  if(isNaN(price)||price<=0) { toast('Enter a valid price', 'error'); return; }
- priceAlerts[ticker] = price;
- _syncAlerts();
- toast(`Alert set for ${ticker} at $${price.toLocaleString()}`, 'star', 3000);
+ const cur = livePrice(ticker);
+ const direction = cur == null ? null : price >= cur ? 'above' : 'below';
+ const alerts = getAlerts().filter(a => !(a.ticker === ticker && a.direction === direction && !a.fired));
+ alerts.push({ ticker, targetPrice: price, direction, fired: false, createdAt: Date.now() });
+ saveAlerts(alerts);
+ el.value = '';
+ track('create_alert', { ticker });
+ toast(direction ? `Alert set: we'll tell you when ${ticker} goes ${direction} $${price.toLocaleString()}` : `Alert set for ${ticker} at $${price.toLocaleString()}`, 'star', 3500);
  renderAlertBadge(ticker);
 }
 function renderAlertBadge(ticker) {
- const badge = document.getElementById('alertBadge_'+ticker);
- if(badge && priceAlerts[ticker]) badge.innerHTML = `<span class="alert-badge"> Alert: $${priceAlerts[ticker].toLocaleString()}</span>`;
+ const el = document.getElementById('alertSection_' + ticker);
+ if (el) renderAlertsSection('alertSection_' + ticker, ticker);
 }
 
 /* ════════════════════════════════
@@ -1605,6 +1671,7 @@ async function subscribeNotif() {
  if (error) { toast('Could not update the digest. Please try again.', 'error'); return; }
  try { on ? localStorage.setItem('ss_digest_'+email, '1') : localStorage.removeItem('ss_digest_'+email); } catch {}
  syncDigestUI();
+ if (on) track('subscribe_digest');
  toast(on ? 'Subscribed! Your first digest arrives Monday morning.' : 'Unsubscribed from the weekly digest.', on ? 'success' : 'info', 4000);
 }
 
@@ -2536,6 +2603,7 @@ function switchTab(t, skipRender=false) {
  setTimeout(() => {
  tab = t;
  currentAsset = null;
+ syncStockUrl(null);
  setViewHead(user || !['w','port','pt','day'].includes(t) ? t : null);
  if (mc && (user || !['w','port','pt','day'].includes(t))) mc.dataset.view = ['s','i','c'].includes(t) ? 'home' : t;
  renderRail();
@@ -3359,6 +3427,8 @@ function renderAsset(ticker, name, type, overrideSym) {
 
   currentAsset = { ticker, name, type };
   document.title = ticker + ' — ' + (name || ticker) + ' | StockSight';
+  syncStockUrl(ticker);
+  track('view_stock', { ticker });
   const chatBox = document.getElementById('chatBox');
   if (chatBox) chatBox.innerHTML = `<div class="chat-hello">${xp === 'beginner'
    ? `Hi! I can explain <strong>${escapeHTML(name)}</strong> in simple words. Tap a question below or type your own.`
@@ -3500,15 +3570,14 @@ function assetSideHTML(c) {
      <button type="button" class="dash-btn dash-btn-main" onclick="saveNote('${ticker}')">Save note</button>
     </div>`,
   alerts: `<div class="asset-pad asset-alerts">
-     <label for="alertInp_${ticker}">Alert me near this price</label>
+     <label for="alertInp_${ticker}">Alert me when ${ticker} reaches</label>
      <div class="alert-row">
-      <input id="alertInp_${ticker}" class="alert-inp" type="number" step="0.01" min="0" placeholder="e.g. 250.00" value="${priceAlerts[ticker] || ''}"/>
+      <input id="alertInp_${ticker}" class="alert-inp" type="number" step="0.01" min="0" placeholder="e.g. 250.00" onkeydown="if(event.key==='Enter')saveAlert('${ticker}')"/>
       <button type="button" class="dash-btn dash-btn-main" onclick="saveAlert('${ticker}')">Set alert</button>
      </div>
-     <div id="alertBadge_${ticker}"></div>
      <div class="asset-quick-wrap">${quickTargetsHTML(ticker, livePrice(ticker))}</div>
-     <p class="asset-hint">StockSight checks live prices while the app is open and notifies you when ${ticker} gets within 5% of your target. Manage every alert in Settings, Notifications.</p>
      <div id="alertSection_${ticker}"></div>
+     <p class="asset-hint">You'll get a heads-up in the app when ${ticker} is within 5% of a target, and an email once it crosses (checked every weekday after the market closes). Manage alerts in Settings, Notifications.</p>
     </div>`,
  }[k]);
  return `
@@ -5979,6 +6048,7 @@ async function toggleWL(ticker, name, type) {
  const idx = watchlist.findIndex(w => w.ticker === ticker);
  if (idx >= 0) { watchlist.splice(idx,1); } else {
  watchlist.push({ticker,name,type});
+ track('add_to_watchlist', { ticker });
  clMark('cl_watch');
  refreshChecklist();
  }
@@ -6459,6 +6529,7 @@ async function rmHolding(i) { holdings.splice(i,1); await saveH(); renderPortfol
 ════════════════════════════════ */
 function loadProfilePage() {
  syncSecurityUI();
+ syncInstallUI();
  if (!user) return;
  document.getElementById('profAv').textContent = user.name[0].toUpperCase();
  document.getElementById('profUN').textContent = user.name;
@@ -6569,25 +6640,8 @@ function showP(name) {
  syncDigestUI();
  const emailInp = document.getElementById('notif-email');
  if(emailInp && user?.email) emailInp.value = user.email;
- // Show active alerts
- const alertList = document.getElementById('notif-alerts-list');
- if(alertList) {
- const entries = Object.entries(priceAlerts);
- if(!entries.length) {
- alertList.innerHTML = `<div style="font-size:.74rem;color:var(--text3)">No alerts set yet. Search any stock and tap Set Alert on the asset page.</div>`;
- } else {
- alertList.innerHTML = entries.map(([t, price])=>`
- <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
- <div style="display:flex;align-items:center;gap:8px">
- <span style="font-family:'Geist',sans-serif;font-weight:700;color:var(--accent2)">${t}</span>
- <span style="font-size:.72rem;color:var(--text2)">Alert at <strong>$${Number(price).toLocaleString()}</strong></span>
- </div>
- <button onclick="delete priceAlerts['${t}'];_syncAlerts();showP('notif')"
- style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;transition:color .15s"
- onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'"></button>
- </div>`).join('');
- }
- }
+ renderNotifAlerts();
+ syncAlertMailUI();
  }
 }
 
@@ -6755,6 +6809,7 @@ async function addHolding() {
  } else {
   holdings.push({ ticker: t, shares, buyPrice, type: k, name });
   msg = `${t} added to your portfolio.`;
+  track('add_holding', { ticker: t });
  }
  closeHoldModal();
  checkMilestones();
@@ -6884,6 +6939,7 @@ async function doSignup(){
  return;
  }
  const u = await startSession(r);
+ track('sign_up', { method: 'email' });
  document.getElementById('su-ok').classList.add('on'); btn.textContent=' Done!';
  setTimeout(()=>{
  closeModal();
@@ -6947,6 +7003,7 @@ async function googleSignIn(tokens) {
  const r = await authApi('google', tokens);
  if (!r.ok) { toast(r.error || 'Google sign-in failed. Please try again.', 'error'); return; }
  await startSession(r);
+ track('login', { method: 'google' });
  closeModal();
  toast('Signed in with Google!', 'success');
  bootApp(); loadUserData();
@@ -6992,6 +7049,7 @@ async function doLogin(){
  return;
  }
  const u = await startSession(r);
+ track('login', { method: 'email' });
  document.getElementById('li-ok').classList.add('on'); btn.textContent=' Welcome back!';
  closeModal();
  setTimeout(()=>{
@@ -7968,7 +8026,7 @@ function toggleBrowserNotifs() {
 function updateNotifToggleUI(on) {
  const tog = document.getElementById('browser-notif-tog');
  const lbl = document.getElementById('browser-notif-lbl');
- if (tog) tog.className = 'notif-tog' + (on ? ' on' : '');
+ if (tog) { tog.className = 'notif-tog' + (on ? ' on' : ''); tog.setAttribute('aria-checked', String(!!on)); }
  if (lbl) lbl.textContent = on ? 'On' : 'Off';
 }
 
@@ -8461,6 +8519,7 @@ function executePtTrade() {
  showPtSuccess('sell', ptCurrentTicker, actualShares, actualShares * ptCurrentPrice, realizedPL);
  }
  savePtPortfolio(pt);
+ track('paper_trade', { ticker: ptCurrentTicker, side: ptSide });
  clMark('cl_paper');
  checkMilestones();
  refreshChecklist();
@@ -8772,6 +8831,7 @@ async function shareStockCard(ticker, type) {
   const file = new File([blob], `stocksight-${ticker}.png`, { type: 'image/png' });
   const url = `https://stocksightai.com/?stock=${encodeURIComponent(ticker)}`;
   // Phones: the share sheet (Instagram, Messages, ...). Computers: save the image and copy the link.
+  track('share', { method: navigator.canShare?.({ files: [file] }) ? 'share_sheet' : 'download', content_type: 'stock_card', item_id: ticker });
   if (navigator.canShare?.({ files: [file] })) {
    try { await navigator.share({ files: [file], text: `${ticker} on StockSight: ${rs.R.verdict}, ${rs.R.score}/100 ${url}` }); return; }
    catch (e) { if (e?.name === 'AbortError') return; }
@@ -10307,10 +10367,6 @@ function showKeyboardShortcuts() {
 /* ════════════════════════════════
  PRICE ALERTS
 ════════════════════════════════ */
-function getAlerts() {
- try { return JSON.parse(localStorage.getItem('ss_alerts_'+(user?.email||''))||'[]'); } catch { return []; }
-}
-function saveAlerts(a) { priceAlerts = a; _syncAlerts(); }
 function addPriceAlert(ticker, targetPrice, direction) {
  if (!requireAuth('Price Alerts')) return;
  if (!targetPrice || isNaN(targetPrice)) { toast('Enter a valid price first', 'info', 2000); return; }
@@ -10330,56 +10386,74 @@ function removeAlert(ticker, direction) {
 async function checkAlerts() {
  if (!user) return;
  const alerts = getAlerts();
- const near = Object.entries(priceAlerts || {});
- if (!alerts.length && !near.length) return;
- const tickers = [...new Set([...alerts.filter(a => !a.fired).map(a => a.ticker), ...near.map(([t]) => t)])];
- if (!tickers.length) return;
- await fetchQuotes(tickers.map(t => [t, TICKERS.find(e => e.t === t)?.k || 's']));
+ const open = alerts.filter(a => !a.fired);
+ if (!open.length) return;
+ await fetchQuotes([...new Set(open.map(a => a.ticker))].map(t => [t, TICKERS.find(e => e.t === t)?.k || 's']));
  const fmt = v => '$' + Number(v).toLocaleString('en-US', { maximumFractionDigits: v < 1 ? 6 : 2 });
  const notify = (title, body) => { if ('Notification' in window && Notification.permission === 'granted') { try { new Notification(title, { body }); } catch {} } };
+ const today = new Date().toISOString().slice(0, 10);
  let changed = false;
- alerts.forEach(a => {
-  if (a.fired) return;
+ open.forEach(a => {
   const cur = livePrice(a.ticker);
   if (cur == null) return;
+  if (a.direction !== 'above' && a.direction !== 'below') { a.direction = cur < a.targetPrice ? 'above' : 'below'; changed = true; return; }
   if ((a.direction === 'above' && cur >= a.targetPrice) || (a.direction === 'below' && cur <= a.targetPrice)) {
-   a.fired = true; changed = true;
+   a.fired = true; a.firedAt = Date.now(); changed = true;
    toast(`Alert: ${a.ticker} is ${a.direction} ${fmt(a.targetPrice)} (now ${fmt(cur)})`, 'star', 6000);
    notify(`${a.ticker} price alert`, `Now ${fmt(cur)}. Your target was ${fmt(a.targetPrice)}.`);
+   return;
+  }
+  // A heads-up once a day when it's close
+  if (Math.abs(cur - a.targetPrice) / a.targetPrice < 0.05) {
+   const key = `ss_alert_near_${a.ticker}_${a.direction}`;
+   if (localStorage.getItem(key) === today) return;
+   localStorage.setItem(key, today);
+   toast(`${a.ticker} is within 5% of your ${fmt(a.targetPrice)} alert (now ${fmt(cur)})`, 'warning', 6000);
+   notify(`${a.ticker} is near your alert`, `Now ${fmt(cur)}. Your alert is ${fmt(a.targetPrice)}.`);
   }
  });
  if (changed) saveAlerts(alerts);
- const today = new Date().toISOString().slice(0, 10);
- near.forEach(([t, target]) => {
-  const cur = livePrice(t);
-  if (cur == null || !target || Math.abs(cur - target) / target >= 0.05) return;
-  const key = 'ss_alert_near_' + t;
-  if (localStorage.getItem(key) === today) return;
-  localStorage.setItem(key, today);
-  toast(`${t} is within 5% of your ${fmt(target)} alert (now ${fmt(cur)})`, 'warning', 6000);
-  notify(`${t} is near your alert`, `Now ${fmt(cur)}. Your alert is ${fmt(target)}.`);
- });
 }
 function renderAlertsSection(containerId, ticker) {
  const el = document.getElementById(containerId); if(!el) return;
- const alerts = getAlerts().filter(a=>a.ticker===ticker);
- const cur = livePrice(ticker) || ptDailyPrice(ticker);
- const isLive = livePrice(ticker) != null;
- el.innerHTML = `<div class="card"><div class="card-hdr"><div class="card-hdr-title"> Price Alerts</div><div class="card-hdr-sub">Get notified when ${ticker} hits your target · checked on each visit</div></div>
- <div style="padding:1rem">
- <div style="display:flex;gap:8px;margin-bottom:.75rem;flex-wrap:wrap">
- <input id="ap_${ticker}" type="number" min="0" step="0.01" placeholder="e.g. $${Math.round(cur*0.95)}"
- style="flex:1;min-width:100px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:.82rem;outline:none"
- onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border2)'"/>
- <button onclick="addPriceAlert('${ticker}',document.getElementById('ap_${ticker}').value,'above')" style="background:rgba(0,201,122,.1);border:1px solid rgba(0,201,122,.3);color:var(--green);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:.75rem;font-weight:700;cursor:pointer">▲ Above</button>
- <button onclick="addPriceAlert('${ticker}',document.getElementById('ap_${ticker}').value,'below')" style="background:rgba(255,56,96,.08);border:1px solid rgba(255,56,96,.25);color:var(--red);border-radius:8px;padding:8px 12px;font-family:inherit;font-size:.75rem;font-weight:700;cursor:pointer">▼ Below</button>
- </div>
- <div style="font-size:.63rem;color:var(--text3);margin-bottom:.75rem">${isLive ? `Price now: $${cur.toLocaleString('en-US',{maximumFractionDigits:cur<1?6:2})}` : 'Live price loading...'}</div>
- ${alerts.length ? alerts.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--card2);border-radius:8px;border:1px solid rgba(245,158,11,.2);margin-bottom:5px">
- <span style="font-size:.75rem">${a.direction==='above'?'▲':'▼'} $${a.targetPrice.toLocaleString()} — notify when ${a.direction}${a.fired?' triggered':''}</span>
- <button onclick="removeAlert('${ticker}','${a.direction}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.7rem"></button>
- </div>`).join('') : `<div style="font-size:.72rem;color:var(--text3)">No alerts for ${ticker} yet.</div>`}
- </div></div>`;
+ const alerts = getAlerts().filter(a => a.ticker === ticker);
+ if (!alerts.length) { el.innerHTML = ''; return; }
+ el.innerHTML = `<ul class="alert-list">${alerts.map(a => `<li class="${a.fired ? 'fired' : ''}">
+   <span>${a.direction === 'above' ? '▲ Above' : a.direction === 'below' ? '▼ Below' : 'At'} <b>$${a.targetPrice.toLocaleString()}</b>${a.fired ? ' · hit' : ''}</span>
+   <button type="button" aria-label="Remove alert" onclick="removeAlertAt('${ticker}',${a.targetPrice},'${a.direction || ''}')">Remove</button></li>`).join('')}</ul>`;
+}
+// Settings, Notifications: every alert across all stocks
+function renderNotifAlerts() {
+ const list = document.getElementById('notif-alerts-list');
+ if (!list) return;
+ const alerts = getAlerts();
+ if (!alerts.length) { list.innerHTML = `<div style="font-size:.74rem;color:var(--text3)">No alerts yet. Open any stock and use the Alerts tab.</div>`; return; }
+ list.innerHTML = `<ul class="alert-list">${alerts.map(a => `<li class="${a.fired ? 'fired' : ''}">
+   <span><b class="al-t" onclick="verifyTicker('${a.ticker}')">${a.ticker}</b> ${a.direction === 'above' ? 'above' : a.direction === 'below' ? 'below' : 'at'} <b>$${a.targetPrice.toLocaleString()}</b>${a.fired ? ' · hit' : ''}</span>
+   <button type="button" aria-label="Remove alert" onclick="removeAlertAt('${a.ticker}',${a.targetPrice},'${a.direction || ''}')">Remove</button></li>`).join('')}</ul>`;
+}
+// Email when an alert is hit (on unless turned off here or from an email's link)
+const alertMailOn = () => !!user?.email && localStorage.getItem('ss_alertmail_' + user.email) !== '0';
+function syncAlertMailUI() {
+ const tog = document.getElementById('alert-mail-tog'), lbl = document.getElementById('alert-mail-lbl');
+ const on = alertMailOn();
+ if (tog) { tog.className = 'notif-tog' + (on ? ' on' : ''); tog.setAttribute('aria-checked', String(on)); }
+ if (lbl) lbl.textContent = on ? 'On' : 'Off';
+}
+async function toggleAlertEmails() {
+ if (!requireAuth('Alert emails')) return;
+ const on = !alertMailOn();
+ const { error } = await usersTable().update({ alert_emails: on });
+ if (error) { toast('Could not save that. Please try again.', 'error'); return; }
+ try { localStorage.setItem('ss_alertmail_' + user.email, on ? '1' : '0'); } catch {}
+ syncAlertMailUI();
+ toast(on ? "We'll email you when an alert is hit." : 'Alert emails turned off.', on ? 'success' : 'info', 3000);
+}
+function removeAlertAt(ticker, target, direction) {
+ saveAlerts(getAlerts().filter(a => !(a.ticker === ticker && a.targetPrice === target && (a.direction || '') === direction)));
+ renderAlertBadge(ticker);
+ if (document.getElementById('notif-alerts-list')) renderNotifAlerts();
+ toast('Alert removed', 'info', 2000);
 }
 setTimeout(()=>{ if(user) checkAlerts(); }, 2500);
 

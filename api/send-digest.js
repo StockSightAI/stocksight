@@ -8,6 +8,7 @@
  * GET /api/send-digest                          send to everyone with digest = true (the cron)
  * GET /api/send-digest?to=you@x.com             send only to that account (a test)
  * GET /api/send-digest?preview=1[&to=you@x.com] show the email in the browser, send nothing
+ * GET /api/send-digest?job=alerts               the daily job: price-alert emails + the site error summary
  * Outside the cron, add &secret=<CRON_SECRET>.
  *
  * Env vars (Vercel dashboard): RESEND_API_KEY, SUPABASE_SERVICE_KEY, CRON_SECRET
@@ -17,6 +18,11 @@
  */
 import { db, unsubscribeUrl } from './_auth.js';
 import { gatherMarket, buildEmail, healthOf } from './_digest.js';
+import { runAlerts, runErrorSummary } from './_daily.js';
+
+// The daily schedule in vercel.json (weekdays, after the US close). Vercel sends the triggering schedule
+// in x-vercel-cron-schedule, so one function serves both jobs.
+const DAILY_SCHEDULE = '0 22 * * 1-5';
 
 const SITE = process.env.DIGEST_BASE_URL || 'https://stocksightai.com';
 const COLUMNS = 'email,name,watchlist,portfolio';
@@ -71,6 +77,18 @@ export default async function handler(req, res) {
   if (!process.env.SUPABASE_SERVICE_KEY || (!resendKey && !preview)) {
     console.error('digest: RESEND_API_KEY and SUPABASE_SERVICE_KEY must be set');
     return res.status(500).json({ error: 'Server configuration error' });
+  }
+
+  if (req.query?.job === 'alerts' || req.headers?.['x-vercel-cron-schedule'] === DAILY_SCHEDULE) {
+    try {
+      const alerts = await runAlerts({ resendKey });
+      const errors = await runErrorSummary({ resendKey });
+      console.log('daily job:', JSON.stringify({ alerts, errors }));
+      return res.status(200).json({ ok: true, alerts, errors });
+    } catch (e) {
+      console.error('daily job failed:', e);
+      return res.status(500).json({ error: 'Daily job failed' });
+    }
   }
 
   const to = String(req.query?.to || '').trim().toLowerCase();

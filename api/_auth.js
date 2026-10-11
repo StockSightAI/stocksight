@@ -20,7 +20,7 @@ const SECRET_COLUMNS = ['phash', 'ph', 'reset_token', 'reset_token_expiry', 'res
 export const WRITABLE_COLUMNS = new Set([
   'name', 'mode', 'watchlist', 'portfolio', 'alerts', 'notes', 'streak_count', 'streak_last_date', 'settings', 'avatar',
   'broker', 'tutorial_done', 'onboarding_done', 'pending_orders', 'investor_profile', 'risk_tolerance', 'invest_style',
-  'investment_goals', 'preferred_sectors', 'digest',
+  'investment_goals', 'preferred_sectors', 'digest', 'alert_emails',
 ]);
 
 export function configured() { return !!SERVICE_KEY(); }
@@ -127,16 +127,18 @@ export function readSession(req) {
     return { email: s.e, version: s.v || 0 };
   } catch { return null; }
 }
-/* ── Unsubscribe links in the weekly digest: the email plus a signature only the server can make ── */
-const unsubSig = email => b64u(crypto.createHmac('sha256', SESSION_SECRET()).update('unsub:' + email).digest()).slice(0, 32);
-export function unsubscribeUrl(email, base = 'https://stocksightai.com') {
-  return `${base}/api/unsubscribe?e=${b64u(email)}&s=${unsubSig(email)}`;
+/* ── Unsubscribe links in emails: the email plus a signature only the server can make ──
+ list 'digest' (the weekly email) or 'alerts' (price-alert emails); each link only works for its own list */
+export const UNSUB_LISTS = { digest: 'digest', alerts: 'alert_emails' };
+const unsubSig = (email, list) => b64u(crypto.createHmac('sha256', SESSION_SECRET()).update(list === 'digest' ? 'unsub:' + email : `unsub:${list}:${email}`).digest()).slice(0, 32);
+export function unsubscribeUrl(email, base = 'https://stocksightai.com', list = 'digest') {
+  return `${base}/api/unsubscribe?e=${b64u(email)}&s=${unsubSig(email, list)}${list === 'digest' ? '' : `&l=${list}`}`;
 }
-export function readUnsubscribe(e, s) {
-  if (!SESSION_SECRET()) return null;
+export function readUnsubscribe(e, s, list = 'digest') {
+  if (!SESSION_SECRET() || !UNSUB_LISTS[list]) return null;
   let email = '';
   try { email = Buffer.from(String(e || ''), 'base64url').toString(); } catch { return null; }
-  return EMAIL_RE.test(email) && same(unsubSig(email), String(s || '')) ? email : null;
+  return EMAIL_RE.test(email) && same(unsubSig(email, list), String(s || '')) ? email : null;
 }
 
 // The session's row, or null if the session was revoked (password changed, account deleted)

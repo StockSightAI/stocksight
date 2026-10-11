@@ -1,7 +1,10 @@
 // Unsubscribe from the weekly digest with the signed link in every email.
 // GET  shows a confirm button (link scanners in inboxes open GET links, so GET never unsubscribes)
 // POST unsubscribes; mail apps also POST here for one-click unsubscribe (RFC 8058)
-import { readUnsubscribe, patchUser, fail } from './_auth.js';
+import { readUnsubscribe, patchUser, fail, UNSUB_LISTS } from './_auth.js';
+
+// ?l=alerts for price-alert emails; no l means the weekly digest
+const WHAT = { digest: ['the weekly digest', 'the Monday market digest'], alerts: ['price-alert emails', 'emails when your price alerts are hit'] };
 
 const page = (title, body, form = '') => `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} · StockSight</title>
@@ -23,22 +26,24 @@ a.sub{display:block;margin-top:14px;color:var(--ink2);font-size:14px}
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  const email = readUnsubscribe(req.query?.e, req.query?.s);
+  const list = UNSUB_LISTS[req.query?.l] ? req.query.l : 'digest';
+  const [what, longWhat] = WHAT[list];
+  const email = readUnsubscribe(req.query?.e, req.query?.s, list);
   if (!email) {
-    return res.status(400).send(page('Link not valid', 'This unsubscribe link is incomplete or has expired. You can turn the weekly digest off any time in StockSight under Settings → Notifications.',
+    return res.status(400).send(page('Link not valid', `This unsubscribe link is incomplete or has expired. You can turn ${what} off any time in StockSight under Settings → Notifications.`,
       '<a class="btn" href="https://stocksightai.com">Open StockSight</a>'));
   }
   if (req.method === 'GET') {
-    return res.status(200).send(page('Stop the weekly digest?', `We'll stop sending the Monday market digest to <b>${email.replace(/[<>&"]/g, '')}</b>.`,
-      `<form method="post"><button type="submit">Unsubscribe</button></form><a class="sub" href="https://stocksightai.com">Keep getting it</a>`));
+    return res.status(200).send(page(`Stop ${what}?`, `We'll stop sending ${longWhat} to <b>${email.replace(/[<>&"]/g, '')}</b>.`,
+      `<form method="post"><button type="submit">Unsubscribe</button></form><a class="sub" href="https://stocksightai.com">Keep getting them</a>`));
   }
   if (req.method !== 'POST') return fail(res, 405, 'Method not allowed');
   try {
-    await patchUser(email, { digest: false });
+    await patchUser(email, { [UNSUB_LISTS[list]]: false });
   } catch (e) {
     console.error('unsubscribe:', e.message);
     return res.status(500).send(page('Something went wrong', 'We could not update your settings. Please try again in a minute.'));
   }
-  return res.status(200).send(page("You're unsubscribed", 'You won\'t get the weekly digest anymore. Changed your mind? Turn it back on in StockSight under Settings → Notifications.',
+  return res.status(200).send(page("You're unsubscribed", `You won't get ${what} anymore. Changed your mind? Turn ${list === 'digest' ? 'it' : 'them'} back on in StockSight under Settings → Notifications.`,
     '<a class="btn" href="https://stocksightai.com">Open StockSight</a>'));
 }

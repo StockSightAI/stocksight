@@ -1,13 +1,36 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
+<script>
+ // When the site breaks in someone's browser, tell the server (the owner gets a daily summary).
+ // Only this site's own code, at most 5 reports a page, and no network blips or browser-extension noise.
+ (function () {
+  var sent = 0, seen = {}, ours = /^https?:\/\/(localhost|127\.0\.0\.1|(www\.)?stocksightai\.com)(:\d+)?\//;
+  function report(msg, src, stack) {
+   try {
+    msg = String(msg || '').slice(0, 500);
+    if (!msg || sent >= 5 || seen[msg] || /^Script error\.?$|ResizeObserver loop|Failed to fetch|NetworkError|Load failed|AbortError/.test(msg)) return;
+    if (src && !ours.test(src)) return;
+    seen[msg] = 1; sent++;
+    var body = JSON.stringify({ action: 'error', message: msg, source: String(src || '').slice(0, 300), stack: String(stack || '').slice(0, 2000), page: location.pathname });
+    if (navigator.sendBeacon) navigator.sendBeacon('/api/community', new Blob([body], { type: 'application/json' }));
+    else fetch('/api/community', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true });
+   } catch (e) {}
+  }
+  addEventListener('error', function (e) { if (e.message) report(e.message, e.filename ? e.filename + ':' + e.lineno + ':' + e.colno : '', e.error && e.error.stack); });
+  addEventListener('unhandledrejection', function (e) {
+   var r = e.reason, stack = r && r.stack || '';
+   if (ours.test(stack.replace(/^[\s\S]*?(https?:)/, '$1'))) report('Unhandled: ' + (r && r.message || r), '', stack);
+  });
+ })();
+</script>
 <script defer src="/app.js"></script>
 <script>
  // Theme before first paint: dark unless this device chose light (saved by setTheme)
  try { if (localStorage.getItem('ss_theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}
  // New visitors land on the landing screen, whose biggest piece is the app screenshot: fetch the right one first
  try {
-  if (!localStorage.getItem('ss_ss3_s')) {
+  if (!localStorage.getItem('ss_ss3_s') && !location.pathname.startsWith('/stock/')) {
    const t = document.documentElement.getAttribute('data-theme'), l = document.createElement('link');
    l.rel = 'preload'; l.as = 'image'; l.fetchPriority = 'high';
    l.setAttribute('imagesrcset', `/images/app-preview-${t}-900.webp 900w, /images/app-preview-${t}-1600.webp 1600w`);
@@ -71,6 +94,11 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="StockSight">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -935,6 +963,18 @@ html{scroll-behavior:smooth}
  box-shadow:0 4px 16px rgba(0,0,0,.3);
 }
 [data-tip]:hover::after{opacity:1}
+.alert-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.alert-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card2);font-size:.82rem;color:var(--text2)}
+.alert-list li b{color:var(--text)}.alert-list li.fired{opacity:.6}
+.alert-list .al-t{color:var(--accent2);cursor:pointer;margin-right:4px}
+.alert-list button{background:none;border:none;color:var(--text3);font:inherit;font-size:.75rem;cursor:pointer;padding:2px 4px}
+.alert-list button:hover{color:var(--red)}
+.seo-stock{box-sizing:border-box;width:calc(100% - 32px);max-width:760px;margin:32px auto;padding:24px 20px;border:1px solid var(--border);border-radius:18px;background:var(--card);color:var(--text)}
+.seo-stock h1{font-size:1.6rem;letter-spacing:-.02em;margin:0 0 6px}.seo-stock p{color:var(--text2);line-height:1.6;margin:8px 0}
+.seo-stock dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0}
+.seo-stock dl div{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--card2)}
+.seo-stock dt{font-size:.72rem;color:var(--text3)}.seo-stock dd{margin:3px 0 0;font-weight:700;font-size:1.05rem}
+.seo-stock a{color:var(--accent2)}
 /* Hidden tips take no space (long ones used to widen their container and add stray scrollbars) */
 [data-tip]:not(:hover):not(:focus)::after{display:none}
 
@@ -2681,7 +2721,8 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
 <body>
 <script>
  // No saved session: show the landing screen now instead of waiting for app.js (it takes over when it loads)
- try { if (!localStorage.getItem('ss_ss3_s')) document.body.dataset.screen = 'gate'; } catch (e) { document.body.dataset.screen = 'gate'; }
+ var onStock = location.pathname.indexOf('/stock/') === 0;
+ try { if (!onStock && !localStorage.getItem('ss_ss3_s')) document.body.dataset.screen = 'gate'; } catch (e) { if (!onStock) document.body.dataset.screen = 'gate'; }
 </script>
 
 <!-- ═══════════════════════════════
@@ -3348,7 +3389,7 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
     <div class="sg-lbl">Browser notifications</div>
     <div class="sg-row">
      <div><div class="sg-label">Watchlist price moves</div><div class="sg-desc">A browser notification when a watchlist stock moves 3% or more in a day</div></div>
-     <div class="set-toggle-wrap"><span id="browser-notif-lbl" class="sg-desc">Off</span><div class="notif-tog" id="browser-notif-tog" role="switch" tabindex="0" onclick="toggleBrowserNotifs()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleBrowserNotifs()}"></div></div>
+     <div class="set-toggle-wrap"><span id="browser-notif-lbl" class="sg-desc">Off</span><div class="notif-tog" id="browser-notif-tog" role="switch" aria-label="Watchlist price moves" aria-checked="false" tabindex="0" onclick="toggleBrowserNotifs()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleBrowserNotifs()}"></div></div>
     </div>
    </div>
 
@@ -3356,6 +3397,10 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
     <div class="sg-lbl">Price alerts</div>
     <div class="sg-row"><div><div class="sg-label">Active alerts</div><div class="sg-desc">Targets you set on stock pages. Remove any you no longer need.</div></div></div>
     <div id="notif-alerts-list" class="sg-pad"><div class="sg-desc">No alerts yet. Open any stock and use the Alerts tab.</div></div>
+    <div class="sg-row">
+     <div><div class="sg-label">Email me when an alert is hit</div><div class="sg-desc">Checked every weekday after the US market closes. One email per alert.</div></div>
+     <div class="set-toggle-wrap"><span id="alert-mail-lbl" class="sg-desc">On</span><div class="notif-tog on" id="alert-mail-tog" role="switch" aria-label="Email me when an alert is hit" aria-checked="true" tabindex="0" onclick="toggleAlertEmails()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleAlertEmails()}"></div></div>
+    </div>
    </div>
   </section>
 
@@ -3409,6 +3454,11 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
       <div class="set-inline"><b class="set-pick" id="dashPickC"></b><button class="tog" onclick="changeDashStockSettings('c')">Change</button></div></div>
     </div>
 
+    <div class="sg">
+     <div class="sg-lbl">App</div>
+     <div class="sg-row sg-stack"><div><div class="sg-label">Install StockSight</div><div class="sg-desc" id="installDesc">Add it to your home screen to open it like an app.</div></div>
+      <button type="button" id="installBtn" class="set-btn set-btn-main" style="display:none" onclick="installApp()">Install app</button></div>
+    </div>
     <div class="sg">
      <div class="sg-lbl">Preferred broker</div>
      <div class="sg-row sg-stack"><div><div class="sg-label">Invest button destination</div><div class="sg-desc">Where "Invest" sends you from a stock page. Currently <strong id="currentBrokerLabel">not set</strong>.</div></div>

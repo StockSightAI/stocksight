@@ -3,11 +3,18 @@
     {
       "path": "/api/send-digest",
       "schedule": "0 14 * * 1"
+    },
+    {
+      "path": "/api/send-digest",
+      "schedule": "0 22 * * 1-5"
     }
   ],
   "functions": {
     "api/send-digest.js": {
       "maxDuration": 60
+    },
+    "api/page.js": {
+      "includeFiles": "index.html"
     }
   },
   "headers": [
@@ -39,6 +46,12 @@
           "value": "same-origin-allow-popups"
         }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/stock/:ticker",
+      "destination": "/api/page?t=:ticker"
     }
   ]
 }

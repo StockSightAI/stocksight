@@ -1,6 +1,7 @@
 // Community data, kept on the server so it can't be stuffed from the browser.
 //   POST { action: 'search', ticker }        someone looked up a ticker (once per person, ticker and day)
 //   POST { action: 'vote', ticker, vote }    buy / hold / sell; needs the sign-in token, one vote per account
+//   POST { action: 'error', message, ... }   a crash in someone's browser, kept for the daily error summary
 //   GET  ?trending=1&days=1                  the most-searched real tickers (1 = today, up to 7)
 //   GET  ?votes=TICKER                       vote counts, plus your own vote when signed in
 import crypto from 'node:crypto';
@@ -24,6 +25,16 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'POST') {
       const b = readBody(req);
+
+      if (b.action === 'error') {
+        // Small, capped and best effort: the table may not exist yet, and reports never fail the page
+        if (limited('err:' + ipOf(req), 20, 3600e3)) return res.status(204).end();
+        const clip = (v, n) => String(v ?? '').slice(0, n);
+        const row = { message: clip(b.message, 500), source: clip(b.source, 300), stack: clip(b.stack, 2000), page: clip(b.page, 200), ua: clip(req.headers?.['user-agent'], 200) };
+        if (row.message) await db('client_errors', { method: 'POST', body: row, prefer: 'return=minimal' }).catch(() => {});
+        return res.status(204).end();
+      }
+
       const ticker = String(b.ticker || '').toUpperCase().trim();
       if (!TICKER_RE.test(ticker)) return fail(res, 400, 'Invalid ticker');
 
