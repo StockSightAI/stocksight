@@ -52,6 +52,14 @@ for (const f of fs.readdirSync(path.join(root, 'api')).filter(f => f.endsWith('.
   try { await import(pathToFileURL(path.join(root, 'api', f)).href); pass++; }
   catch (e) { failN++; console.log('FAIL', `api/${f} loads`, e.message); }
 }
+// Vercel runs api/ as CommonJS (package.json has no "type": "module"), so ESM-only features crash there
+// even though they work in local Node. That broke /stock/ pages once.
+for (const f of fs.readdirSync(path.join(root, 'api')).filter(f => f.endsWith('.js'))) {
+  const lines = fs.readFileSync(path.join(root, 'api', f), 'utf8').split('\n').map(l => l.replace(/^\s*\/\/.*$/, ''));
+  const meta = lines.some(l => /\bimport\.meta\b/.test(l));
+  const topAwait = lines.some(l => /^\S.*\bawait\s/.test(l) && !/=>|function/.test(l));
+  ok(!meta && !topAwait, `api/${f} uses nothing CommonJS lacks (import.meta, top-level await)`);
+}
 // Vercel's Hobby plan allows 12 functions (files in api/ not starting with "_")
 const endpoints = fs.readdirSync(path.join(root, 'api')).filter(f => f.endsWith('.js') && !f.startsWith('_'));
 ok(endpoints.length <= 12, `at most 12 serverless functions (have ${endpoints.length})`, endpoints);

@@ -4,7 +4,7 @@
 // only until the app loads and opens the full stock page; crawlers can read it either way.
 import fs from 'node:fs';
 import path from 'node:path';
-import { quoteSummary } from './_yahoo.js';
+import { UA, quoteSummary } from './_yahoo.js';
 import { LITE, facts as toFacts } from './fundamentals.js';
 import { scoreStock } from './_digest.js';
 import { ySym, TICKER_RE } from './_symbols.js';
@@ -15,14 +15,14 @@ const money = v => v == null ? null : '$' + Number(v).toLocaleString('en-US', { 
 const pct = v => v == null ? null : `${v >= 0 ? '+' : '−'}${Math.abs(v * 100).toFixed(1)}%`;
 const big = v => v == null ? null : v >= 1e12 ? `$${(v / 1e12).toFixed(2)}T` : v >= 1e9 ? `$${(v / 1e9).toFixed(1)}B` : `$${(v / 1e6).toFixed(0)}M`;
 
-// The site's own index.html: bundled with this function (vercel.json includeFiles), or fetched as a fallback
+// The site's own index.html: bundled with this function (vercel.json includeFiles), or fetched as a fallback.
+// Vercel runs these files as CommonJS, so ESM-only features (the module's own URL) aren't available here.
 let shell = null;
 async function siteHtml(req) {
   if (shell) return shell;
-  for (const p of [path.join(process.cwd(), 'index.html'), path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..', 'index.html')]) {
-    try { shell = fs.readFileSync(p, 'utf8'); return shell; } catch {}
-  }
+  try { shell = fs.readFileSync(path.join(process.cwd(), 'index.html'), 'utf8'); return shell; } catch {}
   const r = await fetch(`https://${req.headers?.host || 'stocksightai.com'}/index.html`);
+  if (!r.ok) throw new Error(`index.html: ${r.status}`);
   shell = await r.text();
   return shell;
 }
@@ -41,15 +41,48 @@ function withHead(html, { title, description, url, noindex }) {
   return html;
 }
 
+// quoteSummary gives nothing both for a made-up ticker and when Yahoo is having a moment. Only Yahoo saying
+// "no such symbol" makes a 404; anything else keeps the page up, so an outage never tells Google a stock is gone.
+async function unknownTicker(sym) {
+  for (const host of ['query1', 'query2']) {
+    try {
+      const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d`, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
+      if (r.status === 404) return true;
+      if (r.ok) return !(await r.json())?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    } catch {}
+  }
+  return false;
+}
+
 export default async function handler(req, res) {
   const t = String(req.query?.t || '').toUpperCase().trim();
+  try {
+    return await render(req, res, t);
+  } catch (e) {
+    // Never a broken page: the app on this address opens the stock by itself
+    console.error('stock page:', t, e);
+    res.setHeader('Cache-Control', 'no-store');
+    if (shell) { res.setHeader('Content-Type', 'text/html; charset=utf-8'); return res.status(200).send(shell); }
+    res.setHeader('Location', TICKER_RE.test(t) ? `/?stock=${encodeURIComponent(t)}` : '/');
+    return res.status(302).end();
+  }
+}
+
+async function render(req, res, t) {
   let html = await siteHtml(req);
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
-  const f = TICKER_RE.test(t) ? await quoteSummary(ySym(t), LITE).then(r => (r ? toFacts(r) : null)).catch(() => null) : null;
+  const valid = TICKER_RE.test(t);
+  const f = valid ? await quoteSummary(ySym(t), LITE).then(r => (r ? toFacts(r) : null)).catch(() => null) : null;
   if (!f?.price) {
-    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=600');
-    return res.status(404).send(withHead(html, { title: 'Stock not found | StockSight', description: "We couldn't find that ticker. Search any stock, ETF or coin on StockSight.", url: `${SITE}/`, noindex: true }));
+    if (!valid || await unknownTicker(ySym(t))) {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=600');
+      return res.status(404).send(withHead(html, { title: 'Stock not found | StockSight', description: "We couldn't find that ticker. Search any stock, ETF or coin on StockSight.", url: `${SITE}/`, noindex: true }));
+    }
+    // No numbers right now: the page with this stock's address and name, and no summary, cached briefly
+    const url = `${SITE}/stock/${encodeURIComponent(t)}`;
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
+    return res.status(200).send(withHead(html, { title: `${t} Stock: Price, Analyst Target and Verdict | StockSight`, description: `${t} stock price, analyst target, forecast and StockSight's verdict. Real data, explained in plain English.`, url }));
   }
 
   const name = f.name || t;

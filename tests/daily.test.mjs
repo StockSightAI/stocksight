@@ -72,6 +72,12 @@ ok(/id="seoStock"/.test(html) && /StockSight verdict/.test(html) && /<script def
 p = await fetch(B + '/stock/ZZQXWV');
 html = await p.text();
 ok(p.status === 404 && /<meta name="robots" content="noindex">/.test(html), 'unknown ticker: 404, not indexed', p.status);
+// Yahoo down: the page stays up (no 404 for Google), just without the summary
+await fetch(B + '/__yahoo?down=1');
+p = await fetch(B + '/stock/MSFT');
+html = await p.text();
+ok(p.status === 200 && html.includes('<link rel="canonical" href="https://stocksightai.com/stock/MSFT">') && /<title>MSFT Stock/.test(html) && !/id="seoStock"/.test(html), 'Yahoo down: stock page still up, no summary', p.status);
+await fetch(B + '/__yahoo?down=0');
 p = await fetch(B + '/stock/BTC');
 ok(p.status === 200 && /\(BTC\)/.test(await p.text()), 'crypto stock page');
 
