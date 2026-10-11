@@ -3869,24 +3869,6 @@ async function renderVoteBar(ticker) {
  }
 }
 
-// Load and render top searched stocks
-async function renderTopSearches(containerId) {
- const el = document.getElementById(containerId);
- if (!el) return;
- try {
- const today = new Date().toISOString().slice(0,10);
- const { data, error } = await sb.from('top_searches').select('*').eq('date', today).limit(8);
- if (error || !data?.length) { el.innerHTML = '<span style="font-size:.75rem;color:var(--text3)">No searches recorded yet today</span>'; return; }
- el.innerHTML = data.map((row, i) => `
- <div onclick="lookupTicker('${escapeHTML(row.ticker)}')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r2);background:var(--card2);border:1px solid var(--border);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
- <span style="font-family:'Geist',sans-serif;font-size:.75rem;font-weight:800;color:var(--text3);width:18px">${i+1}</span>
- <span style="font-family:'Geist',sans-serif;font-size:.85rem;font-weight:800;color:var(--text);flex:1">${escapeHTML(row.ticker)}</span>
- <span style="font-size:.65rem;color:var(--text3)">${row.search_count} search${row.search_count!==1?'es':''}</span>
- </div>`).join('');
- } catch {
- el.innerHTML = '<span style="font-size:.75rem;color:var(--text3)">Could not load trending data</span>';
- }
-}
 
 /* ════════════════════════════════
  GLOBAL UTILITIES (must be first — used throughout the file)
@@ -11360,84 +11342,51 @@ function trackSearch(ticker) {
  data[ticker] = (data[ticker]||0) + 1;
  localStorage.setItem(key, JSON.stringify(data));
  } catch {}
- // Community count — one row per search; top_searches aggregates these by day
- try {
- const today = new Date().toISOString().slice(0,10);
- sb.from('searches').insert({ ticker: ticker.toUpperCase(), date: today })
- .then(({ error }) => { if (error) console.warn('Search tracking failed:', error.message); });
- } catch {}
+ // Community count, recorded by the server (once per person, ticker and day)
+ const t = String(ticker).toUpperCase();
+ if (!TREND_TICKER_RE.test(t)) return;
+ fetch('/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ticker: t }), keepalive: true }).catch(() => {});
 }
+const TREND_TICKER_RE = /^[A-Z0-9][A-Z0-9.\-]{0,9}$/;
 
 function renderTrending(containerId) {
  const el = document.getElementById(containerId);
  if (!el) return;
-
- // Show skeleton while loading
  el.innerHTML = `
  <div class="card-hdr" style="background:linear-gradient(135deg,rgba(108,92,231,.07),rgba(108,92,231,.02))">
  <div class="card-hdr-title"> Trending on StockSight</div>
- <div class="card-hdr-sub">Most searched today by the community · live data</div>
+ <div class="card-hdr-sub">What the most people looked up today · live</div>
  </div>
  <div style="padding:.75rem 1rem" id="${containerId}_inner">
  <div style="font-size:.75rem;color:var(--text3);text-align:center;padding:1rem 0">Loading live data...</div>
  </div>`;
-
- // Try Supabase first, fall back to local
- const today = new Date().toISOString().slice(0,10);
- function renderTrendingFallback(inner) {
- let tracked = {};
- try { tracked = JSON.parse(localStorage.getItem('ss_trending')||'{}'); } catch {}
- const dayIdx = Math.floor(Date.now() / 86400000);
- const communityBase = [
- ['NVDA',980],['AAPL',870],['TSLA',760],['BTC',710],['META',650],
- ['AMZN',590],['PLTR',540],['MSFT',510],['ETH',480],['AMD',440],
- ['COIN',420],['HIMS',380],['SOFI',350],['RDDT',320],['CRWD',290],
- ];
- const rotated = [...communityBase.slice(dayIdx%3), ...communityBase.slice(0,dayIdx%3)];
- const combined = {...Object.fromEntries(rotated.map(([t,c])=>[t,c]))};
- Object.entries(tracked).forEach(([t,c]) => { combined[t] = (combined[t]||0) + c*20; });
- const top = Object.entries(combined).sort((a,b)=>b[1]-a[1]).slice(0,8)
- .map(([t]) => ({ t, found: TICKERS.find(e=>e.t===t)||{t,n:t,k:'s'} }));
- inner.innerHTML = top.map(({t, found}, i) => `
- <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .15s"
- onclick="goAsset('${t}','${found.k}')"
+ // Tickers reach onclick only through data attributes, and only if they look like tickers
+ const row = (t, i, note) => {
+  const found = TICKERS.find(e => e.t === t) || { t, n: t, k: 's' };
+  return `<div data-t="${escapeHTML(t)}" data-k="${escapeHTML(found.k)}" onclick="goAsset(this.dataset.t,this.dataset.k)" style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .15s"
  onmouseover="this.style.paddingLeft='6px'" onmouseout="this.style.paddingLeft='0'">
  <div style="font-size:.7rem;font-weight:700;color:var(--text3);width:16px;text-align:center">${i+1}</div>
  <div style="flex:1;min-width:0">
  <div style="font-size:.82rem;font-weight:700;color:var(--text)">${escapeHTML(t)}</div>
  <div style="font-size:.62rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(found.n)}</div>
  </div>
+ ${note ? `<div style="font-size:.62rem;color:var(--text3)">${note}</div>` : ''}
  <div style="font-size:.68rem;color:var(--accent2)">→</div>
- </div>`).join('');
- }
-
- sb.from('top_searches').select('*').eq('date', today).limit(8).then(({ data, error }) => {
- const inner = document.getElementById(containerId+'_inner');
- if (!inner) return;
- if (!error && data?.length >= 3) {
- const top = data.map(row => ({
- t: row.ticker,
- count: row.search_count,
- found: TICKERS.find(e=>e.t===row.ticker) || {t:row.ticker, n:row.ticker, k:'s'}
- }));
- inner.innerHTML = top.map(({t, count, found}, i) => `
- <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .15s"
- onclick="goAsset('${t}','${found.k}')"
- onmouseover="this.style.paddingLeft='6px'" onmouseout="this.style.paddingLeft='0'">
- <div style="font-size:.7rem;font-weight:700;color:var(--text3);width:16px;text-align:center">${i+1}</div>
- <div style="flex:1;min-width:0">
- <div style="font-size:.82rem;font-weight:700;color:var(--text)">${escapeHTML(t)}</div>
- <div style="font-size:.62rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(found.n)}</div>
- </div>
- ${count ? `<div style="font-size:.62rem;color:var(--text3)">${count} search${count!==1?'es':''}</div>` : ''}
- <div style="font-size:.68rem;color:var(--accent2)">→</div>
- </div>`).join('');
- } else {
- renderTrendingFallback(inner);
- }
- }).catch(() => {
- const inner = document.getElementById(containerId+'_inner');
- if (inner) renderTrendingFallback(inner);
+ </div>`;
+ };
+ fetch('/api/search?days=1').then(r => r.ok ? r.json() : null).catch(() => null).then(d => {
+  const inner = document.getElementById(containerId+'_inner');
+  if (!inner) return;
+  const list = (d?.trending || []).filter(x => TREND_TICKER_RE.test(x?.ticker || ''));
+  if (list.length) {
+   inner.innerHTML = list.map((x, i) => row(x.ticker, i, x.people >= 3 ? `${x.people} people` : '')).join('');
+   return;
+  }
+  // Nothing yet today: say so, and offer this device's own most-viewed tickers
+  let mine = [];
+  try { mine = Object.entries(JSON.parse(localStorage.getItem('ss_trending') || '{}')).sort((a, b) => b[1] - a[1]).map(([t]) => t).filter(t => TREND_TICKER_RE.test(t)).slice(0, 5); } catch {}
+  inner.innerHTML = `<div style="font-size:.78rem;color:var(--text3);padding:.25rem 0 .5rem">No one has looked anything up yet today. Search a stock to start the list.</div>` +
+   (mine.length ? `<div style="font-size:.68rem;font-weight:700;color:var(--text2);margin:.35rem 0 .1rem">Your most viewed</div>${mine.map((t, i) => row(t, i, '')).join('')}` : '');
  });
 }
 
@@ -11587,7 +11536,7 @@ async function loadLeaderboard() {
  const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
  return `<div class="lb-row${isMe ? '" style="background:rgba(245,158,11,.05);border-left:2px solid var(--gold)' : ''}">
  <div class="lb-rank${rank <= 3 ? ' top' : ''}">${medal}</div>
- <div class="lb-name" style="${isMe ? 'color:var(--gold)' : ''}">${row.display_name}${isMe ? ' <span style="font-size:.6rem;opacity:.7">(you)</span>' : ''}</div>
+ <div class="lb-name" style="${isMe ? 'color:var(--gold)' : ''}">${escapeHTML(row.display_name)}${isMe ? ' <span style="font-size:.6rem;opacity:.7">(you)</span>' : ''}</div>
  <div class="lb-val" style="color:${retColor}">$${Number(row.value).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
  <div class="lb-ret" style="color:${retColor};background:${retBg}">${row.return_pct >= 0 ? '+' : ''}${Number(row.return_pct).toFixed(1)}%</div>
  </div>`;

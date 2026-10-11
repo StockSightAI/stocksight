@@ -4,7 +4,8 @@
 import { UA, quoteSummary } from './_yahoo.js';
 import { cnn, computed, crypto as cryptoFearGreed, econ } from './market.js';
 import { LITE, facts as toFacts } from './fundamentals.js';
-import { db } from './_auth.js';
+import { ySym } from './_symbols.js';
+import { trending as trendingTickers } from './_trending.js';
 
 const SITE = process.env.DIGEST_BASE_URL || 'https://stocksightai.com';
 const DAY = 86400e3;
@@ -34,24 +35,6 @@ const UNIVERSE = [
 ];
 const NAMES = Object.fromEntries(UNIVERSE);
 
-// Same ticker conventions as the site (index.html: Y_INDEX, ySym)
-const Y_INDEX = {
-  SPX: '^GSPC', IXIC: '^IXIC', DJI: '^DJI', RUT: '^RUT', VIX: '^VIX', NDX: '^NDX', MID: '^MID', SP600: '^SP600',
-  FTSE: '^FTSE', NI225: '^N225', DAX: '^GDAXI', CAC40: '^FCHI', HSI: '^HSI', ASX: '^AXJO', SENSEX: '^BSESN',
-  NIFTY: '^NSEI', KOSPI: '^KS11', SSEC: '000001.SS', IBEX: '^IBEX', MIB: 'FTSEMIB.MI', AEX: '^AEX', SMI: '^SSMI',
-  TSX: '^GSPTSE', BVSP: '^BVSP', MERVAL: '^MERV', DXY: 'DX-Y.NYB', US10Y: '^TNX', US30Y: '^TYX',
-  GOLD: 'GC=F', SILVER: 'SI=F', USOIL: 'CL=F', UKOIL: 'BZ=F', NATGAS: 'NG=F', CORN: 'ZC=F', WHEAT: 'ZW=F',
-};
-const CRYPTO = new Set(['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'AVAX', 'LINK', 'LTC', 'DOT', 'MATIC', 'SHIB', 'UNI',
-  'ATOM', 'FIL', 'APT', 'ARB', 'OP', 'INJ', 'SUI', 'TIA', 'NEAR', 'FTM', 'ALGO', 'HBAR', 'VET', 'THETA', 'EOS', 'XLM', 'TRX',
-  'BCH', 'ETC', 'XMR', 'ZEC', 'DASH', 'PEPE', 'WIF', 'BONK', 'FLOKI']);
-const isCrypto = (t, k) => k === 'c' || (!k && CRYPTO.has(t));
-export function ySym(t, k) {
-  t = String(t || '').toUpperCase().trim();
-  if (Y_INDEX[t]) return Y_INDEX[t];
-  if (isCrypto(t, k)) return t + '-USD';
-  return t.replace(/\./g, '-');
-}
 const isStockSym = s => /^[A-Z][A-Z0-9-]{0,9}$/.test(s) && !s.endsWith('-USD');
 const show = s => s.replace(/-USD$/, '').replace(/^([A-Z]+)-([A-Z])$/, '$1.$2');
 
@@ -234,8 +217,7 @@ export async function gatherMarket(subscribers, now = Date.now()) {
   const allSyms = [...new Set([...fixed, ...userSyms])].slice(0, 400);
   const factSyms = [...new Set([...UNIVERSE.map(x => x[0]), ...[...userSyms].filter(isStockSym)])].slice(0, 110);
 
-  const sinceKey = new Date(now - 7 * DAY).toISOString().slice(0, 10);
-  const [px, fg, cfg, ev, factsBySym, searches] = await Promise.all([
+  const [px, fg, cfg, ev, factsBySym, trending] = await Promise.all([
     spark(allSyms),
     cnn().catch(() => null).then(x => x || computed().catch(() => null)),
     cryptoFearGreed().catch(() => null),
@@ -245,7 +227,8 @@ export async function gatherMarket(subscribers, now = Date.now()) {
       await pool(factSyms, 6, async s => { const r = await quoteSummary(s, LITE); if (r) out[s] = toFacts(r); });
       return out;
     })(),
-    db(`searches?select=ticker&date=gte.${sinceKey}&limit=20000`).catch(() => []),
+    // At least two different people, real tickers only (see _trending.js)
+    trendingTickers({ days: 7, limit: 6, minPeople: 2, now }).catch(() => []),
   ]);
 
   const moves = {};
@@ -275,13 +258,9 @@ export async function gatherMarket(subscribers, now = Date.now()) {
   const econList = (high.length >= 3 ? high : [...high, ...events.filter(e => e.impact !== 'High')]).slice(0, 6)
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  const counts = {};
-  for (const r of Array.isArray(searches) ? searches : []) if (r?.ticker) counts[r.ticker] = (counts[r.ticker] || 0) + 1;
-  const totalSearches = Object.values(counts).reduce((a, b) => a + b, 0);
-  const trending = totalSearches >= 10 ? Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([t]) => t) : [];
-
   return {
-    now, moves, spx, sectors, universe, earnings, pick, econ: econList, trending, fg, cfg, facts: factsBySym,
+    now, moves, spx, sectors, universe, earnings, pick, econ: econList, fg, cfg, facts: factsBySym,
+    trending: trending.length >= 3 ? trending.map(x => x.ticker) : [],
     week: { from: spx.from, to: spx.to }, term: TERMS[isoWeek(new Date(now)) % TERMS.length],
   };
 }
@@ -580,7 +559,7 @@ export function buildEmail(sub, M, unsubscribeUrl) {
     M.fg || M.cfg ? card('Market mood', moodHTML(M)) : '',
     M.pick ? card('StockSight pick of the week', pickHTML(M)) : '',
     M.econ.length || Object.keys(M.earnings).length || P.myEarnings.length ? card('The week ahead', aheadHTML(M, P)) : '',
-    M.trending.length ? card('Trending on StockSight', `<p style="margin:0;line-height:2.2">${M.trending.map(t => `<a href="${stockUrl(t)}" style="${st(13, 700, C.accentInk, `text-decoration:none;background:#efecff;border-radius:999px;padding:6px 12px;margin-right:6px;white-space:nowrap`)}">${esc(t)}</a>`).join(' ')}</p><p style="${st(12, 400, C.mute, 'margin:8px 0 0')}">The most-searched tickers on StockSight over the past 7 days.</p>`) : '',
+    M.trending.length ? card('Trending on StockSight', `<p style="margin:0;line-height:2.2">${M.trending.map(t => `<a href="${stockUrl(t)}" style="${st(13, 700, C.accentInk, `text-decoration:none;background:#efecff;border-radius:999px;padding:6px 12px;margin-right:6px;white-space:nowrap`)}">${esc(t)}</a>`).join(' ')}</p><p style="${st(12, 400, C.mute, 'margin:8px 0 0')}">What the most people looked up on StockSight over the past 7 days.</p>`) : '',
     card('Term of the week', `<p style="${st(17, 800, C.ink, 'margin:0')}">${esc(M.term[0])}</p><p style="${st(14, 400, C.ink2, 'margin:6px 0 0;line-height:1.6')}">${esc(M.term[1])}</p>`),
   ].join('');
 
@@ -616,4 +595,20 @@ ${table(`<tr><td align="center" style="padding:24px 12px 8px">
     'For information and education only, not financial advice.',
   ];
   return { subject, html, text: lines.join('\n') };
+}
+
+/* ── For the after-send report: which parts of this week's email had real data ── */
+export function healthOf(M) {
+  const board = SCOREBOARD.filter(([, s]) => M.moves[s]).length;
+  const p = M.pick;
+  return [
+    ['Scoreboard', `${board} of ${SCOREBOARD.length} markets`, board === SCOREBOARD.length],
+    ['Sectors', `${M.sectors.length} of ${SECTORS.length}`, M.sectors.length === SECTORS.length],
+    ['Biggest movers', `${M.universe.length} of ${UNIVERSE.length} stocks priced`, M.universe.length >= UNIVERSE.length - 5],
+    ['Fear & Greed', [M.fg ? `stocks ${M.fg.score} (${M.fg.source === 'CNN Business' ? 'CNN' : 'StockSight estimate'})` : 'stocks missing', M.cfg ? `crypto ${M.cfg.score}` : 'crypto missing'].join(', '), !!(M.fg && M.cfg)],
+    ['Pick of the week', p ? `${p.name} (${show(p.t)}), ${p.r.verdict}, ${p.r.score}/100` : 'none (company data unavailable)', !!p],
+    ['Economic calendar', M.econ.length ? `${M.econ.length} events` : 'left out (calendar feed unavailable or empty)', M.econ.length > 0],
+    ['Earnings', `${Object.keys(M.earnings).length} reports this week`, true],
+    ['Trending', M.trending.length ? M.trending.join(', ') : 'left out (fewer than 3 tickers searched by 2+ people)', true],
+  ];
 }
