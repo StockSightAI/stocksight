@@ -170,5 +170,10 @@ let last;
 for (let i = 0; i < 11; i++) last = await auth({ action: 'login', email: 'legacy-sha@test.dev', password: 'bad' + i });
 ok(last.status === 429, 'login rate limited', last);
 
+// The limit is counted in the database (shared by every server instance), with hashed keys
+const rl = (await dump()).tables.rate_limits || [];
+ok(rl.length > 0 && rl.every(r => /^[0-9a-f]{40}$/.test(r.key)), 'attempts counted in the database, keys hashed', rl.slice(0, 2));
+ok(!JSON.stringify(rl).includes('@') && !JSON.stringify(rl).includes('legacy-sha'), 'no emails stored in rate limits');
+
 console.log(`\n${pass} passed, ${failN} failed`);
 process.exit(failN ? 1 : 0);

@@ -8,13 +8,17 @@ const s = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 let pass = 0, failN = 0;
 const ok = (c, label, x) => { if (c) pass++; else { failN++; console.log('FAIL', label, x !== undefined ? JSON.stringify(x).slice(0, 400) : ''); } };
 
-const inline = [...s.matchAll(/<script(?![^>]*src=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+// The app script lives in app.js; the page keeps a few small inline scripts
+const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const inline = [...s.matchAll(/<script(?![^>]*src=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]).concat(app);
 const scripts = inline.join('\n');
 const html = s.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '');
 
 // Every inline script parses
 const syntax = inline.map((c, i) => { try { new Function(c); return null; } catch (e) { return `script ${i}: ${e.message}`; } }).filter(Boolean);
-ok(!syntax.length, 'inline scripts parse', syntax);
+ok(!syntax.length, 'inline scripts and app.js parse', syntax);
+ok(/<script defer src="\/app\.js"><\/script>/.test(s), 'index.html loads app.js with defer');
+ok(app.includes("const SUPABASE_URL = 'https://fgcjbdqvnjzafgnahwai.supabase.co';"), 'app.js keeps the SUPABASE_URL line the fake backend swaps');
 
 // No id used twice in the static HTML
 const ids = [...html.matchAll(/\sid="([^"$]+)"/g)].map(m => m[1]);

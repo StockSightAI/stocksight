@@ -10,7 +10,7 @@
 // Successful sign-ins return { token, user }. The token goes in "Authorization: Bearer <token>".
 import crypto from 'node:crypto';
 import {
-  configured, fail, readBody, limited, ipOf, EMAIL_RE, getUserRow, insertUser, patchUser, deleteUserRow,
+  configured, fail, readBody, limitedShared, ipOf, EMAIL_RE, getUserRow, insertUser, patchUser, deleteUserRow,
   hashPassword, verifyPassword, passwordProblem, signSession, sessionRow, publicUser, verifyGoogle, sendResetEmail, sha256,
 } from './_auth.js';
 
@@ -30,7 +30,7 @@ async function signup(req, res, b) {
   if (!EMAIL_RE.test(email)) return fail(res, 400, 'Enter a valid email address.');
   const bad = passwordProblem(b.password);
   if (bad) return fail(res, 400, bad);
-  if (limited('signup:' + ipOf(req), 10, 60 * MIN)) return fail(res, 429, 'Too many new accounts from this network. Try again later.');
+  if (await limitedShared('signup:' + ipOf(req), 10, 60 * MIN)) return fail(res, 429, 'Too many new accounts from this network. Try again later.');
 
   const row = await getUserRow(email);
   if (row?.phash) return res.status(409).json({ error: 'An account with this email already exists. Log in instead.', code: 'exists' });
@@ -44,7 +44,7 @@ async function signup(req, res, b) {
 async function login(req, res, b) {
   const email = cleanEmail(b.email);
   if (!EMAIL_RE.test(email) || typeof b.password !== 'string') return fail(res, 400, 'Enter your email and password.');
-  if (limited('login-ip:' + ipOf(req), 30, 15 * MIN) || limited('login:' + email, 10, 15 * MIN)) {
+  if (await limitedShared('login-ip:' + ipOf(req), 30, 15 * MIN) || await limitedShared('login:' + email, 10, 15 * MIN)) {
     return fail(res, 429, 'Too many sign-in attempts. Wait 15 minutes and try again.');
   }
   const row = await getUserRow(email);
@@ -59,7 +59,7 @@ async function login(req, res, b) {
 }
 
 async function google(req, res, b) {
-  if (limited('google:' + ipOf(req), 30, 15 * MIN)) return fail(res, 429, 'Too many attempts. Try again in a few minutes.');
+  if (await limitedShared('google:' + ipOf(req), 30, 15 * MIN)) return fail(res, 429, 'Too many attempts. Try again in a few minutes.');
   let g;
   try { g = await verifyGoogle({ accessToken: b.accessToken, idToken: b.idToken }); }
   catch (e) { return fail(res, 401, e.message); }
@@ -72,7 +72,7 @@ async function google(req, res, b) {
 async function resetRequest(req, res, b) {
   const email = cleanEmail(b.email);
   if (!EMAIL_RE.test(email)) return fail(res, 400, 'Enter a valid email.');
-  if (limited('reset-ip:' + ipOf(req), 8, 15 * MIN) || limited('reset:' + email, 3, 15 * MIN)) {
+  if (await limitedShared('reset-ip:' + ipOf(req), 8, 15 * MIN) || await limitedShared('reset:' + email, 3, 15 * MIN)) {
     return fail(res, 429, 'Too many code requests. Wait 15 minutes and try again.');
   }
   const row = await getUserRow(email);
@@ -89,7 +89,7 @@ async function resetConfirm(req, res, b) {
   if (!EMAIL_RE.test(email) || !/^\d{6}$/.test(code)) return fail(res, 400, 'Enter the 6-digit code.');
   const bad = passwordProblem(b.password);
   if (bad) return fail(res, 400, bad);
-  if (limited('confirm-ip:' + ipOf(req), 20, 15 * MIN)) return fail(res, 429, 'Too many attempts. Wait 15 minutes and try again.');
+  if (await limitedShared('confirm-ip:' + ipOf(req), 20, 15 * MIN)) return fail(res, 429, 'Too many attempts. Wait 15 minutes and try again.');
 
   const row = await getUserRow(email);
   if (!row?.reset_token) return fail(res, 400, 'That code is no longer valid. Request a new one.');
@@ -116,7 +116,7 @@ async function changePassword(req, res, b) {
   if (!row) return fail(res, 401, 'Please sign in again.');
   const bad = passwordProblem(b.password);
   if (bad) return fail(res, 400, bad);
-  if (limited('change:' + row.email, 10, 15 * MIN)) return fail(res, 429, 'Too many attempts. Wait 15 minutes and try again.');
+  if (await limitedShared('change:' + row.email, 10, 15 * MIN)) return fail(res, 429, 'Too many attempts. Wait 15 minutes and try again.');
   // Google-only accounts have no password yet, so they can add one without a current password
   if (row.phash && !verifyPassword(String(b.current || ''), row.phash).ok) return fail(res, 403, 'Current password is incorrect.');
   const saved = await patchUser(row.email, { phash: hashPassword(b.password), token_version: (row.token_version || 0) + 1 });
@@ -127,7 +127,7 @@ async function deleteAccount(req, res, b) {
   const row = await sessionRow(req);
   if (!row) return fail(res, 401, 'Please sign in again.');
   if (b.confirm !== 'DELETE') return fail(res, 400, 'Please type DELETE to confirm.');
-  if (limited('delete:' + row.email, 10, 15 * MIN)) return fail(res, 429, 'Too many attempts. Wait 15 minutes and try again.');
+  if (await limitedShared('delete:' + row.email, 10, 15 * MIN)) return fail(res, 429, 'Too many attempts. Wait 15 minutes and try again.');
   if (row.phash && !verifyPassword(String(b.password || ''), row.phash).ok) return fail(res, 403, 'Incorrect password. Please try again.');
   await deleteUserRow(row.email);
   return res.status(200).json({ ok: true });

@@ -11,6 +11,7 @@
  * Outside the cron, add &secret=<CRON_SECRET>.
  *
  * Env vars (Vercel dashboard): RESEND_API_KEY, SUPABASE_SERVICE_KEY, CRON_SECRET
+ * Optional: DIGEST_MAILING_ADDRESS  postal address for the email footer (US email law asks for one), e.g. a PO box
  * Optional: DIGEST_REPORT_TO  your email (comma-separate several); after every Monday send it gets a
  *           short report: how many went out, which sections had data, and any errors or a failure.
  */

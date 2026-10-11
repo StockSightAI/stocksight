@@ -156,6 +156,18 @@ export function limited(key, max, windowMs) {
   e.n++;
   return e.n > max;
 }
+// Shared by every server instance: counted in Postgres by public.hit_rate_limit (keys hashed, so no emails
+// or IPs are stored). Until that function exists, or if the database is unreachable, this instance's count applies.
+export async function limitedShared(key, max, windowMs) {
+  const local = limited(key, max, windowMs);
+  try {
+    const over = await db('rpc/hit_rate_limit', {
+      method: 'POST',
+      body: { p_key: sha256('rate:' + key).slice(0, 40), p_max: max, p_window_seconds: Math.round(windowMs / 1000) },
+    });
+    return over === true || local;
+  } catch { return local; }
+}
 export const ipOf = req => (req.headers?.['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown';
 
 export function readBody(req) {

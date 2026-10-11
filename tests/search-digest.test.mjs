@@ -50,6 +50,7 @@ const trendingInEmail = (digestMail?.html.match(/\?stock=([A-Z.]+)" style="[^"]*
 console.log('trending in email:', trendingInEmail.join(','));
 ok(!trendingInEmail.includes('SOFI') && !trendingInEmail.includes('HOOD') && !trendingInEmail.includes('ZZQXW'), 'email trending: no spam, no 1-person, no fake', trendingInEmail);
 ok(trendingInEmail.includes('AAPL') && trendingInEmail.includes('NVDA'), 'email trending has real ones', trendingInEmail);
+ok(digestMail?.html.includes('PO Box 1, Testville') && digestMail?.text.includes('PO Box 1, Testville'), 'mailing address in the footer (html and text)');
 
 // tests and previews never send a report
 const before = (await dump()).mail.length;

@@ -24,6 +24,7 @@ process.env.RESEND_API_KEY = 're_test_fake_key';
 process.env.DIGEST_BASE_URL = `http://localhost:${PORT}`;
 delete process.env.CRON_SECRET;
 process.env.DIGEST_REPORT_TO = 'owner@test.dev';
+process.env.DIGEST_MAILING_ADDRESS = 'PO Box 1, Testville, ST 00000';
 let yahooDown = false;
 const GOOGLE_CLIENT_ID = '215107020140-9n8h7eaor1fl1rlvtnjf1vg5l6upu4ei.apps.googleusercontent.com';
 
@@ -134,6 +135,16 @@ function fakeRest(req, res, url, body) {
   const send = (status, data) => { res.statusCode = status; res.setHeader('Content-Type', 'application/json'); res.end(data === undefined ? '' : JSON.stringify(data)); };
   if (SERVICE_ONLY.has(table) && key !== process.env.SUPABASE_SERVICE_KEY) return send(401, { code: '42501', message: `permission denied for table ${table}` });
   if (table === 'pt_leaderboard' && req.method !== 'GET' && key !== process.env.SUPABASE_SERVICE_KEY) return send(401, { code: '42501', message: 'permission denied for table pt_leaderboard' });
+  // public.hit_rate_limit(p_key, p_max, p_window_seconds): the shared login-attempt counter
+  if (table === 'rpc/hit_rate_limit') {
+    if (key !== process.env.SUPABASE_SERVICE_KEY) return send(401, { code: '42501', message: 'permission denied for function hit_rate_limit' });
+    const rl = (tables.rate_limits ||= []), t = Date.now();
+    let r = rl.find(x => x.key === body.p_key);
+    if (!r) { r = { key: body.p_key, hits: 0, reset_at: 0 }; rl.push(r); }
+    if (r.reset_at < t) { r.hits = 0; r.reset_at = t + body.p_window_seconds * 1000; }
+    r.hits++;
+    return send(200, r.hits > body.p_max);
+  }
   const rows = (tables[table] ||= []);
   const p = url.searchParams, prefer = req.headers.prefer || '';
   const wantRep = prefer.includes('return=representation');
@@ -203,7 +214,8 @@ http.createServer(async (req, res) => {
   if (!p.startsWith(root + path.sep)) { res.statusCode = 403; return res.end('forbidden'); }
   fs.readFile(p, (err, data) => {
     if (err) { res.statusCode = 404; return res.end('not found'); }
-    if (p.endsWith('index.html')) data = Buffer.from(data.toString().replace("const SUPABASE_URL = 'https://fgcjbdqvnjzafgnahwai.supabase.co';", `const SUPABASE_URL = '${FAKE}';`));
+    // The app talks to the fake database instead of production
+    if (p.endsWith('app.js') || p.endsWith('index.html')) data = Buffer.from(data.toString().replace("const SUPABASE_URL = 'https://fgcjbdqvnjzafgnahwai.supabase.co';", `const SUPABASE_URL = '${FAKE}';`));
     res.setHeader('Content-Type', types[path.extname(p)] || 'application/octet-stream');
     res.end(data);
   });

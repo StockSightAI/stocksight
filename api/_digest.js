@@ -534,6 +534,9 @@ function paperHTML(P) {
 }
 
 export function buildEmail(sub, M, unsubscribeUrl) {
+  // A postal address in the footer is required by US email law (CAN-SPAM). It lives in a Vercel setting,
+  // not in this public code: DIGEST_MAILING_ADDRESS, e.g. "PO Box 123, City, ST 12345"
+  const address = String(process.env.DIGEST_MAILING_ADDRESS || '').trim();
   const P = personal(sub, M);
   const first = String(sub.name || '').trim().split(/\s+/)[0] || '';
   const sentences = story(M);
@@ -580,6 +583,7 @@ ${table(`<tr><td align="center" style="padding:24px 12px 8px">
   <tr><td style="padding:0 8px 28px;text-align:center">
     <p style="${st(12, 400, C.mute, 'margin:0 0 8px;line-height:1.6')}">You're getting this because you turned on the weekly digest in StockSight. <a href="${esc(unsubscribeUrl)}" style="color:${C.accentInk}">Unsubscribe</a> · <a href="${SITE}" style="color:${C.accentInk}">Settings</a></p>
     <p style="${st(11, 400, C.mute, 'margin:0;line-height:1.6')}">For information and education only, not financial advice. Weekly changes compare Friday's close with the previous Friday's (crypto: Sunday to Sunday). Data: Yahoo Finance, CNN Business, alternative.me, Forex Factory.</p>
+    ${address ? `<p style="${st(11, 400, C.mute, 'margin:8px 0 0;line-height:1.6')}">StockSight · ${esc(address)}</p>` : ''}
   </td></tr>
 </table></td></tr>`, `background:${C.bg}`)}
 </body></html>`;
@@ -593,6 +597,7 @@ ${table(`<tr><td align="center" style="padding:24px 12px 8px">
     ...(M.econ.length ? ['', 'THE WEEK AHEAD', ...M.econ.map(e => `${etDate(new Date(e.date).getTime(), { weekday: 'short' })}: ${e.title}`)] : []),
     '', `TERM OF THE WEEK: ${M.term[0]}`, M.term[1], '', `Open StockSight: ${SITE}`, `Unsubscribe: ${unsubscribeUrl}`,
     'For information and education only, not financial advice.',
+    ...(address ? [`StockSight · ${address}`] : []),
   ];
   return { subject, html, text: lines.join('\n') };
 }
