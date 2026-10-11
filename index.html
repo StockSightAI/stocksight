@@ -5,24 +5,28 @@
  // Theme before first paint: dark unless this device chose light (saved by setTheme)
  try { if (localStorage.getItem('ss_theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}
 </script>
-<!-- Google Identity Services -->
-<script src="https://accounts.google.com/gsi/client" async></script>
 <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-TQYMPBNNJY"></script>
 <script>
  window.dataLayer = window.dataLayer || [];
  function gtag(){dataLayer.push(arguments);}
  gtag('js', new Date());
  gtag('config', 'G-TQYMPBNNJY');
+ // The Analytics library (~170 KB) loads once the page is up, so it never competes with first paint.
+ // Events before then wait in dataLayer and are sent when it arrives.
+ addEventListener('load', () => {
+  const s = document.createElement('script');
+  s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=G-TQYMPBNNJY';
+  document.head.appendChild(s);
+ });
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- ── Primary SEO Meta ── --> <!-- v2 -->
-<title>StockSight</title>
+<title>StockSight: free stock research, explained at your level</title>
 <meta name="google-site-verification" content="4-mwke0X9o_juBuFx3XtyVcd9T_C4Q_SO3Z1VKia8Y0" />
 <meta name="google-site-verification" content="2wplgz8lQZDrqybeMQNIaHbxJE-rd3F3UQ9y73zjxrI" />
-<meta name="description" content="StockSight is a free stock market platform with live TradingView charts, AI-powered analysis, price predictions, paper trading, portfolio tracker, and crypto — no account required to browse.">
+<meta name="description" content="Free stock research for people who aren't stock people. Real market data explained at your level, plus paper trading, forecasts and a weekly portfolio email.">
 <meta name="keywords" content="stock dashboard, AI stock analysis, live stock charts, stock price prediction, portfolio tracker, paper trading, crypto tracker, free stock app, investment tracker, stock screener">
 <meta name="author" content="Shravan Appou">
 <meta name="robots" content="index, follow">
@@ -30,33 +34,37 @@
 
 <!-- ── Open Graph (Facebook, LinkedIn, Discord, iMessage previews) ── -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://stocksight.app">
-<meta property="og:title" content="StockSight">
-<meta property="og:description" content="Live charts, AI stock analysis, price predictions, paper trading & portfolio tracker — completely free. No API key. No paywall.">
+<meta property="og:url" content="https://stocksightai.com/">
+<meta property="og:title" content="StockSight: stock research for people who aren't stock people">
+<meta property="og:description" content="Real market data, explained at your level. Paper trading, forecasts and a weekly portfolio email. Free, no credit card.">
 <meta property="og:site_name" content="StockSight">
-<meta property="og:image" content="https://stocksight-v11-diphh8bir-shravan-appou-s-projects.vercel.app/og-image.svg">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://stocksightai.com/og-image.jpg">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="StockSight — AI-powered stock research platform">
+<meta property="og:image:alt" content="StockSight: stock research for people who aren't stock people, with the Markets dashboard">
 
 <!-- ── Twitter / X Card ── -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="StockSight">
-<meta name="twitter:description" content="Live charts, AI analysis, paper trading & portfolio tracker — free, no login required to browse.">
-<meta name="twitter:image" content="https://stocksight-v11-diphh8bir-shravan-appou-s-projects.vercel.app/og-image.svg">
+<meta name="twitter:title" content="StockSight: stock research for people who aren't stock people">
+<meta name="twitter:description" content="Real market data, explained at your level. Paper trading, forecasts and a weekly portfolio email. Free.">
+<meta name="twitter:image" content="https://stocksightai.com/og-image.jpg">
+<meta name="twitter:image:alt" content="StockSight: stock research for people who aren't stock people">
 <meta name="twitter:creator" content="@shravan_appou">
 
 <!-- ── Canonical ── -->
-<link rel="canonical" href="https://stocksight.app">
+<link rel="canonical" href="https://stocksightai.com/">
 
 <!-- ── Favicon ── -->
-<link rel="icon" type="image/png" href="/stocksight-logo.png">
-<link rel="apple-touch-icon" href="/stocksight-logo.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&display=swap"></noscript>
 <style>
 :root {
  --bg:#1c1c1c;--card:#242424;--card2:#2a2a2a;--card3:#313131;
@@ -244,6 +252,9 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .b-c{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.28);color:var(--gold)}
 .b-wl{background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.28);color:var(--green);cursor:pointer;transition:all .15s}
 .b-wl:hover{opacity:.8;transform:scale(.97)}
+.b-share{background:var(--card2);border:1px solid var(--border2);color:var(--text2);cursor:pointer;font-family:inherit;transition:color .15s,border-color .15s,transform .15s}
+.b-share:hover{color:var(--text);border-color:var(--border3)}.b-share:active{transform:scale(.96)}
+.b-share[disabled]{opacity:.55;cursor:progress}
 .a-links{font-size:.63rem;color:var(--text3);margin-top:8px}
 .a-links a{color:var(--accent2);text-decoration:none;font-weight:500}
 .a-links a:hover{text-decoration:underline}
@@ -913,6 +924,8 @@ html{scroll-behavior:smooth}
  box-shadow:0 4px 16px rgba(0,0,0,.3);
 }
 [data-tip]:hover::after{opacity:1}
+/* Hidden tips take no space (long ones used to widen their container and add stray scrollbars) */
+[data-tip]:not(:hover):not(:focus)::after{display:none}
 
 /* ── POLISH: watchlist/portfolio skeleton ── */
 .skel-wl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:10px;margin-top:.5rem}
@@ -2319,7 +2332,7 @@ html.theme-anim *,html.theme-anim *::before,html.theme-anim *::after{transition:
 .rs-key{position:relative;display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);cursor:help}
 .rs-key span{font-size:.68rem;color:var(--text3);font-weight:500;border-bottom:1px dotted var(--border3);align-self:flex-start}
 .rs-key b{font:700 .9rem 'Geist',sans-serif;font-variant-numeric:tabular-nums}
-.rs-key[data-tip]:hover::after,.rs-key[data-tip]:focus::after{content:attr(data-tip);position:absolute;left:0;right:-40px;bottom:calc(100% + 6px);z-index:6;padding:8px 10px;border-radius:9px;background:var(--text);color:var(--card);font:500 .72rem/1.45 'Geist',sans-serif;box-shadow:0 10px 26px var(--shadow);pointer-events:none;animation:fadeUp .18s var(--ease-out)}
+.rs-key[data-tip]:hover::after,.rs-key[data-tip]:focus::after{content:attr(data-tip);position:absolute;left:0;right:0;top:calc(100% + 6px);bottom:auto;transform:none;white-space:normal;opacity:1;z-index:6;padding:8px 10px;border-radius:9px;background:var(--text);color:var(--card);font:500 .72rem/1.45 'Geist',sans-serif;box-shadow:0 10px 26px var(--shadow);pointer-events:none;animation:fadeUp .18s var(--ease-out)}
 .rs-how{font-size:.78rem;color:var(--text2)}
 .rs-how summary{cursor:pointer;font-weight:600;color:var(--accent2)}
 .rs-how p{margin:6px 0 0;line-height:1.55}
@@ -2684,8 +2697,8 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
  </section>
 
  <figure class="g2-shot">
- <img class="g2-shot-dark" src="/images/app-preview-dark.jpg" alt="The StockSight Markets dashboard with live index tiles, an S&P 500 chart, a practice portfolio and a watchlist" width="1600" height="1000" loading="lazy" decoding="async">
- <img class="g2-shot-light" src="/images/app-preview.jpg" alt="The StockSight Markets dashboard with live index tiles, an S&P 500 chart, a practice portfolio and a watchlist" width="1600" height="1000" loading="lazy" decoding="async">
+ <img class="g2-shot-dark" src="/images/app-preview-dark-1600.webp" srcset="/images/app-preview-dark-900.webp 900w, /images/app-preview-dark-1600.webp 1600w" sizes="(max-width: 900px) 92vw, 52vw" alt="The StockSight Markets dashboard with live index tiles, an S&P 500 chart, a practice portfolio and a watchlist" width="1600" height="1000" loading="lazy" decoding="async">
+ <img class="g2-shot-light" src="/images/app-preview-light-1600.webp" srcset="/images/app-preview-light-900.webp 900w, /images/app-preview-light-1600.webp 1600w" sizes="(max-width: 900px) 92vw, 52vw" alt="The StockSight Markets dashboard with live index tiles, an S&P 500 chart, a practice portfolio and a watchlist" width="1600" height="1000" loading="lazy" decoding="async">
  </figure>
  <script>try { document.querySelector('.g2-shot-' + document.documentElement.getAttribute('data-theme')).loading = 'eager'; } catch (e) {}</script>
 
@@ -3673,7 +3686,12 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
 ════════════════════════════════ */
 const SUPABASE_URL = 'https://fgcjbdqvnjzafgnahwai.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_OfRLOYvNWFmq2x9qF5ix1g_7ynysTdY';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Public, read-only data straight from Supabase (today only the leaderboard). Everything private goes through /api.
+async function sbRead(path) {
+ const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } });
+ if (!r.ok) throw new Error('Supabase read failed: ' + r.status);
+ return r.json();
+}
 
 /* ── Account API ──
  Sign-in runs on the server (/api/auth), and the user's own row is read and saved through /api/user
@@ -7084,6 +7102,7 @@ function assetHeadHTML(c) {
     <span class="badge ${bc}">${typeLabel}</span>
     ${type === 'c' ? `<span class="badge b-c">${xp === 'beginner' ? 'Trades all day, every day' : '24/7'}</span>` : ''}
     <span class="badge b-wl" id="wlBtn" onclick="toggleWL('${ticker}','${jsq(name)}','${type}')">${isWl ? ' Saved' : xp === 'beginner' ? '+ Save' : '+ Watchlist'}</span>
+    <button type="button" class="badge b-share" onclick="shareStockCard('${ticker}','${type}')" aria-label="Share ${ticker} as an image"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13"/></svg>Share</button>
     <span id="mktSessionBadge_${ticker}" class="ah-session"></span>
    </div>
   </div>
@@ -10438,6 +10457,7 @@ async function saveHoldings(){
  AUTH MODAL
 ════════════════════════════════ */
 function openModal(which){
+ loadGSI(); // ready by the time someone taps "Continue with Google"
  const m = document.getElementById('modal');
  if (m) m.classList.remove('off');
  document.body.style.overflow = 'hidden';
@@ -10554,15 +10574,30 @@ async function doSignup(){
 // ── GOOGLE SIGN-IN ──────────────────────────────────────────
 const GOOGLE_CLIENT_ID = '215107020140-9n8h7eaor1fl1rlvtnjf1vg5l6upu4ei.apps.googleusercontent.com';
 
+let _gsiLoading = null;
+function loadGSI() {
+ if (typeof google !== 'undefined' && google.accounts) return Promise.resolve(true);
+ if (!_gsiLoading) _gsiLoading = new Promise(done => {
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
+  s.onload = () => { initGSI(); done(true); };
+  s.onerror = () => { _gsiLoading = null; done(false); };
+  document.head.appendChild(s);
+ });
+ return _gsiLoading;
+}
 function initGSI() {
- if (typeof google === 'undefined' || !google.accounts) return;
+ if (typeof google === 'undefined' || !google.accounts || initGSI.done) return;
+ initGSI.done = true;
  // Initialize ID token flow (for One Tap, if ever needed)
  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredential, ux_mode: 'popup' });
 }
 
 function clickGoogleSignIn() {
  if (typeof google === 'undefined' || !google.accounts) {
- showToast('Google sign-in unavailable. Try again shortly.', 'error', '');
+ // The popup has to open from the click itself, so if Google's script isn't here yet, fetch it and ask for one more tap
+ loadGSI();
+ showToast('Connecting to Google. Tap the button again in a second.', 'info', '');
  return;
  }
  // Use OAuth2 token client — opens a real browser popup (most reliable approach)
@@ -10603,8 +10638,7 @@ async function handleGoogleCredential(response) {
 }
 
 // Init GSI once the script is loaded
-if (typeof google !== 'undefined') { initGSI(); }
-else { window.addEventListener('load', () => { setTimeout(initGSI, 500); }); }
+window.addEventListener('load', () => setTimeout(loadGSI, 3000));
 // ────────────────────────────────────────────────────────────
 
 async function doLogin(){
@@ -11515,8 +11549,8 @@ async function loadLeaderboard() {
  const el = document.getElementById('leaderboardList');
  if (!el) return;
  try {
- const { data, error } = await sb.from('pt_leaderboard').select('display_name,value,return_pct,holdings_count,updated_at').order('value', { ascending: false }).limit(15);
- if (error || !data || !data.length) {
+ const data = await sbRead('pt_leaderboard?select=display_name,value,return_pct,holdings_count,updated_at&order=value.desc&limit=15');
+ if (!data || !data.length) {
  el.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:.78rem">No entries yet — make a trade and opt in to be the first!</div>`;
  return;
  }
@@ -12314,6 +12348,124 @@ function sharePtCard() {
  link.href = canvas.toDataURL('image/png');
  link.click();
  toast('Portfolio card saved! Post it on X or Reddit 🚀', 'success', 4000);
+}
+
+/* ── Share a stock as an image (1080x1350, fits Instagram, LinkedIn and X) ──
+ Drawn from the same research the stock page shows: verdict, analyst target, risk and a year of real prices. */
+const CARD_COLORS = { 'Strong Buy': '#a78bfa', 'Buy': '#a78bfa', 'Hold': '#f2b544', 'Sell': '#f87171' };
+function loadImg(src) {
+ return new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = src; });
+}
+async function drawStockCard({ ticker, name, R, closes }) {
+ const W = 1080, H = 1350, P = 72;
+ const c = document.createElement('canvas'); c.width = W; c.height = H;
+ const x = c.getContext('2d');
+ await Promise.all(['400 30px Geist', '600 30px Geist', '700 30px Geist', '800 30px Geist'].map(f => document.fonts.load(f).catch(() => {})));
+ const f = R.facts || {}, st = R.stats || {}, price = R.price;
+ const font = (w, px) => `${w} ${px}px Geist, system-ui, sans-serif`;
+ const text = (t, X, Y, w, px, color, align = 'left') => { x.font = font(w, px); x.fillStyle = color; x.textAlign = align; x.fillText(t, X, Y); };
+ const box = (X, Y, w, h, r) => { x.beginPath(); if (x.roundRect) x.roundRect(X, Y, w, h, r); else x.rect(X, Y, w, h); };
+
+ // Background: near-black with violet light, and a planet rising at the bottom
+ x.fillStyle = '#07050b'; x.fillRect(0, 0, W, H);
+ const glow = (cx, cy, r, a) => { const g = x.createRadialGradient(cx, cy, 0, cx, cy, r); g.addColorStop(0, `rgba(124,74,230,${a})`); g.addColorStop(1, 'rgba(124,74,230,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H); };
+ glow(W * 0.85, 120, 620, 0.32); glow(W * 0.1, H, 760, 0.38);
+ let seed = ticker.split('').reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 233280, 7);
+ const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+ for (let i = 0; i < 90; i++) { x.fillStyle = `rgba(255,255,255,${0.12 + rnd() * 0.4})`; x.fillRect(rnd() * W, rnd() * H, 1.6, 1.6); }
+ x.save(); x.beginPath(); x.arc(W / 2, H + 1160, 1250, 0, Math.PI * 2);
+ x.shadowColor = 'rgba(170,125,255,0.7)'; x.shadowBlur = 70; x.fillStyle = '#06040a'; x.fill(); x.restore();
+ x.save(); x.beginPath(); x.arc(W / 2, H + 1160, 1250, Math.PI * 1.05, Math.PI * 1.95); x.lineWidth = 3; x.strokeStyle = 'rgba(225,210,255,0.85)'; x.stroke(); x.restore();
+
+ // Brand
+ try { const logo = await loadImg('/stocksight-logo-96.png'); x.save(); box(P, 64, 52, 52, 13); x.clip(); x.drawImage(logo, P, 64, 52, 52); x.restore(); } catch {}
+ x.font = font(600, 34); x.textAlign = 'left'; x.fillStyle = '#f6f1ff'; x.fillText('Stock', P + 66, 101);
+ const sw = x.measureText('Stock').width; x.fillStyle = '#b49cfc'; x.fillText('Sight', P + 66 + sw, 101);
+ text(new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), W - P, 101, 500, 26, 'rgba(246,241,255,0.45)', 'right');
+
+ // Ticker, name, price
+ text(ticker, P, 262, 800, 128, '#f6f1ff');
+ text(name.length > 34 ? name.slice(0, 33) + '…' : name, P, 318, 400, 36, 'rgba(246,241,255,0.6)');
+ const ret = st.ret1y ?? f.change52w;
+ if (price) {
+  text(fmtPx(price), P, 412, 700, 64, '#f6f1ff');
+  if (ret != null) {
+   x.font = font(700, 64); const pw = x.measureText(fmtPx(price)).width;
+   const up = ret >= 0, label = `${up ? '+' : ''}${(ret * 100).toFixed(1)}% past year`;
+   x.font = font(700, 26); const lw = x.measureText(label).width + 32;
+   x.fillStyle = up ? 'rgba(167,139,250,0.16)' : 'rgba(248,113,113,0.14)';
+   box(P + pw + 22, 368, lw, 48, 24); x.fill();
+   text(label, P + pw + 22 + lw / 2, 401, 700, 26, up ? '#c4b5fd' : '#fca5a5', 'center');
+  }
+ }
+
+ // A year of real prices
+ if (closes.length > 20) {
+  const cx0 = P, cy0 = 460, cw = W - P * 2, ch = 300;
+  const lo = Math.min(...closes), hi = Math.max(...closes), span = hi - lo || 1;
+  const px = i => cx0 + i / (closes.length - 1) * cw, py = v => cy0 + ch - (v - lo) / span * ch;
+  const fill = x.createLinearGradient(0, cy0, 0, cy0 + ch);
+  fill.addColorStop(0, 'rgba(139,92,246,0.32)'); fill.addColorStop(1, 'rgba(139,92,246,0)');
+  x.beginPath(); closes.forEach((v, i) => i ? x.lineTo(px(i), py(v)) : x.moveTo(px(i), py(v)));
+  x.lineTo(px(closes.length - 1), cy0 + ch); x.lineTo(cx0, cy0 + ch); x.closePath(); x.fillStyle = fill; x.fill();
+  x.beginPath(); closes.forEach((v, i) => i ? x.lineTo(px(i), py(v)) : x.moveTo(px(i), py(v)));
+  x.lineWidth = 5; x.lineJoin = 'round'; x.strokeStyle = '#a78bfa'; x.shadowColor = 'rgba(167,139,250,0.6)'; x.shadowBlur = 18; x.stroke(); x.shadowBlur = 0;
+  x.beginPath(); x.arc(px(closes.length - 1), py(closes[closes.length - 1]), 10, 0, Math.PI * 2); x.fillStyle = '#ede9fe'; x.fill();
+ }
+
+ // Verdict and two numbers
+ const vy = 820, col = CARD_COLORS[R.verdict] || '#a78bfa';
+ x.fillStyle = 'rgba(255,255,255,0.045)'; x.strokeStyle = 'rgba(255,255,255,0.10)'; x.lineWidth = 2;
+ box(P, vy, W - P * 2, 250, 28); x.fill(); x.stroke();
+ text('STOCKSIGHT VERDICT', P + 40, vy + 62, 700, 22, 'rgba(246,241,255,0.5)');
+ text(R.verdict, P + 40, vy + 140, 800, 72, col);
+ text(`${R.score}/100`, P + 40, vy + 196, 600, 30, 'rgba(246,241,255,0.62)');
+ const up = f.targetMean && price ? f.targetMean / price - 1 : null;
+ const stats = [];
+ if (up != null) stats.push(['Analyst target', fmtPx(f.targetMean), `${up >= 0 ? '+' : ''}${(up * 100).toFixed(0)}% from today`]);
+ if (st.vol != null) stats.push(['Risk', st.vol >= 0.7 ? 'Very high' : st.vol >= 0.4 ? 'High' : st.vol >= 0.25 ? 'Moderate' : 'Lower', `swings ~${Math.round(st.vol * 100)}% a year`]);
+ stats.slice(0, 2).forEach(([label, val, sub], i) => {
+  const sx = P + 470 + i * 240;
+  text(label, sx, vy + 62, 600, 22, 'rgba(246,241,255,0.5)');
+  text(val, sx, vy + 132, 700, 42, '#f6f1ff');
+  text(sub, sx, vy + 178, 400, 22, 'rgba(246,241,255,0.55)');
+ });
+
+ // Where to see the rest
+ text('Full breakdown at', P, 1170, 400, 28, 'rgba(246,241,255,0.55)');
+ text(`stocksightai.com/?stock=${ticker}`, P, 1214, 700, 34, '#f6f1ff');
+ text('Real market data. Not financial advice.', W - P, 1214, 400, 22, 'rgba(246,241,255,0.4)', 'right');
+ return c;
+}
+
+async function shareStockCard(ticker, type) {
+ const rs = window._rs;
+ if (!rs || rs.ticker !== ticker || !rs.R) { toast(`Still loading ${ticker}. Try again in a second.`, 'info'); return; }
+ const btn = document.querySelector('.b-share');
+ if (btn) btn.disabled = true;
+ try {
+  let closes = [];
+  try { closes = (await getHistory(ySym(ticker, type))).c.slice(-252); } catch {}
+  const canvas = await drawStockCard({ ticker, name: rsName(ticker, rs.R.facts), R: rs.R, closes });
+  const blob = await new Promise(ok => canvas.toBlob(ok, 'image/png'));
+  const file = new File([blob], `stocksight-${ticker}.png`, { type: 'image/png' });
+  const url = `https://stocksightai.com/?stock=${encodeURIComponent(ticker)}`;
+  // Phones: the share sheet (Instagram, Messages, ...). Computers: save the image and copy the link.
+  if (navigator.canShare?.({ files: [file] })) {
+   try { await navigator.share({ files: [file], text: `${ticker} on StockSight: ${rs.R.verdict}, ${rs.R.score}/100 ${url}` }); return; }
+   catch (e) { if (e?.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  try { await navigator.clipboard.writeText(url); toast('Image saved and link copied. Paste the link with your post.', 'success', 4500); }
+  catch { toast(`Image saved. Link: ${url}`, 'success', 5000); }
+ } catch (e) {
+  console.warn('share card:', e);
+  toast('Could not make the image. Please try again.', 'error');
+ } finally {
+  if (btn) btn.disabled = false;
+ }
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -13410,7 +13562,7 @@ function selectRisk(v) {
   if (!user) return;
   user.risk_tolerance = v;
   localStorage.setItem('ss_risk_' + user.email, v);
-  if (sb) usersTable().update({ risk_tolerance: v }).eq('email', user.email).then(()=>{});
+  usersTable().update({ risk_tolerance: v }).eq('email', user.email).then(()=>{});
   toast('Risk tolerance saved', 'success');
 }
 function loadRiskTolerance() {
@@ -13457,7 +13609,7 @@ function selectStyle(v) {
   if (!user) return;
   user.invest_style = v;
   localStorage.setItem('ss_divgrow_' + user.email, v);
-  if (sb) usersTable().update({ invest_style: v }).eq('email', user.email).then(()=>{});
+  usersTable().update({ invest_style: v }).eq('email', user.email).then(()=>{});
   toast('Investment style saved', 'success');
 }
 function loadDivGrow() {
@@ -13552,7 +13704,7 @@ async function saveGoals() {
   const checked = [...document.querySelectorAll('#goals-list input[type=checkbox]:checked')].map(c => c.dataset.goal);
   user.investment_goals = checked;
   localStorage.setItem('ss_goals_' + user.email, JSON.stringify(checked));
-  if (sb) await usersTable().update({ investment_goals: JSON.stringify(checked) }).eq('email', user.email);
+  await usersTable().update({ investment_goals: JSON.stringify(checked) }).eq('email', user.email);
   toast('Goals saved', 'success');
 }
 function loadGoals() {
@@ -13603,7 +13755,7 @@ async function saveSectors() {
   const selected = [...document.querySelectorAll('#sectors-list button.sector-on')].map(b => b.dataset.sector);
   user.preferred_sectors = selected;
   localStorage.setItem('ss_sectors_' + user.email, JSON.stringify(selected));
-  if (sb) await usersTable().update({ preferred_sectors: JSON.stringify(selected) }).eq('email', user.email);
+  await usersTable().update({ preferred_sectors: JSON.stringify(selected) }).eq('email', user.email);
   const msg = document.getElementById('sector-save-msg');
   if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 2000); }
 }

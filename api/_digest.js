@@ -133,7 +133,7 @@ function weekMove(sym, q, now) {
   const ref = [...pts].reverse().find(p => p.t <= last.t - 6.5 * DAY);
   if (!ref) return null;
   const days = pts.filter(p => p.t > ref.t && p.t <= last.t);
-  return { price: last.c, prev: ref.c, change: last.c - ref.c, pct: (last.c / ref.c - 1) * 100, from: days[0]?.t ?? last.t, to: last.t };
+  return { price: last.c, prev: ref.c, change: last.c - ref.c, pct: (last.c / ref.c - 1) * 100, from: days[0]?.t ?? last.t, to: last.t, days: [ref, ...days] };
 }
 
 /* ── The verdict model, same weights and thresholds as scoreAsset in index.html (stocks only) ── */
@@ -611,4 +611,61 @@ export function healthOf(M) {
     ['Earnings', `${Object.keys(M.earnings).length} reports this week`, true],
     ['Trending', M.trending.length ? M.trending.join(', ') : 'left out (fewer than 3 tickers searched by 2+ people)', true],
   ];
+}
+
+/* ── The Monday Instagram recap (stocksight-ad/src/WeeklyRecap.tsx) built from the same data ── */
+const PLAIN_EVENTS = [
+  [/FOMC|Federal Funds|Fed Chair|Interest Rate/i, 'Federal Reserve interest rate news'],
+  [/Core PCE|PCE/i, "PCE inflation (the Fed's favorite)"],
+  [/CPI/i, 'Consumer inflation report (CPI)'],
+  [/PPI/i, 'Producer prices (PPI)'],
+  [/Non-Farm|Payrolls/i, 'Monthly jobs report'],
+  [/Unemployment Claims|Jobless/i, 'Weekly jobless claims'],
+  [/Unemployment Rate/i, 'Unemployment rate'],
+  [/Retail Sales/i, 'US retail sales'],
+  [/GDP/i, 'GDP growth'],
+  [/ISM|PMI/i, 'Business activity survey (ISM/PMI)'],
+  [/Consumer (Confidence|Sentiment)/i, 'Consumer confidence'],
+];
+export function recapData(M) {
+  const mv = s => M.moves[s];
+  const spx = mv('^GSPC');
+  const short = ms => etDate(ms, { month: 'short', day: 'numeric' });
+  const lead = M.sectors[0], lag = M.sectors[M.sectors.length - 1];
+  const p = spx.pct, abs = Math.abs(p).toFixed(1);
+  const headline =
+    p >= 1 ? `Stocks rallied: the S&P 500 gained ${abs}%${lead ? `, led by ${lead.name}` : ''}.`
+    : p >= 0.2 ? `A steady week: the S&P 500 added ${abs}%${lead ? `, led by ${lead.name}` : ''}.`
+    : p > -0.2 ? `A flat week for stocks${lead ? `, with ${lead.name} out in front` : ''}.`
+    : p > -1 ? `Stocks slipped: the S&P 500 lost ${abs}%${lag ? ` as ${lag.name} lagged` : ''}.`
+    : `A rough week: the S&P 500 fell ${abs}%${lag ? ` and ${lag.name} fell the most` : ''}.`;
+  const parts = story(M);
+  const used = new Set();
+  const watch = [];
+  for (const e of M.econ) {
+    const plain = PLAIN_EVENTS.find(([re]) => re.test(e.title))?.[1];
+    if (!plain || used.has(plain)) continue;
+    used.add(plain);
+    watch.push({ when: etDate(new Date(e.date).getTime(), { weekday: 'short' }), what: plain });
+  }
+  for (const [s, t] of Object.entries(M.earnings).filter(([s]) => NAMES[s]).sort((a, b) => a[1] - b[1])) {
+    if (watch.length >= 5) break;
+    watch.push({ when: earnDate(t, { weekday: 'short' }), what: `${NAMES[s]} earnings` });
+  }
+  const order = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  watch.sort((a, b) => order.indexOf(a.when) - order.indexOf(b.when));
+  const base = spx.days[0].c;
+  return {
+    range: `${short(M.week.from)} – ${short(M.week.to)}`,
+    year: etDate(M.week.to, { year: 'numeric' }),
+    headline,
+    indexes: [['S&P 500', 'SPX', '^GSPC'], ['Nasdaq', 'IXIC', '^IXIC'], ['Dow Jones', 'DJI', '^DJI']]
+      .filter(([, , s]) => mv(s)).map(([name, sub, s]) => ({ name, sub, chg: +mv(s).pct.toFixed(2) })),
+    gainers: M.universe.slice(0, 3).map(x => ({ t: show(x.t), n: x.name, chg: +x.pct.toFixed(1) })),
+    losers: M.universe.slice(-3).reverse().map(x => ({ t: show(x.t), n: x.name, chg: +x.pct.toFixed(1) })),
+    story: [parts[1], parts[2], parts[3] || parts[4]].filter(Boolean),
+    weekPath: spx.days.map(d => +(d.c / base * 100).toFixed(2)),
+    weekDays: spx.days.map((d, i) => (i ? etDate(d.t, { weekday: 'short' }) : 'Prev')),
+    watch: watch.slice(0, 5),
+  };
 }
