@@ -3791,30 +3791,31 @@ async function syncUserToSupabase(u) {
 // trackSearch is defined in the TRENDING ON STOCKSIGHT section below
 // (records locally for badges + inserts into Supabase for community trending)
 
-// One-way hash of a user's email. Votes are keyed by this instead of the raw
-// address, so the publicly-readable votes table never contains personal data.
-// Deterministic (same email always maps to the same id) so a user can still
-// change their own vote. Requires a secure context: https or localhost.
-async function voterId(email) {
- const data = new TextEncoder().encode('stocksight-vote:' + email.trim().toLowerCase());
- const buf = await crypto.subtle.digest('SHA-256', data);
- return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+// Community votes live on the server: one vote per signed-in account per ticker (api/community.js)
+async function getVotes(ticker) {
+ try {
+  const r = await fetch('/api/community?votes=' + encodeURIComponent(ticker.toUpperCase()), { headers: getTok() ? { Authorization: 'Bearer ' + getTok() } : {} });
+  if (!r.ok) return null;
+  return await r.json();
+ } catch { return null; }
 }
 
 // Cast or update a community vote for a ticker
 async function castVote(ticker, vote) {
  if (!user?.email) { showToast('Sign in to vote', 'info'); return; }
  try {
- const { error } = await sb.from('votes').upsert(
- { ticker: ticker.toUpperCase(), voter_hash: await voterId(user.email), vote },
- { onConflict: 'ticker,voter_hash' }
- );
- if (error) throw error;
+ const r = await fetch('/api/community', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getTok() },
+  body: JSON.stringify({ action: 'vote', ticker: ticker.toUpperCase(), vote }),
+ });
+ if (r.status === 401) { await sessionExpired(); return; }
+ if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'Could not save vote');
  showToast(`Voted ${vote.toUpperCase()} on ${ticker}`, 'success');
  renderVoteBar(ticker);
  renderPoll(ticker);
  } catch(err) {
- showToast('Could not save vote', 'warn');
+ showToast(err.message || 'Could not save vote', 'warn');
  }
 }
 
@@ -3822,20 +3823,16 @@ async function castVote(ticker, vote) {
 async function renderVoteBar(ticker) {
  const el = document.getElementById('voteBar_'+ticker);
  if (!el) return;
+ if (!TREND_TICKER_RE.test(String(ticker).toUpperCase())) return;
  try {
- // Get vote counts (may be null if no votes yet)
- const { data, error } = await sb.from('vote_counts').select('*').eq('ticker', ticker.toUpperCase()).maybeSingle();
- const total = data?.total_votes || 0;
- const bp = total ? Math.round((data.buy_count/total)*100) : 0;
- const hp2 = total ? Math.round((data.hold_count/total)*100) : 0;
- const sp = total ? Math.round((data.sell_count/total)*100) : 0;
-
- // Get user's current vote
- let userVote = null;
- if (user?.email) {
- const { data: uv } = await sb.from('votes').select('vote').eq('ticker', ticker.toUpperCase()).eq('voter_hash', await voterId(user.email)).maybeSingle();
- if (uv) userVote = uv.vote;
- }
+ // Counts, plus this account's own vote when signed in
+ const data = await getVotes(ticker);
+ if (!data) throw new Error('unavailable');
+ const total = data.total || 0;
+ const bp = total ? Math.round((data.buy/total)*100) : 0;
+ const hp2 = total ? Math.round((data.hold/total)*100) : 0;
+ const sp = total ? Math.round((data.sell/total)*100) : 0;
+ const userVote = user?.email ? data.mine : null;
 
  el.innerHTML = `
  <div>
@@ -5351,21 +5348,17 @@ async function renderPoll(ticker) {
  // Show loading state
  el.innerHTML = `<div style="font-size:.75rem;color:var(--text3);text-align:center;padding:1rem 0">Loading votes...</div>`;
 
- // Get vote counts from Supabase
- const { data } = await sb.from('vote_counts').select('*').eq('ticker', ticker.toUpperCase()).maybeSingle();
- const total = data?.total_votes || 0;
- const buyCnt = data?.buy_count || 0;
- const holdCnt = data?.hold_count || 0;
- const sellCnt = data?.sell_count || 0;
+ if (!TREND_TICKER_RE.test(String(ticker).toUpperCase())) { el.innerHTML = ''; return; }
+ // Counts, plus this account's own vote when signed in
+ const data = await getVotes(ticker);
+ if (!data) { el.innerHTML = `<div style="font-size:.75rem;color:var(--text3);text-align:center;padding:1rem 0">Votes are unavailable right now.</div>`; return; }
+ const total = data.total || 0;
+ const buyCnt = data.buy || 0;
+ const holdCnt = data.hold || 0;
+ const sellCnt = data.sell || 0;
  const sum = total || 1;
  const pct = v => Math.round(v/sum*100);
-
- // Get user's current vote
- let mv = null;
- if (user?.email) {
- const { data: uv } = await sb.from('votes').select('vote').eq('ticker', ticker.toUpperCase()).eq('voter_hash', await voterId(user.email)).maybeSingle();
- if (uv) mv = uv.vote;
- }
+ const mv = user?.email ? data.mine : null;
 
  el.innerHTML = `
  <div style="display:flex;flex-direction:column;gap:.75rem;flex:1;height:100%">
@@ -11345,7 +11338,7 @@ function trackSearch(ticker) {
  // Community count, recorded by the server (once per person, ticker and day)
  const t = String(ticker).toUpperCase();
  if (!TREND_TICKER_RE.test(t)) return;
- fetch('/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ticker: t }), keepalive: true }).catch(() => {});
+ fetch('/api/community', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'search', ticker: t }), keepalive: true }).catch(() => {});
 }
 const TREND_TICKER_RE = /^[A-Z0-9][A-Z0-9.\-]{0,9}$/;
 
@@ -11374,7 +11367,7 @@ function renderTrending(containerId) {
  <div style="font-size:.68rem;color:var(--accent2)">→</div>
  </div>`;
  };
- fetch('/api/search?days=1').then(r => r.ok ? r.json() : null).catch(() => null).then(d => {
+ fetch('/api/community?trending=1&days=1').then(r => r.ok ? r.json() : null).catch(() => null).then(d => {
   const inner = document.getElementById(containerId+'_inner');
   if (!inner) return;
   const list = (d?.trending || []).filter(x => TREND_TICKER_RE.test(x?.ticker || ''));
