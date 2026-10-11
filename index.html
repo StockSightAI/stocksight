@@ -5,6 +5,16 @@
 <script>
  // Theme before first paint: dark unless this device chose light (saved by setTheme)
  try { if (localStorage.getItem('ss_theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}
+ // New visitors land on the landing screen, whose biggest piece is the app screenshot: fetch the right one first
+ try {
+  if (!localStorage.getItem('ss_ss3_s')) {
+   const t = document.documentElement.getAttribute('data-theme'), l = document.createElement('link');
+   l.rel = 'preload'; l.as = 'image'; l.fetchPriority = 'high';
+   l.setAttribute('imagesrcset', `/images/app-preview-${t}-900.webp 900w, /images/app-preview-${t}-1600.webp 1600w`);
+   l.setAttribute('imagesizes', '(max-width: 900px) 92vw, 52vw');
+   document.head.appendChild(l);
+  }
+ } catch (e) {}
 </script>
 <!-- Google Analytics -->
 <script>
@@ -2707,7 +2717,7 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
  <img class="g2-shot-dark" src="/images/app-preview-dark-1600.webp" srcset="/images/app-preview-dark-900.webp 900w, /images/app-preview-dark-1600.webp 1600w" sizes="(max-width: 900px) 92vw, 52vw" alt="The StockSight Markets dashboard with live index tiles, an S&P 500 chart, a practice portfolio and a watchlist" width="1600" height="1000" loading="lazy" decoding="async">
  <img class="g2-shot-light" src="/images/app-preview-light-1600.webp" srcset="/images/app-preview-light-900.webp 900w, /images/app-preview-light-1600.webp 1600w" sizes="(max-width: 900px) 92vw, 52vw" alt="The StockSight Markets dashboard with live index tiles, an S&P 500 chart, a practice portfolio and a watchlist" width="1600" height="1000" loading="lazy" decoding="async">
  </figure>
- <script>try { document.querySelector('.g2-shot-' + document.documentElement.getAttribute('data-theme')).loading = 'eager'; } catch (e) {}</script>
+ <script>try { const i = document.querySelector('.g2-shot-' + document.documentElement.getAttribute('data-theme')); i.loading = 'eager'; i.fetchPriority = 'high'; } catch (e) {}</script>
 
  <section class="g2-grid" aria-label="What StockSight does">
  <article class="g2-cell g2-cell-photo">
