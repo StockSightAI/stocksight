@@ -1042,7 +1042,7 @@ function updateGateUserCount() {
 function requireAuth(featureName) {
  if (user) return true;
  // Show a contextual prompt to sign up
- showSignupNudge(`Sign up free to use <strong>${featureName}</strong> — plus watchlists, portfolio tracking, AI chat, and more.`, true);
+ showSignupNudge(`Sign up free to use <strong>${featureName}</strong>, plus lessons, leagues with friends, watchlists, portfolio tracking and more.`, true);
  return false;
 }
 
@@ -1069,9 +1069,9 @@ function showSignupNudge(message, isFeatureGate) {
  <div style="font-size:.82rem;color:var(--text2);line-height:1.65">${message}</div>
  </div>
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:1.5rem;padding:1rem;background:var(--card2);border-radius:12px;border:1px solid var(--border)">
- ${[' Save to Watchlist',' Portfolio tracker',' Paper trading',' Vote on polls',
- ' AI Chat per stock',' Price alerts',' Stock notes',' Badges & streaks',
- ' Broker integration',' Custom settings',' Custom homepage',' Weekly digest'].map(f =>
+ ${[' Lessons and quizzes',' Leagues with friends',' Save to Watchlist',' Portfolio tracker',
+ ' Paper trading',' Price alerts',' AI Chat per stock',' Badges & streaks',
+ ' Stock notes',' Vote on polls',' Broker integration',' Weekly digest'].map(f =>
  `<div style="display:flex;align-items:center;gap:6px;font-size:.74rem;color:var(--text2)"><span style="color:var(--green);font-size:.75rem;font-weight:700">&#x2713;</span>${f}</div>`).join('')}
  </div>
  <div style="display:flex;gap:8px">
@@ -2611,7 +2611,10 @@ function initSearch() {
 /* ════════════════════════════════
  TABS
 ════════════════════════════════ */
+// Tabs that need an account
+const SIGNED_IN_TABS = { w: 'Watchlist', port: 'Portfolio', pt: 'Paper Trading', day: 'Day Trading', learn: 'Learn', leagues: 'Leagues' };
 function switchTab(t, skipRender=false) {
+ if (!user && SIGNED_IN_TABS[t]) { requireAuth(SIGNED_IN_TABS[t]); return; }
  _viewSeq++;
  tutOnTab(t);
  const mc = document.getElementById('mainContent');
@@ -2648,7 +2651,7 @@ function switchTab(t, skipRender=false) {
  if (t==='port') { if(!requireAuth('Portfolio')) return; ss2.style.display='none'; document.title='Portfolio — StockSight'; showPortfolioSkeleton(); setTimeout(()=>{renderPortfolio();mcRestore();},60); return; }
  if (t==='screen') { ss2.style.display='none'; document.title='Screener — StockSight'; renderScreener(); mcRestore(); return; }
  if (t==='pt') { if(!requireAuth('Paper Trading')) return; ss2.style.display='none'; document.title='Paper Trading — StockSight'; renderPaperTradeTab(); mcRestore(); return; }
- if (t==='learn') { ss2.style.display='none'; document.title='Learn — StockSight'; renderLearnView(); mcRestore(); return; }
+ if (t==='learn') { if(!requireAuth('Learn')) return; ss2.style.display='none'; document.title='Learn — StockSight'; renderLearnView(); mcRestore(); return; }
  if (t==='leagues') { if(!requireAuth('Leagues')) return; ss2.style.display='none'; document.title='Leagues — StockSight'; if (!skipRender) renderLeaguesView(); mcRestore(); return; }
  if (t==='day') { if(!requireAuth('Day Trading')) return; ss2.style.display='none'; document.title='Day Trade — StockSight'; renderDayTradeTab(); mcRestore(); return; }
 
@@ -3265,7 +3268,7 @@ function learnRowHTML() {
  return `
  <button type="button" class="dash-learn-intro learn-level" onclick="openLearnHub()" aria-label="Open all lessons">
   <span class="lv-ring" style="--p:${lv.pct.toFixed(0)}"><b>${lv.n}</b></span>
-  <span class="lv-txt"><span class="lv-name">Learn &amp; grow</span><span class="lv-sub">${lv.name} · ${s.xp} XP</span></span>
+  <span class="lv-txt"><span class="lv-name">Learn &amp; grow</span><span class="lv-sub">${user ? `${lv.name} · ${s.xp} XP` : 'Free with an account'}</span></span>
  </button>
  ${learnTiles(s).map((x, i) => `<button type="button" class="dash-lesson dash-lesson-${i % 3}" onclick="${x.go}">
    <span class="dash-lesson-ico">${learnIcon(x.icon)}</span>
@@ -3359,6 +3362,7 @@ function lessonOverlay(labelId, inner, extraCls = '') {
  return ov;
 }
 function openLearnHub() {
+ if (!requireAuth('Learn')) return;
  lessonOverlay('learnHubTitle', `<div id="learnHubBody">${learnHubHTML()}</div>`, 'hub-box');
  if (!LEARN_LIB.full) loadLessonLibrary();
 }
@@ -3374,6 +3378,7 @@ function startRun(R) {
 }
 function quizOrder(qs) { return qs.map(q => shuffleIdx(q.a.length)); }
 async function openLesson(id) {
+ if (!requireAuth('Learn')) return;
  if (typeof id === 'number') id = CORE_TRACK.lessons[id];
  let l = lessonById(id);
  if (!l && !LEARN_LIB.full) { await loadLessonLibrary(); l = lessonById(id); }
@@ -3390,6 +3395,7 @@ function fillRun(R, qs) {
  renderLesson();
 }
 async function startDaily() {
+ if (!requireAuth('Learn')) return;
  const today = learnToday(), s0 = getLearn();
  if (s0.daily?.date === today && s0.daily.done) { toast('Today\'s challenge is done. Here\'s a practice round instead.', 'info', 2600); return startPractice(); }
  const R = startQuizRun('daily', 'Today\'s challenge', 'bolt');
@@ -3402,6 +3408,7 @@ async function startDaily() {
  fillRun(R, qs);
 }
 async function startPractice() {
+ if (!requireAuth('Learn')) return;
  const R = startQuizRun('practice', 'Endless practice', 'loop');
  await loadLessonLibrary();
  const live = await liveQuestions(3, Math.random);
@@ -3413,6 +3420,7 @@ async function startPractice() {
 
 // A lesson written from one real stock's numbers: what it is, its chart, its valuation, risk and analysts
 async function openStockLesson(t) {
+ if (!requireAuth('Learn')) return;
  t = String(t || stockOfDay()).toUpperCase();
  const k = tickerKind(t);
  const R = startQuizRun('stock', `Learn from ${tName(t)}`, 'search');
@@ -14314,7 +14322,7 @@ async function toggleLeagueEmails() {
 ════════════════════════════════ */
 function renderLearnView() {
  const mc = document.getElementById('mainContent');
- if (!mc) return;
+ if (!mc || !user) return;
  mc.innerHTML = `<div class="learn-page"><div id="learnHubBody">${learnHubHTML()}</div></div>`;
  if (!LEARN_LIB.full) loadLessonLibrary();
 }
