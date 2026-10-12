@@ -1947,6 +1947,54 @@ body.accent-ruby{--accent:#be123c;--accent2:#fda4af;--accent3:#e11d48;--glow:rgb
 .legal-doc h2{font-size:.9rem;font-weight:700;color:var(--text);margin:16px 0 4px}
 .legal-doc p{margin:0 0 8px}.legal-doc ul{margin:4px 0 8px;padding-left:1.2em}.legal-doc li{margin:3px 0}
 .legal-doc strong{color:var(--text)}.legal-doc a{color:var(--accent2)}
+/* Valuation, Stress test and Options tabs; the portfolio stress test */
+.in-pane{padding:16px 18px;display:flex;flex-direction:column;gap:18px}
+.in-sec h4{font-size:.95rem;font-weight:700;letter-spacing:-.01em;margin:0 0 4px;color:var(--text)}
+.in-sub{font-size:.8rem;color:var(--text3);margin:0 0 10px}
+.in-p{font-size:.86rem;line-height:1.6;color:var(--text2);margin:0 0 10px}
+.in-p b{color:var(--text)}
+.in-note{font-size:.74rem;line-height:1.5;color:var(--text3);margin:8px 0 0}
+.in-note a{color:var(--accent2)}
+.in-hype{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:12px;border:1px solid var(--border2);background:var(--card2);margin:8px 0 10px}
+.in-hype b{font-size:1.05rem}.in-hype span{font-size:.82rem;color:var(--text2)}
+.in-hype.ok b{color:var(--green)}.in-hype.mid b{color:var(--gold)}.in-hype.warn b{color:#f59e0b}.in-hype.bad b{color:var(--red)}
+.in-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.in-list li{position:relative;padding-left:16px;font-size:.84rem;line-height:1.5;color:var(--text2)}
+.in-list li::before{content:"";position:absolute;left:2px;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--text3)}
+.in-list li.l1::before{background:var(--gold)}.in-list li.l2::before{background:var(--red)}
+.in-scen{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--card2);display:flex;flex-direction:column;gap:6px;font-size:.82rem}
+.in-scen>b{font-size:.84rem;color:var(--text)}
+.in-scen div{display:flex;justify-content:space-between;gap:12px;color:var(--text2)}
+.in-scen em{font-style:normal;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;white-space:nowrap}
+.in-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px}
+.in-grid>div:last-child:nth-child(odd){grid-column:1/-1}
+.in-grid>div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--card2);min-width:0}
+.in-grid span{font-size:.72rem;color:var(--text3)}
+.in-grid b{font-size:1.1rem;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.in-grid small{font-size:.72rem;color:var(--text2);line-height:1.4}
+.in-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px}
+.in-table{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
+.in-table th{text-align:left;font-size:.7rem;font-weight:600;color:var(--text3);padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+.in-table td{padding:8px 10px;border-top:1px solid var(--border);color:var(--text);white-space:nowrap}
+.in-table tr:first-child td{border-top:0}
+.in-table td small{display:block;font-size:.68rem;color:var(--text3)}
+.in-table .dn,.dcf-head .dn{color:var(--red)}.in-table .up,.dcf-head .up{color:var(--green)}
+.in-table sup{font-size:.6rem;color:var(--text3);margin-left:2px}
+.in-card{margin-top:16px}
+.dcf-out{margin:8px 0 14px}
+.dcf-head{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.dcf-head>div{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--card2)}
+.dcf-head span{display:block;font-size:.72rem;color:var(--text3)}
+.dcf-head b{font-size:1.2rem;font-weight:750;font-variant-numeric:tabular-nums}
+.dcf-bars{display:flex;align-items:flex-end;gap:4px;height:60px;margin-top:6px}
+.dcf-bars i{flex:1;border-radius:4px 4px 1px 1px;background:var(--accent);opacity:.7}
+.dcf-sl{margin:4px 0 12px}
+.dcf-src{margin-top:12px;font-size:.8rem;color:var(--text2)}
+.dcf-src summary{cursor:pointer;color:var(--accent2);font-weight:600}
+.dcf-src ul{margin:8px 0 0;padding-left:1.1em;display:flex;flex-direction:column;gap:5px;line-height:1.5}
+.dcf-src b{color:var(--text)}
+@media (max-width:600px){.dcf-head b{font-size:1rem}.in-pane{padding:14px}}
+@media (max-width:380px){.in-grid{grid-template-columns:1fr}}
 /* Phone: More sheet, native lists */
 .m-title{display:none}
 .more-ov{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;opacity:0;transition:opacity .2s}

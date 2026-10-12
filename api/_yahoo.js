@@ -6,9 +6,11 @@ export const SYMBOL_RE = /^[\^A-Z0-9][A-Z0-9.\-=^]{0,19}$/;
 
 // Daily closes from Yahoo Finance (dividend and split adjusted)
 export async function fromYahoo(symbol, range = '5y') {
+  // 'since2000' is weekly closes since January 2000 (Yahoo turns a plain range=max into quarterly)
+  const span = range === 'since2000' ? `period1=946684800&period2=${Math.floor(Date.now() / 1000)}&interval=1wk` : `range=${range}&interval=1d`;
   for (const host of ['query1', 'query2']) {
     try {
-      const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=1d&events=div%2Csplits`;
+      const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?${span}&events=div%2Csplits`;
       const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
       if (!r.ok) continue;
       const j = await r.json();
@@ -62,7 +64,52 @@ export async function fromCoinbase(symbol) {
 }
 
 export async function getDaily(symbol, range = '5y') {
-  return (await fromYahoo(symbol, range)) || (symbol.endsWith('-USD') ? await fromCoinbase(symbol) : null);
+  return (await fromYahoo(symbol, range)) || (symbol.endsWith('-USD') && range !== 'since2000' ? await fromCoinbase(symbol) : null);
+}
+
+// Option chains for one expiry (the nearest when date is left out); same session cookie and crumb as quoteSummary
+export async function optionChain(symbol, date) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let sess;
+    try { sess = await getSession(attempt > 0); } catch { continue; }
+    let refresh = false;
+    for (const host of ['query2', 'query1']) {
+      try {
+        const url = `https://${host}.finance.yahoo.com/v7/finance/options/${encodeURIComponent(symbol)}?crumb=${encodeURIComponent(sess.crumb)}${date ? `&date=${date}` : ''}`;
+        const r = await fetch(url, { headers: { 'User-Agent': UA, Cookie: sess.cookie, Accept: 'application/json' } });
+        if (r.status === 401 || r.status === 403) { refresh = true; break; }
+        if (r.status === 404) return null;
+        if (!r.ok) continue;
+        return (await r.json())?.optionChain?.result?.[0] || null;
+      } catch {}
+    }
+    if (!refresh) break;
+  }
+  return null;
+}
+
+// Reported free cash flow over the last 12 months (operating cash flow minus capital spending).
+// financialData's "freeCashflow" is Yahoo's own levered estimate and can be far off (for NVIDIA, a third of the real number).
+export async function trailingCashFlow(symbol) {
+  const now = Math.floor(Date.now() / 1000);
+  const types = ['trailingFreeCashFlow', 'trailingOperatingCashFlow', 'trailingCapitalExpenditure'];
+  for (const host of ['query2', 'query1']) {
+    try {
+      const url = `https://${host}.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/${encodeURIComponent(symbol)}?type=${types.join(',')}&period1=${now - 3 * 365 * 86400}&period2=${now}`;
+      const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: AbortSignal.timeout(6000) });
+      if (!r.ok) continue;
+      const got = {};
+      for (const s of (await r.json())?.timeseries?.result || []) {
+        const k = s.meta?.type?.[0], last = (s[k] || []).filter(v => Number.isFinite(v?.reportedValue?.raw)).pop();
+        // Older than ~15 months means the company stopped reporting; don't use it
+        if (last && Date.parse(last.asOfDate) > (now - 460 * 86400) * 1000) got[k] = { v: last.reportedValue.raw, asOf: last.asOfDate };
+      }
+      const op = got.trailingOperatingCashFlow, cx = got.trailingCapitalExpenditure;
+      const fcf = got.trailingFreeCashFlow?.v ?? (op && cx ? op.v + cx.v : null);
+      return fcf == null ? null : { fcf, operating: op?.v ?? null, capex: cx?.v ?? null, asOf: (got.trailingFreeCashFlow || op).asOf };
+    } catch {}
+  }
+  return null;
 }
 
 // quoteSummary (fundamentals, analysts, earnings) needs a session cookie and "crumb" token

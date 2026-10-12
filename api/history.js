@@ -1,9 +1,10 @@
 // Daily price history used by the AI forecast model.
 // GET /api/history?symbol=AAPL  (Yahoo-style symbols: ^GSPC, BTC-USD, BRK-B)
 // GET /api/history?symbol=AAPL&intraday=1  real one-minute sessions for the Day Trade replay
+// GET /api/history?symbol=AAPL&range=since2000  weekly closes since 2000 (the crisis stress test)
 import { SYMBOL_RE, getDaily, intradaySessions } from './_yahoo.js';
 
-const RANGES = ['1y', '2y', '5y', '10y'];
+const RANGES = ['1y', '2y', '5y', '10y', 'since2000'];
 
 export default async function handler(req, res) {
   const symbol = String(req.query?.symbol || '').toUpperCase().trim();

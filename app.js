@@ -786,7 +786,7 @@ const saveH=()=>{
  if(!user?.email) return;
  ss('ss3_h_'+user.email, holdings);
  const _prefs = safeParse('ss3_p_'+user.email, {});
- usersTable().update({ portfolio: { holdings, paper_trade: safeParse('ss_pt_'+user.email,{}), prefs: _prefs } }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveH sync failed'); });
+ usersTable().update({ portfolio: { holdings, paper_trade: getPtPortfolio(), prefs: _prefs } }).eq('email', user.email).then(({error})=>{ if(error) console.warn('saveH sync failed'); });
 };
 const saveP=()=>{
  if(!user?.email) return;
@@ -4277,9 +4277,10 @@ function assetStageHTML(c) {
  const { xp } = c;
  const tabs = xp === 'beginner'
   ? [['Price', 'price'], ['What could happen', 'predict'], ['What experts think', 'analysts'], ['News', 'news']]
-  : xp === 'mid'
-  ? [['Chart', 'price'], ['Forecast', 'predict'], ['Analysts', 'analysts'], ['Earnings', 'earnings'], ['News', 'news']]
-  : [['Chart', 'price'], ['Forecast', 'predict'], ['Fundamentals', 'fund'], ['Analysts', 'analysts'], ['Earnings', 'earnings'], ['News', 'news'], ['Technicals', 'tech']];
+  : (xp === 'mid'
+  ? [['Chart', 'price'], ['Forecast', 'predict'], ['Valuation', 'dcf'], ['Stress test', 'stress'], ['Analysts', 'analysts'], ['Earnings', 'earnings'], ['Options', 'opts'], ['News', 'news']]
+  : [['Chart', 'price'], ['Forecast', 'predict'], ['Valuation', 'dcf'], ['Stress test', 'stress'], ['Fundamentals', 'fund'], ['Analysts', 'analysts'], ['Earnings', 'earnings'], ['Options', 'opts'], ['News', 'news'], ['Technicals', 'tech']])
+   .filter(([, k]) => !(['c', 'i'].includes(c.type) && (k === 'dcf' || k === 'opts')));
  const panel = k => ({
   price: '<div id="tv-chart" class="ss-fill"></div>',
   predict: '<div class="asset-forecast"><div id="predContent"></div></div>',
@@ -4288,6 +4289,9 @@ function assetStageHTML(c) {
   fund: `<div id="rsFund" class="rs-pane">${rsLoading('Loading financials')}</div>`,
   news: '<div id="tv-asset-news" class="ss-fill"></div>',
   tech: '<div id="tv-tech" class="ss-fill"></div>',
+  dcf: `<div id="rsDcf" class="rs-pane">${rsLoading('Building the valuation')}</div>`,
+  stress: `<div id="rsStress" class="rs-pane">${rsLoading('Running the stress tests')}</div>`,
+  opts: `<div id="rsOpts" class="rs-pane">${rsLoading('Reading the options market')}</div>`,
  }[k]);
  return `
   <section class="card ss-tabs asset-stage" data-ss-group="asset-main-${xp}" data-ss-nosave="1">
@@ -4362,7 +4366,7 @@ function fillResearch(c, D) {
  if (!R) {
   const retry = `<button type="button" class="dash-btn dash-btn-main" onclick="loadResearch('${ticker}','${type}').then(D=>fillResearch({ticker:'${ticker}',name:'${jsq(name)}',type:'${type}',xp:'${xp}'},D))">Try again</button>`;
   const msg = `<div class="rs-loading rs-err"><b>Couldn't load ${ticker}'s data</b><small>The market data service didn't respond. Check your connection and try again.</small>${retry}</div>`;
-  ['rsVerdict', 'rsAnalysts', 'rsEarnings', 'rsFund', 'rsRisk', 'rsAbout'].forEach(id => set(id, msg));
+  ['rsVerdict', 'rsAnalysts', 'rsEarnings', 'rsFund', 'rsRisk', 'rsAbout', 'rsDcf', 'rsStress', 'rsOpts'].forEach(id => set(id, msg));
   set('rsHead', '');
   return;
  }
@@ -4373,6 +4377,7 @@ function fillResearch(c, D) {
  set('rsFund', rsFundHTML(R, F));
  set('rsRisk', rsRiskHTML(R, F));
  set('rsAbout', rsAboutHTML(R, F, xp, c));
+ fillInsights(c, D);
  document.querySelectorAll('.rs-pane').forEach(p => { p.classList.remove('rs-in'); void p.offsetWidth; p.classList.add('rs-in'); });
 }
 
@@ -4619,12 +4624,12 @@ function rsFundHTML(R, F) {
    + (S.length ? `<section class="rs-sec"><h4>Sector weights</h4><ul class="rs-holdings">${S.filter(x => x.pct > 0.005).sort((a, b) => b.pct - a.pct).map(x => `<li><span>${x.sector.replace(/_/g, ' ').replace(/\b\w/g, m => m.toUpperCase())}</span><b>${fmtPlain(x.pct)}</b></li>`).join('')}</ul></section>` : '');
  }
  if (R.kind !== 'stock') return grp('Market', [row('Market cap', fmtBig(f.marketCap)), row('52-wk high', fmtPx(f.fiftyTwoWeekHigh)), row('52-wk low', fmtPx(f.fiftyTwoWeekLow)), row('1y return', fmtSigned(st.ret1y)), row('Volatility', fmtPlain(st.vol, 0)), row('5y CAGR', fmtSigned(st.cagr))]) + `<div class="rs-empty"><p>${R.kind === 'crypto' ? 'Coins have no income statement or balance sheet.' : 'Indexes have no company financials of their own.'}</p></div>`;
- const fcfm = f.freeCashflow != null && f.revenue ? f.freeCashflow / f.revenue : null;
+ const fcf = f.fcfReported ?? f.freeCashflow, fcfm = fcf != null && f.revenue ? fcf / f.revenue : null;
  return `<div class="fd-wrap">
   ${grp('Valuation', [row('P/E (ttm)', f.trailingPE?.toFixed(1)), row('P/E (fwd)', f.forwardPE?.toFixed(1)), row('PEG', f.peg?.toFixed(2)), row('P/S', f.priceToSales?.toFixed(1)), row('P/B', f.priceToBook?.toFixed(1)), row('EV/EBITDA', f.evToEbitda?.toFixed(1)), row('EV/Revenue', f.evToRevenue?.toFixed(1)), row('Mkt cap', fmtBig(f.marketCap))])}
   ${grp('Profitability', [row('Gross margin', fmtPlain(f.grossMargin)), row('Operating margin', fmtPlain(f.operatingMargin)), row('Net margin', fmtPlain(f.profitMargin)), row('ROE', fmtPlain(f.roe)), row('ROA', fmtPlain(f.roa)), row('FCF margin', fmtPlain(fcfm))])}
   ${grp('Growth', [row('Revenue y/y', fmtSigned(f.revenueGrowth)), row('Earnings y/y', fmtSigned(f.earningsGrowth)), row('Revenue (ttm)', fmtBig(f.revenue)), row('EPS (ttm)', f.trailingEps != null ? '$' + f.trailingEps.toFixed(2) : '—'), row('EPS (fwd)', f.forwardEps != null ? '$' + f.forwardEps.toFixed(2) : '—')])}
-  ${grp('Balance sheet and cash', [row('Cash', fmtBig(f.totalCash)), row('Debt', fmtBig(f.totalDebt)), row('Debt/Equity', f.debtToEquity != null ? (f.debtToEquity / 100).toFixed(2) : '—'), row('Current ratio', f.currentRatio?.toFixed(2)), row('Operating CF', fmtBig(f.operatingCashflow)), row('Free cash flow', fmtBig(f.freeCashflow))])}
+  ${grp('Balance sheet and cash', [row('Cash', fmtBig(f.totalCash)), row('Debt', fmtBig(f.totalDebt)), row('Debt/Equity', f.debtToEquity != null ? (f.debtToEquity / 100).toFixed(2) : '—'), row('Current ratio', f.currentRatio?.toFixed(2)), row('Operating CF', fmtBig(f.operatingCashflow)), row('Free cash flow', fmtBig(f.fcfReported ?? f.freeCashflow))])}
   ${grp('Dividends and ownership', [row('Yield', f.dividendYield ? fmtPlain(f.dividendYield, 2) : 'None'), row('Annual dividend', f.dividendRate ? '$' + f.dividendRate.toFixed(2) : '—'), row('Payout ratio', fmtPlain(f.payoutRatio, 0)), row('Institutions', fmtPlain(f.institutionsPct, 0)), row('Insiders', fmtPlain(f.insidersPct, 1)), row('Short % float', fmtPlain(f.shortPctFloat, 1))])}
  </div>`;
 }
@@ -5056,6 +5061,8 @@ function scoreAsset(t, f, st) {
  if (ret != null) {
   let s = 50 + (ret - spRet) * 120;
   if (f?.twoHundredDayAvg && px) s += px > f.twoHundredDayAvg ? 8 : -8;
+  // A price far above its 200-day average is usually hype or a squeeze: it can't lift the verdict
+  if (f?.twoHundredDayAvg && px && px / f.twoHundredDayAvg > 1.35) s = Math.min(s, 50);
   add('momentum', 'Momentum', kind === 'stock' ? 10 : 35, s, { ret1y: ret, spRet, above200: f?.twoHundredDayAvg && px ? px > f.twoHundredDayAvg : null });
  }
  if (kind !== 'stock') {
@@ -5111,7 +5118,8 @@ function researchPoints(R) {
    if (f.totalCash > f.totalDebt) G(0.3, `It has more money saved than it owes.`, `More cash (${fmtBig(f.totalCash)}) than debt (${fmtBig(f.totalDebt)}).`, `Net cash ${fmtBig(f.totalCash - f.totalDebt)}`);
    else if (f.debtToEquity > 150) B(0.45, `It owes a lot of money.`, `Carries heavy debt: ${(f.debtToEquity / 100).toFixed(1)}x shareholder equity.`, `D/E ${(f.debtToEquity / 100).toFixed(2)}, net debt ${fmtBig(f.totalDebt - f.totalCash)}`);
   }
-  if (f.freeCashflow > 0 && f.revenue && f.freeCashflow / f.revenue >= 0.15) G(0.35, `It brings in lots of spare cash after paying its bills.`, `Generates strong cash: ${fmtBig(f.freeCashflow)} of free cash flow last year.`, `FCF ${fmtBig(f.freeCashflow)} (${fmtPlain(f.freeCashflow / f.revenue, 0)} margin)`);
+  const fcf = f.fcfReported ?? f.freeCashflow;
+  if (fcf > 0 && f.revenue && fcf / f.revenue >= 0.15) G(0.35, `It brings in lots of spare cash after paying its bills.`, `Generates strong cash: ${fmtBig(fcf)} of free cash flow last year.`, `FCF ${fmtBig(fcf)} (${fmtPlain(fcf / f.revenue, 0)} margin)`);
   const pe = f.forwardPE > 0 ? f.forwardPE : f.trailingPE > 0 ? f.trailingPE : null;
   if (pe >= 35) B(Math.min(1, pe / 60), `It's expensive. Buyers pay about $${Math.round(pe)} for every $1 of profit it makes in a year.`, `Pricey: about ${Math.round(pe)}x expected earnings, versus roughly 20x for a typical S&P 500 stock.`, `Fwd P/E ${pe.toFixed(1)}${f.peg > 0 ? `, PEG ${f.peg.toFixed(2)}` : ''}`);
   else if (pe && pe <= 15) G(0.4, `Its price is low compared with how much money it makes.`, `Inexpensive: about ${Math.round(pe)}x expected earnings.`, `Fwd P/E ${pe.toFixed(1)}${f.peg > 0 ? `, PEG ${f.peg.toFixed(2)}` : ''}`);
@@ -5148,6 +5156,8 @@ function researchPoints(R) {
  }
  if (R.kind === 'index') G(0.5, `This is a scoreboard for a big group of companies. You can't buy it directly, but you can buy a fund that copies it (${INDEX_ETF[t] || 'an index fund'}).`, `You can't buy an index directly; investors use a fund that tracks it, such as ${INDEX_ETF[t] || 'an index ETF'}.`, `Tradable proxy: ${INDEX_ETF[t] || 'index ETF'}`);
  if (R.kind === 'crypto') B(0.7, `No company is behind it, so there are no profits to check. Its price is just what people are willing to pay.`, `No earnings or cash flow to value; the price runs on demand and sentiment.`, `No fundamentals; sentiment-driven`);
+ const stretch = f.twoHundredDayAvg && px ? px / f.twoHundredDayAvg - 1 : null;
+ if (stretch != null && stretch > 0.35) B(Math.min(1, stretch), `The price jumped fast. It's ${pc0(stretch)} above its usual level, and big jumps like that often cool off.`, `The price is ${pc0(stretch)} above its 200-day average. Run-ups that steep often cool off.`, `${pc0(stretch)} above the 200-day average (stretched)`);
  good.sort((a, b) => b.w - a.w); bad.sort((a, b) => b.w - a.w);
  return { good: good.slice(0, 5), bad: bad.slice(0, 5) };
 }
@@ -5228,7 +5238,9 @@ function realChatReply(m, ticker, rich) {
  const sents = (F?.profile?.summary || '').match(/[^.!?]+[.!?]+/g) || [];
  const tail = kid ? '<br><br><em>This is a computer\'s guess from real numbers, not advice.</em>' : '<br><br><em>From live Yahoo Finance data. Not financial advice.</em>';
 
- if (/what does .* do|business model|how does .* make money|what do they (do|make|sell)|tell me about|^what is |^what's /.test(m)) {
+ // A bare 'what is ...' means the business, unless it names a topic ("what's the bear case?", "what is the P/E?")
+ const topic = /bull|bear|upside|downside|risk|safe|volatil|beta|rate|inflation|macro|\bfed\b|econom|recession|valu|expensive|cheap|p\/?e\b|ratio|dividend|earning|revenue|margin|profit|target|analyst|forecast|predict|price|news|options?\b|short|insider|ceo|who runs|compet/.test(m);
+ if (/what does .* do|business model|how does .* make money|what do they (do|make|sell)|tell me about/.test(m) || (/^what is |^what's /.test(m) && !topic)) {
   if (R.kind === 'stock' && sents.length) return rich(kid ? `What ${name} does` : `${ticker}: the business`, (kid ? sents[0] : sents.slice(0, adv ? 4 : 2).join(' ')) + (f.industry && !kid ? `<br><br>Sector: ${f.sector} · Industry: ${f.industry}${F?.profile?.employees ? ` · ${F.profile.employees.toLocaleString()} employees` : ''}` : ''));
   if (R.kind === 'fund') return rich(`What ${name} is`, `${kid ? 'It\'s a fund: one share holds a little of many companies.' : sents.slice(0, 2).join(' ')}${F?.fund?.holdings?.length ? `<br><br>Biggest holdings: ${F.fund.holdings.slice(0, 5).map(h => `${h.symbol} (${fmtPlain(h.pct)})`).join(', ')}` : ''}`);
   if (R.kind === 'crypto') return rich(`What ${name} is`, kid ? 'It\'s digital money on the internet. No company is behind it, so its price is just what people will pay.' : (sents[0] || `${name} is a cryptocurrency.`) + ' There\'s no company, revenue or profit behind it, so its value depends entirely on demand.');
@@ -5238,7 +5250,10 @@ function realChatReply(m, ticker, rich) {
   return rich(kid ? `Is ${name} a good buy?` : `${ticker}: buy, hold or sell?`, `${head} ${verdictLine(R, P, xp)}<br><br><strong>${kid ? 'Good things' : 'For it'}</strong><br>${list(P.good.slice(0, 3))}<br><br><strong>${kid ? 'Be careful' : 'Against it'}</strong><br>${list(P.bad.slice(0, 3))}${tail}`);
  }
  if (/bull case|upside|reasons to (buy|like)|why buy|positives|strengths/.test(m)) return rich(kid ? `Good things about ${name}` : `${ticker}: the bull case`, list(P.good) + tail);
- if (/bear case|downside|reasons not|why not|negatives|weakness|what are the risks|main risks/.test(m)) return rich(kid ? `Things to be careful about` : `${ticker}: the bear case`, list(P.bad) + tail);
+ if (/bear case|downside|reasons not|why not|negatives|weakness|what are the risks|main risks/.test(m)) return rich(kid ? `Things to be careful about` : `${ticker}: the bear case`, list(P.bad) + bearChatExtra(R) + tail);
+ if (/interest rate|inflation|macro|federal reserve|\bfed\b|rate (hike|cut)|the economy|recession/.test(m) && !kid) {
+  return rich(`${ticker}: interest rates and the economy`, macroChatLine(ticker) + 'Higher rates make future profits worth less today, so fast-growing companies usually feel them most, while banks can benefit. The Stress test tab shows how it held up in 2022 and other crashes.' + tail);
+ }
  if (/risky|risk level|volatil|beta|is it safe|how safe|swing/.test(m)) {
   if (st.vol == null) return null;
   const spv = liveStats('SPX')?.vol || 0.15, ratio = st.vol / spv;
@@ -6605,7 +6620,7 @@ function getChatReply(msg, ticker, name) {
  if (m.match(/market (crash|correction|recession|bubble)|economy|inflation|interest rate|fed |federal reserve|macro|rate (hike|cut)/)) {
  if (d) {
  const [beta] = d;
- return rich(`Macro Impact on ${ticker}`,
+ return rich(`Macro Impact on ${ticker}`, macroChatLine(ticker) +
  `<strong>Interest rates:</strong> When the Fed raises rates, growth stocks (especially tech and crypto) tend to fall as future earnings are worth less today. ${beta>1.5?`${ticker} has high beta (${beta}x) — very sensitive to rate changes.`:`${ticker} has ${beta<0.9?'defensive characteristics — less sensitive to rate changes.':'moderate sensitivity to interest rate changes.'}`}<br><br>` +
  `<strong>Inflation:</strong> High inflation → Fed raises rates → growth stocks/crypto fall. Moderate inflation (2-3%) is healthy for stocks.<br><br>` +
  `<strong>Recession:</strong> ${isCrypto?'Crypto typically falls sharply in risk-off environments. Bitcoin dropped 75%+ in 2022.':isIndex?`${ticker} drops in recessions but historically recovers fully within 1-3 years.`:`${d[0]<0.9?ticker+' is relatively defensive — it tends to hold up better than average in downturns.':ticker+' has high beta — it amplifies both gains and losses vs the market.'}`}<br><br>` +
@@ -8804,8 +8819,13 @@ function ptSimPrice_yesterday(ticker) {
 }
 
 function getPtPortfolio() {
- try { return JSON.parse(localStorage.getItem('ss_pt_'+(user?.email||''))||'{"cash":10000,"holdings":{}}'); }
- catch { return {cash:10000, holdings:{}}; }
+ let pt = null;
+ try { pt = JSON.parse(localStorage.getItem('ss_pt_'+(user?.email||'')) || 'null'); } catch {}
+ // Accounts that saved holdings before ever paper trading synced an empty {}: treat that as a fresh start
+ if (!pt || typeof pt !== 'object') pt = {};
+ if (!('cash' in pt)) pt.cash = 10000;
+ if (!pt.holdings || typeof pt.holdings !== 'object') pt.holdings = {};
+ return pt;
 }
 function savePtPortfolio(pt) {
  try { localStorage.setItem('ss_pt_'+(user?.email||''), JSON.stringify(pt)); } catch {}
@@ -13121,7 +13141,7 @@ const SS_TAB_GROUPS = [
  ] },
  { key: 'pt', when: () => ssFindCard(/^Open Positions/i), anchor: () => ssFindCard(/^Open Positions/i), items: [
   [/Pending Orders/i, 'Pending', 0], [/^Allocation/i, 'Allocation', 1], [/Risk Lab/i, 'Risk lab', 2],
-  [/Portfolio Insight/i, 'Insight', 3], [/Trade History/i, 'History', 4], [/Leaderboard/i, 'Leaderboard', 5],
+  [/Portfolio Insight/i, 'Insight', 3], [/Trade History/i, 'History', 4], [/Leaderboard/i, 'Leaderboard', 5], [/^Stress test/i, 'Stress test', 2.5],
  ] },
  { key: 'day', when: () => ssFindCard(/Order Ticket/i), anchor: mc => mc.querySelector('#dtGrid'), items: [
   [/Position Sizer/i, 'Position sizer', 0], [/Your Numbers/i, 'Your numbers', 1], [/Trade Journal/i, 'Journal', 2], [/Import Real Trades/i, 'Import trades', 3],
@@ -14490,3 +14510,449 @@ function hubLeagueHTML() {
 
 // The offline screen (sw.js). Having one is also part of what lets app stores and browsers install StockSight.
 if ('serviceWorker' in navigator) addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+
+/* ════════════════════════════════
+ DEEPER TOOLS on stock pages and portfolios
+ Valuation: a discounted cash flow (DCF) sandbox with every input shown and adjustable.
+ Stress test: a hype check, a data-only bear case, interest-rate sensitivity and past crashes.
+ Options: implied volatility, expected move, put/call ratios, unusual activity and hedge cost.
+ Portfolios: how today's holdings would have done through past crises.
+ All from real prices and filings (Yahoo Finance). Approximations are labeled as such.
+════════════════════════════════ */
+const pct1 = v => v == null || !Number.isFinite(v) ? '—' : `${(v * 100).toFixed(1)}%`;
+const pct0 = v => v == null || !Number.isFinite(v) ? '—' : `${(v * 100).toFixed(0)}%`;
+const sgn0 = v => v == null || !Number.isFinite(v) ? '—' : `${v >= 0 ? '+' : '−'}${Math.abs(v * 100).toFixed(0)}%`;
+const usd = v => v == null || !Number.isFinite(v) ? '—' : v < 0 ? '−' + usd(-v) : (v >= 1e9 ? fmtBig(v) : fmtPx(v));
+const insightNote = t => `<p class="in-note">${t}</p>`;
+const inLoading = t => `<div class="lc-load"><i></i><i></i><i></i></div><p class="in-note" style="text-align:center">${t}</p>`;
+const inSection = (title, body, sub = '') => `<section class="in-sec"><h4>${title}</h4>${sub ? `<p class="in-sub">${sub}</p>` : ''}${body}</section>`;
+
+/* ── Price history helpers ── */
+// Weekly closes since 2000 (for crash windows), cached per symbol
+const _longReq = new Map();
+function getLongHistory(sym) {
+ if (!_longReq.has(sym)) {
+  _longReq.set(sym, fetch('/api/history?range=since2000&symbol=' + encodeURIComponent(sym))
+   .then(r => (r.ok ? r.json() : null)).catch(() => null)
+   .then(d => { if (!d?.t?.length) { setTimeout(() => _longReq.delete(sym), 60000); return null; } return d; }));
+ }
+ return _longReq.get(sym);
+}
+const toTs = iso => Date.parse(iso + 'T12:00:00Z') / 1000;
+// Index of the last close on or before a date; null if the history doesn't reach back that far
+function idxAt(h, ts) {
+ if (!h?.t?.length || ts < h.t[0] || ts > h.t[h.t.length - 1] + 8 * 86400) return null;
+ let lo = 0, hi = h.t.length - 1;
+ while (lo < hi) { const m = (lo + hi + 1) >> 1; if (h.t[m] <= ts) lo = m; else hi = m - 1; }
+ return lo;
+}
+// S&P 500 peak-to-bottom dates
+const CRISES = [
+ { name: 'Dot-com crash', start: '2000-03-24', end: '2002-10-09' },
+ { name: '2008 financial crisis', start: '2007-10-09', end: '2009-03-09' },
+ { name: '2011 debt-ceiling scare', start: '2011-04-29', end: '2011-10-03' },
+ { name: 'Late-2018 selloff', start: '2018-09-20', end: '2018-12-24' },
+ { name: 'COVID crash', start: '2020-02-19', end: '2020-03-23' },
+ { name: '2022 rate-hike bear market', start: '2022-01-03', end: '2022-10-12' },
+ { name: '2025 tariff shock', start: '2025-02-19', end: '2025-04-08' },
+];
+// Return over a crisis, and how many months until the start level came back
+function crisisMove(h, c) {
+ const i0 = idxAt(h, toTs(c.start)), i1 = idxAt(h, toTs(c.end));
+ if (i0 == null || i1 == null || i1 <= i0) return null;
+ const move = h.c[i1] / h.c[i0] - 1;
+ let rec = null;
+ for (let k = i1; k < h.c.length; k++) if (h.c[k] >= h.c[i0]) { rec = Math.max(1, Math.round((h.t[k] - h.t[i1]) / 2629800)); break; }
+ return { move, recovered: rec };
+}
+const betaOf = t => liveStats(t)?.beta ?? ASSET_DATA[t]?.[0] ?? (tickerKind(t) === 'c' ? 2 : 1);
+
+/* ── Hype check: is the price running ahead of the business? ── */
+function hypeCheck(R) {
+ const f = R.facts || {}, st = R.stats || {}, px = R.price;
+ const sig = [];
+ const add = (hot, warm, text) => sig.push({ level: hot ? 2 : warm ? 1 : 0, text });
+ const stretch = f.twoHundredDayAvg && px ? px / f.twoHundredDayAvg - 1 : null;
+ if (stretch != null) add(stretch > 0.35, stretch > 0.15, `The price is ${sgn0(stretch)} versus its 200-day average.`);
+ const ret = st.ret1y ?? f.change52w;
+ if (ret != null) add(ret > 1, ret > 0.5, `It's ${sgn0(ret)} over the past year.`);
+ if (st.rsi != null) add(st.rsi > 78, st.rsi > 68, `Its 14-day RSI is ${st.rsi.toFixed(0)} (above 70 often means it ran up fast).`);
+ const pe = f.forwardPE > 0 ? f.forwardPE : f.trailingPE > 0 ? f.trailingPE : null;
+ if (R.kind === 'stock') {
+  if (pe) add(pe > 80, pe > 40, `It trades at ${pe.toFixed(0)} times earnings.`);
+  else if (f.priceToSales) add(f.priceToSales > 25, f.priceToSales > 10, `It has no profit yet and trades at ${f.priceToSales.toFixed(0)} times sales.`);
+ }
+ if (f.shortPctFloat != null) add(f.shortPctFloat > 0.2, f.shortPctFloat > 0.1, `${pct0(f.shortPctFloat)} of its shares are sold short.`);
+ const score = sig.reduce((s, x) => s + x.level, 0);
+ const label = score >= 6 ? 'Overheated' : score >= 4 ? 'Hot' : score >= 2 ? 'Warm' : 'Calm';
+ return { label, score, sig, stretch };
+}
+function hypeHTML(R) {
+ const H = hypeCheck(R);
+ const tone = { Calm: 'ok', Warm: 'mid', Hot: 'warn', Overheated: 'bad' }[H.label];
+ const lead = {
+  Calm: 'Nothing suggests the price is running on hype.',
+  Warm: 'Some signs the price has run up faster than usual.',
+  Hot: 'The price has run well ahead of where it usually trades. Hype-driven runs often cool off.',
+  Overheated: 'Several signs of a hype-driven run. Prices like this can fall fast when attention moves on.',
+ }[H.label];
+ return inSection('Hype check', `
+  <div class="in-hype ${tone}"><b>${H.label}</b><span>${lead}</span></div>
+  <ul class="in-list">${H.sig.map(s => `<li class="l${s.level}">${s.text}</li>`).join('')}</ul>
+  ${insightNote(H.label === 'Hot' || H.label === 'Overheated'
+   ? "StockSight's verdict never uses news or social media buzz, and a run like this can't raise its score: price momentum counts for 10% and is capped when the price is stretched."
+   : "StockSight's verdict never uses news or social media buzz. If the price ever runs far above its usual level, that can't raise the score: price momentum counts for 10% and is capped when the price is stretched.")}`);
+}
+
+/* ── The bear case, from the data only (no momentum, no analyst optimism) ── */
+function bearScenarios(R) {
+ const f = R.facts || {}, st = R.stats || {}, px = R.price, out = [];
+ if (!px) return out;
+ if (f.targetLow > 0 && f.analysts >= 3) out.push([`The lowest analyst target (${fmtPx(f.targetLow)})`, f.targetLow / px - 1]);
+ const pe = f.forwardPE > 0 ? f.forwardPE : f.trailingPE > 0 ? f.trailingPE : null;
+ if (R.kind === 'stock' && pe > 20) out.push([`If investors paid 20 times earnings (about the long-run market average) instead of ${pe.toFixed(0)}`, 20 / pe - 1]);
+ if (st.maxDD != null && st.maxDD < -0.05) out.push(['A repeat of its worst drop in the past year', st.maxDD]);
+ if (f.fiftyTwoWeekLow > 0) out.push([`Back to its 52-week low (${fmtPx(f.fiftyTwoWeekLow)})`, f.fiftyTwoWeekLow / px - 1]);
+ return out.filter(([, v]) => v < -0.01);
+}
+function bearCaseHTML(R, P) {
+ const sc = bearScenarios(R), bad = (P?.bad || []).map(p => p.mid);
+ return inSection('The bear case', `
+  ${bad.length ? `<ul class="in-list">${bad.slice(0, 6).map(b => `<li class="l1">${b}</li>`).join('')}</ul>` : '<p class="in-sub">The numbers show no major weak spots right now.</p>'}
+  ${sc.length ? `<div class="in-scen"><b>What the downside could look like</b>${sc.map(([l, v]) => `<div><span>${l}</span><em>${sgn0(v)}</em></div>`).join('')}</div>` : ''}
+  ${insightNote('Scenarios, not predictions. Built only from the business numbers and price history, leaving out momentum and analyst optimism on purpose.')}`,
+  'The data-backed case against it, so you see both sides.');
+}
+
+/* ── Interest rates and the economy ── */
+const _macroCache = {};
+async function macroFor(t, k) {
+ if (_macroCache[t]) return _macroCache[t];
+ const sym = ySym(t, k);
+ const [s, y, irx, oil, usdIdx, vix, longS, longSpx] = await Promise.all([
+  getHistory(sym), getHistory('^TNX'), getHistory('^IRX').catch(() => null), getHistory('CL=F').catch(() => null),
+  getHistory('DX-Y.NYB').catch(() => null), getHistory('^VIX').catch(() => null), getLongHistory(sym), getLongHistory('^GSPC'),
+ ]);
+ // Weekly stock returns against weekly changes in the 10-year Treasury yield, on matching dates
+ const yAt = new Map(y.t.map((ts, i) => [Math.floor(ts / 86400), y.c[i]]));
+ const pts = [];
+ for (let i = 0; i < s.t.length; i++) { const v = yAt.get(Math.floor(s.t[i] / 86400)); if (v != null) pts.push([s.c[i], v]); }
+ const r = [], dy = [];
+ for (let i = 5; i < pts.length; i += 5) { r.push(pts[i][0] / pts[i - 5][0] - 1); dy.push(pts[i][1] - pts[i - 5][1]); }
+ let sens = null, corr = null;
+ if (r.length > 40) {
+  const mr = rsAvg(r), my = rsAvg(dy);
+  let cov = 0, vy = 0, vr = 0;
+  for (let i = 0; i < r.length; i++) { cov += (r[i] - mr) * (dy[i] - my); vy += (dy[i] - my) ** 2; vr += (r[i] - mr) ** 2; }
+  sens = vy ? cov / vy : null;
+  corr = vy && vr ? cov / Math.sqrt(vy * vr) : null;
+ }
+ const chg = (h, n = 63) => h?.c?.length > n ? { now: h.c[h.c.length - 1], then: h.c[h.c.length - 1 - n] } : null;
+ const hike = CRISES.find(c => c.name.startsWith('2022'));
+ const out = {
+  sens, corr, weeks: r.length,
+  y10: chg(y), y3m: chg(irx), oil: chg(oil), dollar: chg(usdIdx), vix: vix?.c?.length ? vix.c[vix.c.length - 1] : null,
+  hike: longS ? crisisMove(longS, hike) : null, hikeSpx: longSpx ? crisisMove(longSpx, hike) : null,
+ };
+ _macroCache[t] = out;
+ return out;
+}
+function macroHTML(t, M) {
+ const name = rsName(t, window._rs?.R?.facts);
+ let sensLine = 'Not enough matching history to measure it.';
+ if (M.sens != null) {
+  const per = M.sens * 0.25, weak = Math.abs(M.corr) < 0.1;
+  sensLine = weak
+   ? `Over the past ${Math.round(M.weeks / 52)} years, ${name} has had little connection to interest-rate moves (correlation ${M.corr.toFixed(2)}).`
+   : `Over the past ${Math.round(M.weeks / 52)} years, when the 10-year Treasury yield rose 0.25 points in a week, ${name} tended to move <b>${sgn0(per)}</b> that week (correlation ${M.corr.toFixed(2)}). ${per < -0.004 ? 'Rising rates have tended to hurt it.' : per > 0.004 ? 'It has tended to do better when rates rise, as banks and energy companies often do.' : 'The effect has been small.'}`;
+ }
+ const delta = (o, unit, n = 2) => o ? `${o.now >= o.then ? 'Up' : 'Down'} from ${o.then.toFixed(n)}${unit} three months ago` : 'not available';
+ const pctDelta = o => o ? `${sgn0(o.now / o.then - 1)} over three months` : 'not available';
+ return inSection('Interest rates and the economy', `
+  <p class="in-p">${sensLine}</p>
+  ${M.hike ? `<p class="in-p">In the <b>2022 rate-hike bear market</b>, when the Fed raised rates fastest in 40 years, ${name} moved <b>${sgn0(M.hike.move)}</b> versus <b>${sgn0(M.hikeSpx?.move)}</b> for the S&amp;P 500.</p>` : ''}
+  <div class="in-grid">
+   <div><span>10-year Treasury yield</span><b>${M.y10 ? M.y10.now.toFixed(2) + '%' : '—'}</b><small>${delta(M.y10, '%')}</small></div>
+   <div><span>3-month T-bill (follows the Fed's rate)</span><b>${M.y3m ? M.y3m.now.toFixed(2) + '%' : '—'}</b><small>${delta(M.y3m, '%')}</small></div>
+   <div><span>Oil (WTI)</span><b>${M.oil ? fmtPx(M.oil.now) : '—'}</b><small>${pctDelta(M.oil)}</small></div>
+   <div><span>US dollar index</span><b>${M.dollar ? M.dollar.now.toFixed(1) : '—'}</b><small>${pctDelta(M.dollar)}</small></div>
+   <div><span>VIX (market fear gauge)</span><b>${M.vix != null ? M.vix.toFixed(1) : '—'}</b><small>${M.vix == null ? '' : M.vix > 25 ? 'high: markets are nervous' : M.vix < 15 ? 'low: markets are calm' : 'normal range'}</small></div>
+  </div>
+  ${insightNote('Inflation shows up in bond yields and oil prices, which move first. Measured from real daily prices; past relationships can change.')}`,
+  'How it has reacted to rate changes, and where rates stand now.');
+}
+// A line for the chat's macro answer, once the numbers are in
+function macroChatLine(t) {
+ const M = _macroCache[t];
+ if (!M || M.sens == null) return `<em>Open the Stress test tab for ${t}'s measured sensitivity to interest rates.</em><br><br>`;
+ const per = M.sens * 0.25;
+ const link = Math.abs(M.corr) < 0.1
+  ? `over the past ${Math.round(M.weeks / 52)} years, ${t} has had little connection to weekly interest-rate moves (correlation ${M.corr.toFixed(2)}).`
+  : `when the 10-year yield rose 0.25 points in a week, ${t} moved about ${sgn0(per)} on average (correlation ${M.corr.toFixed(2)}).`;
+ return `<strong>Measured, not guessed:</strong> ${link}${M.hike ? ` In 2022's rate hikes it moved ${sgn0(M.hike.move)} vs ${sgn0(M.hikeSpx?.move)} for the S&P 500.` : ''}<br><br>`;
+}
+
+/* ── Past crashes, for one asset ── */
+function crashesHTML(t, h, spx) {
+ const beta = betaOf(t);
+ const rows = CRISES.map(c => {
+  const s = crisisMove(spx, c);
+  if (!s) return null;
+  const m = h ? crisisMove(h, c) : null;
+  const est = !m;
+  const move = m ? m.move : Math.max(-0.95, beta * s.move);
+  return { c, s, move, est, rec: m?.recovered };
+ }).filter(Boolean);
+ if (!rows.length) return '';
+ return inSection('Past crashes', `
+  <div class="in-table-wrap"><table class="in-table">
+   <thead><tr><th>Crash</th><th>S&amp;P 500</th><th>${t}</th><th>Back to its old price</th></tr></thead>
+   <tbody>${rows.map(x => `<tr><td>${x.c.name}<small>${x.c.start.slice(0, 7)} to ${x.c.end.slice(0, 7)}</small></td><td class="dn">${sgn0(x.s.move)}</td><td class="${x.move < 0 ? 'dn' : 'up'}">${sgn0(x.move)}${x.est ? '<sup>est</sup>' : ''}</td><td>${x.est ? '—' : x.rec == null ? 'not yet' : x.rec < 12 ? `${x.rec} mo` : `${(x.rec / 12).toFixed(1)} yr`}</td></tr>`).join('')}</tbody>
+  </table></div>
+  ${rows.some(x => x.est) ? insightNote(`<sup>est</sup> ${t} wasn't trading yet, so this is its beta (${beta.toFixed(2)}) times the S&amp;P 500's move: a rough guess.`) : ''}
+  ${insightNote('From the start of each crash to the S&amp;P 500\'s bottom, using weekly closing prices (dividends included). Approximate.')}`,
+  'How it held up when the whole market fell.');
+}
+
+function renderStressTab() {
+ const el = document.getElementById('rsStress'), S = window._rs;
+ if (!el || !S?.R) return;
+ const { R, P } = S, t = S.ticker, k = S.type || tickerKind(t);
+ el.innerHTML = `<div class="in-pane">${R.kind === 'stock' || R.kind === 'crypto' ? hypeHTML(R) : ''}${R.kind === 'stock' ? bearCaseHTML(R, P) : ''}<div id="inMacro">${inLoading('Measuring how it reacts to interest rates')}</div><div id="inCrash"></div></div>`;
+ const seq = t;
+ macroFor(t, k).then(M => { if (window._rs?.ticker === seq) { const m = document.getElementById('inMacro'); if (m) m.innerHTML = macroHTML(t, M); } })
+  .catch(() => { const m = document.getElementById('inMacro'); if (m) m.innerHTML = insightNote("Rate data didn't load. Try again in a minute."); });
+ Promise.all([getLongHistory(ySym(t, k)), getLongHistory('^GSPC')]).then(([h, spx]) => {
+  if (window._rs?.ticker !== seq || !spx) return;
+  const c = document.getElementById('inCrash');
+  if (c) c.innerHTML = crashesHTML(t, h, spx);
+ });
+}
+
+/* ── Valuation: a DCF sandbox ── */
+let _dcf = null;
+function dcfDefaults(R) {
+ const f = R.facts || {}, px = R.price;
+ const g = rsClamp(f.revenueGrowth ?? f.earningsGrowth ?? 0.05, -0.05, 0.3);
+ const rf = rsClamp((livePrice('US10Y') ?? 4.3) / 100, 0.01, 0.08);
+ const beta = rsClamp(R.stats?.beta ?? f.beta5y ?? 1, 0.6, 2);
+ return {
+  fcf: f.fcfReported ?? f.freeCashflow, shares: f.marketCap && px ? f.marketCap / px : null,
+  netCash: (f.totalCash || 0) - (f.totalDebt || 0),
+  g1: Math.round(g * 1000) / 1000, g2: Math.round(g * 500) / 1000, tg: 0.025,
+  disc: Math.round(rsClamp(rf + beta * 0.05, 0.06, 0.14) * 1000) / 1000, rf, beta,
+ };
+}
+function dcfValue(p) {
+ if (!(p.fcf > 0) || !(p.shares > 0) || p.disc <= p.tg + 0.005) return null;
+ let cf = p.fcf, pv = 0;
+ const flows = [];
+ for (let y = 1; y <= 10; y++) { cf *= 1 + (y <= 5 ? p.g1 : p.g2); flows.push(cf); pv += cf / (1 + p.disc) ** y; }
+ const tv = cf * (1 + p.tg) / (p.disc - p.tg), tvPv = tv / (1 + p.disc) ** 10;
+ return { perShare: (pv + tvPv + p.netCash) / p.shares, pv, tvPv, flows };
+}
+// The growth rate (first five years, half that after) that makes the model equal today's price
+function impliedGrowth(p, price) {
+ let lo = -0.5, hi = 1.5;
+ const at = g => dcfValue({ ...p, g1: g, g2: g / 2 })?.perShare ?? -Infinity;
+ if (at(hi) < price || at(lo) > price) return null;
+ for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (at(m) < price) lo = m; else hi = m; }
+ return (lo + hi) / 2;
+}
+const DCF_INPUTS = [
+ ['fcf', 'Free cash flow, last 12 months', null, null, null],
+ ['g1', 'Cash-flow growth, years 1 to 5', -0.1, 0.4, 0.005],
+ ['g2', 'Cash-flow growth, years 6 to 10', -0.05, 0.25, 0.005],
+ ['disc', 'Discount rate (your required return)', 0.05, 0.15, 0.0025],
+ ['tg', 'Growth forever after year 10', 0, 0.04, 0.0025],
+];
+function dcfHTML(R) {
+ const f = R.facts || {};
+ if (R.kind !== 'stock') return `<div class="in-pane">${insightNote('A cash-flow valuation needs a company\'s own cash flows. Funds, indexes and crypto don\'t have them, so there\'s nothing to value this way.')}</div>`;
+ const base = dcfDefaults(R);
+ // Banks and insurers move customers' money through their cash flow, so a DCF says nothing about them
+ if (/Bank|Insurance|Mortgage|Capital Markets/i.test(f.industry || '')) {
+  const pb = f.priceToBook, roe = f.roe;
+  return `<div class="in-pane">${inSection('Valuation sandbox', `<p class="in-p">${rsName(R.t, f)} is a ${/Insurance/i.test(f.industry) ? 'insurer' : 'bank or lender'}. Its cash flow is mostly customers' money moving in and out, so a cash-flow (DCF) valuation doesn't work for it.</p>
+   <p class="in-p">The usual guides are <b>price-to-book</b> (what you pay for each $1 of the company's net worth)${pb != null ? `, which is <b>${pb.toFixed(2)}</b>` : ''}, and <b>return on equity</b> (profit on that net worth)${roe != null ? `, which is <b>${pct1(roe)}</b>` : ''}. A price-to-book well above 1 is reasonable only when the return on equity is high.</p>`)}</div>`;
+ }
+ if (!(base.fcf > 0) || !base.shares) {
+  return `<div class="in-pane">${inSection('Valuation sandbox', `<p class="in-p">${rsName(R.t, f)} ${base.fcf != null ? `had ${usd(base.fcf)} of free cash flow over the past year` : "doesn't report free cash flow"}, so a cash-flow valuation can't give a meaningful answer yet. That's common for young or fast-growing companies; price-to-sales and growth are better guides for now.</p>`)}</div>`;
+ }
+ _dcf = { t: R.t, base, p: { ...base }, price: R.price };
+ return `<div class="in-pane">${inSection('Valuation sandbox (DCF)', `
+  <div class="dcf-out" id="dcfOut"></div>
+  <div class="lc-sliders dcf-sl">${DCF_INPUTS.map(([k, label, min, max, step]) => k === 'fcf'
+   ? `<label class="lc-sl"><span>${label}</span><b data-dv="fcf"></b><input type="range" data-dk="fcf" min="${(base.fcf * 0.3).toFixed(0)}" max="${(base.fcf * 2).toFixed(0)}" step="${(base.fcf / 100).toFixed(0)}" value="${base.fcf}" oninput="dcfSet(this)"></label>`
+   : `<label class="lc-sl"><span>${label}</span><b data-dv="${k}"></b><input type="range" data-dk="${k}" min="${min}" max="${max}" step="${step}" value="${base[k]}" oninput="dcfSet(this)"></label>`).join('')}</div>
+  <button type="button" class="dash-btn" onclick="dcfReset()">Reset to the starting numbers</button>
+  <details class="dcf-src"><summary>Where every starting number comes from</summary><ul>
+   <li><b>Free cash flow:</b> ${usd(base.fcf)} over the last 12 months${f.fcfReported != null ? ` (cash from operations minus spending on equipment and buildings${f.fcfAsOf ? `, through ${f.fcfAsOf}` : ''})` : ''}, from the company's reports via Yahoo Finance.</li>
+   <li><b>Growth:</b> starts at the latest yearly revenue growth${f.revenueGrowth == null ? ' (not reported, so 5%)' : ''}, capped between −5% and 30%, then half that for years 6 to 10.</li>
+   <li><b>Discount rate:</b> the 10-year Treasury yield (${pct1(base.rf)}) plus its beta (${base.beta.toFixed(2)}) times a 5% extra return investors expect from stocks.</li>
+   <li><b>Shares:</b> market cap ÷ price = ${(base.shares / 1e9).toFixed(2)} billion. <b>Net cash:</b> cash minus debt = ${usd(base.netCash)}.</li>
+   <li>The value of all future cash, shrunk to today's dollars, plus net cash, divided by shares.</li>
+  </ul></details>
+  ${insightNote("A DCF is only as good as its inputs: small changes in growth or the discount rate move the answer a lot. That's why you can change them. Not financial advice.")}`,
+  'What the business could be worth from the cash it produces. Change any number and the value updates.')}</div>`;
+}
+function dcfRun() {
+ if (!_dcf) return;
+ const { p, price } = _dcf, box = document.getElementById('dcfOut');
+ document.querySelectorAll('[data-dv]').forEach(b => {
+  const k = b.dataset.dv;
+  b.textContent = k === 'fcf' ? usd(p.fcf) : pct1(p[k]);
+  const inp = document.querySelector(`[data-dk="${k}"]`);
+  if (inp) inp.style.setProperty('--fill', `${((inp.value - inp.min) / (inp.max - inp.min) * 100).toFixed(1)}%`);
+ });
+ if (!box) return;
+ const v = dcfValue(p);
+ if (!v) { box.innerHTML = '<p class="in-p">The discount rate has to be above the forever growth rate for the math to work.</p>'; return; }
+ const gap = v.perShare / price - 1, ig = impliedGrowth(p, price), tvShare = v.tvPv / (v.pv + v.tvPv);
+ const maxF = Math.max(...v.flows);
+ box.innerHTML = `
+  <div class="dcf-head"><div><span>Value per share</span><b>${fmtPx(v.perShare)}</b></div><div><span>Today's price</span><b>${fmtPx(price)}</b></div>
+   <div><span>Difference</span><b class="${gap >= 0 ? 'up' : 'dn'}">${sgn0(gap)}</b></div></div>
+  <p class="in-p">${gap >= 0.1 ? `With these numbers, it's worth about <b>${pct0(gap)} more</b> than today's price.` : gap <= -0.1 ? `With these numbers, today's price is about <b>${pct0(-gap / (1 + gap))} above</b> what the cash flows support.` : 'With these numbers, today\'s price is about right.'}
+   ${ig != null ? ` Today's price assumes cash flow grows about <b>${pct1(ig)} a year</b> for five years (half that after).` : ''}</p>
+  <div class="dcf-bars" aria-label="Projected free cash flow, years 1 to 10">${v.flows.map((x, i) => `<i style="height:${Math.max(4, x / maxF * 100).toFixed(0)}%" title="Year ${i + 1}: ${usd(x)}"></i>`).join('')}</div>
+  <p class="in-note">Projected free cash flow, years 1 to 10. ${pct0(tvShare)} of the value comes from after year 10, which is the most uncertain part.</p>`;
+}
+function dcfSet(inp) { if (!_dcf) return; _dcf.p[inp.dataset.dk] = +inp.value; dcfRun(); }
+function dcfReset() {
+ if (!_dcf) return;
+ _dcf.p = { ..._dcf.base };
+ document.querySelectorAll('[data-dk]').forEach(i => { i.value = _dcf.base[i.dataset.dk]; });
+ dcfRun();
+}
+
+/* ── Options pulse ── */
+async function renderOptionsTab() {
+ const el = document.getElementById('rsOpts'), S = window._rs;
+ if (!el || !S) return;
+ const t = S.ticker, k = S.type || tickerKind(t);
+ if (k === 'c' || k === 'i') { el.innerHTML = `<div class="in-pane">${insightNote('Options data is shown for stocks and funds.')}</div>`; return; }
+ el.innerHTML = `<div class="in-pane">${inLoading('Reading the options market')}</div>`;
+ let o = null;
+ try { const r = await fetch(`/api/fundamentals?options=1&symbol=${encodeURIComponent(ySym(t, k))}`); if (r.ok) o = await r.json(); } catch {}
+ if (window._rs?.ticker !== t || !document.getElementById('rsOpts')) return;
+ if (!o) { el.innerHTML = `<div class="in-pane">${insightNote(`No options data for ${t} right now. Not every stock has listed options.`)}</div>`; return; }
+ const hv = liveStats(t)?.vol;
+ const exp = new Date(o.expiry + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+ const pc = o.putCallVolume;
+ const pcWord = pc == null ? '' : pc > 1 ? 'more puts than calls: traders are hedging or bearish' : pc < 0.7 ? 'more calls than puts: traders lean bullish' : 'a fairly even mix';
+ el.innerHTML = `<div class="in-pane">${inSection('Options pulse', `
+  <div class="in-grid">
+   <div><span>Implied volatility</span><b>${pct0(o.iv)}</b><small>${hv != null && o.iv != null ? `options expect ${o.iv > hv * 1.15 ? 'bigger swings than' : o.iv < hv * 0.85 ? 'smaller swings than' : 'about the same swings as'} its past year (${pct0(hv)})` : 'the yearly swing options are pricing in'}</small></div>
+   <div><span>Expected move by ${exp}</span><b>±${pct1(o.expectedMovePct)}</b><small>±${fmtPx(o.expectedMove)}: about a 2 in 3 chance it ends inside this range</small></div>
+   <div><span>Put/call ratio</span><b>${pc ?? '—'}</b><small>${pcWord}${o.putCallOpenInterest != null ? ` (open positions: ${o.putCallOpenInterest})` : ''}</small></div>
+   <div><span>Protect your shares</span><b>${o.protectivePut ? pct1(o.protectivePut.costPct) : '—'}</b><small>${o.protectivePut ? `a ${fmtPx(o.protectivePut.strike)} put costs about ${fmtPx(o.protectivePut.cost)} a share and limits losses below that price until ${exp}` : 'no put prices available'}</small></div>
+  </div>`, `The ${exp} expiry, ${o.days} days out.`)}
+  ${inSection('Unusual activity', o.unusual.length ? `
+   <div class="in-table-wrap"><table class="in-table">
+    <thead><tr><th>Contract</th><th>Expires</th><th>Volume</th><th>Open interest</th><th>Volume ÷ open</th></tr></thead>
+    <tbody>${o.unusual.map(u => `<tr><td>${fmtPx(u.strike)} <b class="${u.type === 'call' ? 'up' : 'dn'}">${u.type}</b></td><td>${new Date(u.expiry + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td><td>${u.volume.toLocaleString()}</td><td>${u.openInterest.toLocaleString()}</td><td>${u.openInterest ? (u.volume / u.openInterest).toFixed(1) + '×' : 'new'}</td></tr>`).join('')}</tbody>
+   </table></div>
+   ${insightNote('Contracts that traded more than twice their open positions (and at least 500 contracts): a sign of big new bets. Calls profit if the price rises, puts if it falls. One trade can also be a hedge, so treat it as a clue, not a signal.')}`
+   : '<p class="in-sub">No contracts with unusually heavy trading in the next few expiries.</p>')}
+  ${insightNote('Options data from Yahoo Finance, can be delayed. Options are risky and many expire worthless. New to them? <a href="#" onclick="openLesson(\'options\');return false">Read the options lesson</a>.')}
+ </div>`;
+}
+
+/* ── Fill the new tabs when a stock page's data arrives ── */
+function fillInsights(c, D) {
+ const R = D?.R;
+ if (!R) return;
+ window._rs = Object.assign(window._rs || {}, { type: c.type });
+ const dcf = document.getElementById('rsDcf');
+ if (dcf) { dcf.innerHTML = dcfHTML(R); dcfRun(); }
+ if (document.getElementById('rsStress')) renderStressTab();
+ if (document.getElementById('rsOpts')) renderOptionsTab();
+ // The DCF's discount rate uses today's 10-year yield; refresh once it's in
+ if (R.kind === 'stock' && livePrice('US10Y') == null) fetchQuotes([['US10Y', 'i']]).then(() => {
+  if (window._rs?.ticker === c.ticker && _dcf?.t === c.ticker && JSON.stringify(_dcf.p) === JSON.stringify(_dcf.base)) { const el = document.getElementById('rsDcf'); if (el) { el.innerHTML = dcfHTML(R); dcfRun(); } }
+ });
+}
+
+/* ── Portfolio stress test (Portfolio and Paper Trade) ── */
+function portfolioPositions(kind) {
+ if (kind === 'pt') {
+  const pt = getPtPortfolio();
+  const pos = Object.entries(pt.holdings || {}).map(([t, h]) => { const sh = typeof h === 'object' && h ? Number(h.shares) || 0 : Number(h) || 0; return { t, k: tickerKind(t), sh, value: sh * ptDailyPrice(t) }; }).filter(p => p.value > 0);
+  return { pos, cash: Number(pt.cash) || 0 };
+ }
+ const pos = holdings.map(h => ({ t: h.ticker, k: h.type || tickerKind(h.ticker), sh: Number(h.shares) || 0, value: (Number(h.shares) || 0) * (livePrice(h.ticker) ?? Number(h.buyPrice) ?? 0) })).filter(p => p.value > 0);
+ return { pos, cash: 0 };
+}
+// The last result for each page, kept while the holdings stay the same: Paper Trade redraws itself as prices update
+const _stressLast = {};
+const stressSig = pos => pos.map(p => `${p.t}:${p.sh}`).sort().join(',');
+function mountPortfolioStress(kind) {
+ if (tab !== kind) return;
+ const mc = document.getElementById('mainContent');
+ if (!mc || document.getElementById('stressCard')) return;
+ const { pos } = portfolioPositions(kind);
+ if (!pos.length) return;
+ const last = _stressLast[kind]?.sig === stressSig(pos) ? _stressLast[kind].html : null;
+ mc.insertAdjacentHTML('beforeend', `<section class="card in-card" id="stressCard">
+  <div class="card-hdr"><div class="card-hdr-title">Stress test: past crashes</div><div class="card-hdr-sub">How today's ${kind === 'pt' ? 'practice portfolio' : 'holdings'} would have done in real market crashes</div></div>
+  <div class="asset-pad" id="stressBody">${last || `<button type="button" class="dash-btn dash-btn-main" onclick="runPortfolioStress('${kind}')">Run the stress test</button>`}</div>
+ </section>`);
+ // A tab in the tools panel: the one-screen desktop grid has no room for another card
+ // Mounted in the same step as the page draw, so the panel can reopen on this tab if it was the last one used
+ const wrap = ssTabify(kind, [{ el: document.getElementById('stressCard'), label: 'Stress test', order: kind === 'pt' ? 2.5 : 3.5 }]);
+ let saved = null;
+ try { saved = localStorage.getItem('ss_tab_' + kind); } catch {}
+ const i = wrap && saved === 'Stress test' ? [...wrap.querySelectorAll(':scope > .ss-tabs-bar > .ss-tab')].findIndex(b => b.textContent === saved) : -1;
+ if (i >= 0) ssTabSelect(wrap, i, false);
+}
+async function runPortfolioStress(kind) {
+ const box = document.getElementById('stressBody');
+ if (!box) return;
+ const { pos, cash } = portfolioPositions(kind);
+ _stressLast[kind] = { sig: stressSig(pos), html: inLoading('Replaying past crashes with your holdings') };
+ box.innerHTML = _stressLast[kind].html;
+ const total = pos.reduce((s, p) => s + p.value, 0) + cash;
+ await fetchStats(pos.map(p => [p.t, p.k])).catch(() => null);
+ const [spx, ...hists] = await Promise.all([getLongHistory('^GSPC'), ...pos.map(p => getLongHistory(ySym(p.t, p.k)))]);
+ const out = () => document.getElementById('stressBody');   // the page may have redrawn while this ran
+ if (!out()) { delete _stressLast[kind]; return; }
+ if (!spx) { delete _stressLast[kind]; out().innerHTML = insightNote("Price history didn't load. Try again in a minute."); return; }
+ const estNames = new Set();
+ const rows = CRISES.map(c => {
+  const s = crisisMove(spx, c);
+  if (!s) return null;
+  let change = 0;
+  pos.forEach((p, i) => {
+   const m = hists[i] ? crisisMove(hists[i], c) : null;
+   if (!m) estNames.add(p.t);
+   change += p.value * (m ? m.move : Math.max(-0.95, betaOf(p.t) * s.move));
+  });
+  return { c, s, port: total ? change / total : 0, dollars: change };
+ }).filter(Boolean);
+ const worst = rows.reduce((a, b) => (b.port < a.port ? b : a), rows[0]);
+ const html = `
+  <p class="in-p">Your worst case: the <b>${worst.c.name}</b>, about <b class="${worst.port < 0 ? 'dn' : 'up'}">${sgn0(worst.port)}</b>, or ${worst.dollars < 0 ? 'a loss of ' : ''}${usd(Math.abs(worst.dollars))} of today's ${usd(total)}${kind === 'pt' && cash ? ' (cash in the account stays put)' : ''}.</p>
+  <div class="in-table-wrap"><table class="in-table">
+   <thead><tr><th>Crash</th><th>S&amp;P 500</th><th>Your portfolio</th></tr></thead>
+   <tbody>${rows.map(x => `<tr><td>${x.c.name}<small>${x.c.start.slice(0, 7)} to ${x.c.end.slice(0, 7)}</small></td><td class="dn">${sgn0(x.s.move)}</td><td class="${x.port < 0 ? 'dn' : 'up'}">${sgn0(x.port)}<small>${x.dollars < 0 ? '−' : '+'}${usd(Math.abs(x.dollars))} today</small></td></tr>`).join('')}</tbody>
+  </table></div>
+  ${estNames.size ? insightNote(`Some holdings weren't trading during every crash (${[...estNames].slice(0, 6).join(', ')}${estNames.size > 6 ? ' and more' : ''}). For those, it uses each one's beta times the S&amp;P 500's move: a rough guess.`) : ''}
+  ${insightNote("Today's holdings, replayed from the start of each crash to the market's bottom using weekly closing prices. Past crashes won't repeat exactly. Not financial advice.")}
+  <button type="button" class="dash-btn" onclick="runPortfolioStress('${kind}')">Run again</button>`;
+ _stressLast[kind] = { sig: stressSig(pos), html };
+ if (out()) out().innerHTML = html;
+ track('stress_test', { kind });
+}
+// Add the Stress test tab to Portfolio and Paper Trade whenever they draw
+{
+ const wrap = name => { const orig = window[name]; if (typeof orig !== 'function') return; window[name] = function (...a) { const r = orig.apply(this, a); try { mountPortfolioStress(name === 'renderPortfolio' ? 'port' : 'pt'); } catch (e) { console.warn('stress tab', e); } return r; }; };
+ wrap('renderPortfolio');
+ wrap('renderPaperTradeTab');
+}
+
+// Extra lines for the chat's bear-case answer
+function bearChatExtra(R) {
+ const sc = R ? bearScenarios(R) : [];
+ return sc.length ? '<br><br><strong>What the downside could look like</strong><br>' + sc.map(([l, v]) => `• ${l}: ${sgn0(v)}`).join('<br>') : '';
+}

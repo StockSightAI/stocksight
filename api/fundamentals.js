@@ -3,7 +3,9 @@
 //
 // GET /api/fundamentals?symbol=AAPL             full detail for one stock, ETF, index or coin
 // GET /api/fundamentals?symbols=AAPL,MSFT,...   the scoring facts for up to 20 symbols
-import { SYMBOL_RE, quoteSummary } from './_yahoo.js';
+// GET /api/fundamentals?symbol=AAPL&options=1   options pulse: implied volatility, expected move, put/call
+//                                                ratios, unusual activity and what a protective put costs
+import { SYMBOL_RE, quoteSummary, optionChain, trailingCashFlow } from './_yahoo.js';
 
 const FULL = ['price', 'assetProfile', 'summaryDetail', 'financialData', 'defaultKeyStatistics', 'recommendationTrend',
   'earningsHistory', 'calendarEvents', 'upgradeDowngradeHistory', 'earningsTrend', 'earnings', 'fundProfile', 'topHoldings'];
@@ -92,7 +94,7 @@ export function facts(r) {
   };
 }
 
-function full(r, symbol) {
+function full(r, symbol, cf) {
   const ap = r.assetProfile || {}, fp = r.fundProfile || {}, th = r.topHoldings || {};
   const pick = (o, keys) => Object.fromEntries(keys.map(k => [k, num(o?.[k])]));
   const trend = (r.recommendationTrend?.trend || []).map(t => ({ period: t.period, ...pick(t, ['strongBuy', 'buy', 'hold', 'sell', 'strongSell']) }));
@@ -115,7 +117,8 @@ function full(r, symbol) {
   const sectors = (th.sectorWeightings || []).map(o => { const [k, v] = Object.entries(o)[0] || []; return k ? { sector: k, pct: num(v) } : null; }).filter(Boolean);
   return {
     symbol,
-    facts: facts(r),
+    // fcfReported is the reported 12-month free cash flow; freeCashflow stays Yahoo's estimate so scores match the screener
+    facts: { ...facts(r), fcfReported: cf?.fcf ?? null, capex: cf?.capex ?? null, fcfAsOf: cf?.asOf ?? null },
     profile: {
       summary: str(ap.longBusinessSummary) || str(ap.description),
       website: str(ap.website),
@@ -135,14 +138,69 @@ function full(r, symbol) {
   };
 }
 
+// Options pulse for the expiry closest to a month out (anything expiring within 5 days is skipped:
+// those trade on the day's noise). Unusual activity scans that expiry and the next two.
+const DAY = 86400;
+const goodIv = v => Number.isFinite(v) && v > 0.04 && v < 5;   // outside market hours Yahoo reports near-zero junk
+const mid = c => (c ? (c.bid > 0 && c.ask > 0 ? (c.bid + c.ask) / 2 : c.lastPrice > 0 ? c.lastPrice : null) : null);
+const nearest = (list, x) => list.reduce((b, c) => (!b || Math.abs(c.strike - x) < Math.abs(b.strike - x) ? c : b), null);
+const sum = (list, k) => list.reduce((s, c) => s + (Number(c[k]) || 0), 0);
+const isoDay = t => new Date(t * 1000).toISOString().slice(0, 10);
+export async function optionsSummary(sym, now = Date.now() / 1000) {
+  const first = await optionChain(sym);
+  const dates = (first?.expirationDates || []).filter(d => d - now > 5 * DAY);
+  if (!dates.length) return null;
+  const target = now + 30 * DAY;
+  const exp = dates.reduce((b, d) => (Math.abs(d - target) < Math.abs(b - target) ? d : b), dates[0]);
+  const scan = [exp, ...dates.filter(d => d > exp).slice(0, 2)];
+  const chains = await Promise.all(scan.map(d => (first.options?.[0]?.expirationDate === d ? first : optionChain(sym, d))));
+  const main = chains[0]?.options?.[0], price = chains[0]?.quote?.regularMarketPrice ?? first.quote?.regularMarketPrice;
+  if (!main || !(price > 0)) return null;
+  const calls = main.calls || [], puts = main.puts || [];
+  const days = Math.max(1, (exp - now) / DAY);
+  const atmC = nearest(calls, price), atmP = nearest(puts, price);
+  const ivs = [atmC?.impliedVolatility, atmP?.impliedVolatility].filter(goodIv);
+  const straddle = mid(atmC) != null && mid(atmP) != null ? mid(atmC) + mid(atmP) : null;
+  // Quoted implied volatility when it's live; otherwise read it off the at-the-money straddle,
+  // which costs about 0.8 x price x volatility x sqrt(years)
+  const iv = ivs.length ? ivs.reduce((a, b) => a + b, 0) / ivs.length
+    : straddle ? straddle / (0.7979 * price * Math.sqrt(days / 365)) : null;
+  const move = iv ? price * iv * Math.sqrt(days / 365) : straddle;
+  const callVol = sum(calls, 'volume'), putVol = sum(puts, 'volume'), callOi = sum(calls, 'openInterest'), putOi = sum(puts, 'openInterest');
+  const hedge = nearest(puts.filter(p => p.strike <= price), price * 0.95);
+  const hedgeCost = mid(hedge);
+  const unusual = chains.flatMap((ch, i) => {
+    const o = ch?.options?.[0];
+    if (!o) return [];
+    const tag = (c, type) => ({ type, strike: c.strike, expiry: isoDay(scan[i]), volume: c.volume || 0, openInterest: c.openInterest || 0, iv: goodIv(c.impliedVolatility) ? +c.impliedVolatility.toFixed(4) : null, last: c.lastPrice ?? null });
+    return [...(o.calls || []).map(c => tag(c, 'call')), ...(o.puts || []).map(c => tag(c, 'put'))];
+  }).filter(c => c.volume >= 500 && c.volume > 2 * c.openInterest).sort((a, b) => b.volume - a.volume).slice(0, 6);
+  return {
+    symbol: sym, price, expiry: isoDay(exp), days: Math.round(days),
+    iv: iv != null ? +iv.toFixed(4) : null,
+    expectedMove: move != null ? +move.toFixed(2) : null, expectedMovePct: move != null ? +(move / price).toFixed(4) : null,
+    callVolume: callVol, putVolume: putVol, putCallVolume: callVol ? +(putVol / callVol).toFixed(2) : null,
+    putCallOpenInterest: callOi ? +(putOi / callOi).toFixed(2) : null,
+    protectivePut: hedge && hedgeCost ? { strike: hedge.strike, cost: +hedgeCost.toFixed(2), costPct: +(hedgeCost / price).toFixed(4) } : null,
+    unusual, expiries: dates.length, asOf: Date.now(),
+  };
+}
+
 export default async function handler(req, res) {
   const one = String(req.query?.symbol || '').toUpperCase().trim();
+  if (one && req.query?.options) {
+    if (!SYMBOL_RE.test(one)) return res.status(400).json({ error: 'Invalid symbol' });
+    const o = await optionsSummary(one).catch(() => null);
+    if (!o) { res.setHeader('Cache-Control', 's-maxage=300'); return res.status(404).json({ error: 'No options data for this symbol' }); }
+    res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=900, stale-while-revalidate=3600');
+    return res.status(200).json(o);
+  }
   if (one) {
     if (!SYMBOL_RE.test(one)) return res.status(400).json({ error: 'Invalid symbol' });
-    const r = await quoteSummary(one, FULL);
+    const [r, cf] = await Promise.all([quoteSummary(one, FULL), trailingCashFlow(one).catch(() => null)]);
     if (!r) { res.setHeader('Cache-Control', 's-maxage=120'); return res.status(404).json({ error: 'No data for this symbol' }); }
     res.setHeader('Cache-Control', 'public, max-age=1800, s-maxage=21600, stale-while-revalidate=86400');
-    return res.status(200).json(full(r, one));
+    return res.status(200).json(full(r, one, cf));
   }
 
   const symbols = [...new Set(String(req.query?.symbols || '').toUpperCase().split(',').map(x => x.trim()).filter(x => SYMBOL_RE.test(x)))].slice(0, 20);
