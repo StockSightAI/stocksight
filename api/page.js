@@ -2,12 +2,15 @@
 // (vercel.json rewrites /stock/:t to /api/page?t=...). Sends the normal site with this stock's title,
 // description and preview tags, plus a short real-data summary in the page itself. People see that summary
 // only until the app loads and opens the full stock page; crawlers can read it either way.
+// Also league invites: stocksightai.com/join/ABC123 (rewritten to /api/page?league=...) gets a link preview
+// naming the league, so a shared invite reads as an invite. The app on that address handles the joining.
 import fs from 'node:fs';
 import path from 'node:path';
 import { UA, quoteSummary } from './_yahoo.js';
 import { LITE, facts as toFacts } from './fundamentals.js';
 import { scoreStock } from './_digest.js';
 import { ySym, TICKER_RE } from './_symbols.js';
+import { invitePreview, CODE_RE } from './_leagues.js';
 
 const SITE = 'https://stocksightai.com';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -54,8 +57,27 @@ async function unknownTicker(sym) {
   return false;
 }
 
+async function renderInvite(req, res, code) {
+  let html = await siteHtml(req);
+  const p = CODE_RE.test(code) ? await invitePreview(code).catch(() => null) : null;
+  const title = p ? `Join ${p.name} on StockSight` : 'Join a league on StockSight';
+  const description = p
+    ? `${p.by ? `${p.by} invited you to` : "You're invited to"} ${p.name}, a StockSight league with ${p.members} ${p.members === 1 ? 'member' : 'members'}. Learn investing, earn XP and see who tops the board each week.`
+    : 'StockSight leagues: learn investing with friends, earn XP and see who tops the board each week.';
+  html = withHead(html, { title, description, url: `${SITE}/join/${encodeURIComponent(code)}`, noindex: true })
+    .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${SITE}/">`);
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
+  return res.status(200).send(html);
+}
+
 export default async function handler(req, res) {
   const t = String(req.query?.t || '').toUpperCase().trim();
+  if (req.query?.league) {
+    const code = String(req.query.league).toUpperCase().trim();
+    try { return await renderInvite(req, res, code); }
+    catch (e) { console.error('invite page:', e); res.setHeader('Location', '/'); return res.status(302).end(); }
+  }
   try {
     return await render(req, res, t);
   } catch (e) {

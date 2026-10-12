@@ -13,6 +13,7 @@ import {
   configured, fail, readBody, limitedShared, ipOf, EMAIL_RE, getUserRow, insertUser, patchUser, deleteUserRow,
   hashPassword, verifyPassword, passwordProblem, signSession, sessionRow, publicUser, verifyGoogle, sendResetEmail, sha256,
 } from './_auth.js';
+import { leaveAll } from './_leagues.js';
 
 const MIN = 60e3;
 const CODE_TTL = 15 * MIN;
@@ -129,6 +130,7 @@ async function deleteAccount(req, res, b) {
   if (b.confirm !== 'DELETE') return fail(res, 400, 'Please type DELETE to confirm.');
   if (await limitedShared('delete:' + row.email, 10, 15 * MIN)) return fail(res, 429, 'Too many attempts. Wait 15 minutes and try again.');
   if (row.phash && !verifyPassword(String(b.password || ''), row.phash).ok) return fail(res, 403, 'Incorrect password. Please try again.');
+  await leaveAll(row.email).catch(e => console.warn('delete: leagues', e.message));
   await deleteUserRow(row.email);
   return res.status(200).json({ ok: true });
 }

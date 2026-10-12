@@ -30,7 +30,7 @@
  try { if (localStorage.getItem('ss_theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}
  // New visitors land on the landing screen, whose biggest piece is the app screenshot: fetch the right one first
  try {
-  if (!localStorage.getItem('ss_ss3_s') && !location.pathname.startsWith('/stock/')) {
+  if (!localStorage.getItem('ss_ss3_s') && !/^\/(stock|join)\//.test(location.pathname)) {
    const t = document.documentElement.getAttribute('data-theme'), l = document.createElement('link');
    l.rel = 'preload'; l.as = 'image'; l.fetchPriority = 'high';
    l.setAttribute('imagesrcset', `/images/app-preview-${t}-900.webp 900w, /images/app-preview-${t}-1600.webp 1600w`);
@@ -722,7 +722,8 @@ header{margin-bottom:2rem}
 .ob-next.ready:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--glow)}
 .ob-skip{background:none;border:none;color:var(--text3);font-family:inherit;font-size:.75rem;cursor:pointer;padding:4px 8px}
 .ob-skip:hover{color:var(--text2)}
-#tutorialOverlay{position:fixed;inset:0;z-index:9000;pointer-events:all;background:rgba(0,0,0,.55);backdrop-filter:blur(1px)}
+#tutorialOverlay{position:fixed;inset:0;z-index:9000;pointer-events:none;background:none}
+.tut-shade{position:fixed;z-index:9001;background:rgba(0,0,0,.55);pointer-events:all}
 .tut-spotlight{
  position:fixed;z-index:9002;border-radius:12px;pointer-events:none;
  box-shadow:0 0 0 3px rgba(108,92,231,.9), 0 0 0 6px rgba(108,92,231,.3), 0 0 24px rgba(108,92,231,.4);
@@ -753,7 +754,6 @@ header{margin-bottom:2rem}
 .tut-dots{display:flex;gap:4px;margin-left:auto}
 .tut-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);transition:background .2s}
 .tut-dot.on{background:var(--accent2)}
-.tut-target-active{position:relative;z-index:9003 !important}
 
 /* ── BROKER MODAL ── */
 #brokerModal{position:fixed;inset:0;z-index:8000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
@@ -1819,6 +1819,168 @@ body[data-screen="gate"] #S-gate{display:block!important}
  .lc-m{padding:7px 9px;font-size:.8rem}.lc-m.lc-def{font-size:.76rem}
 }
 @media (prefers-reduced-motion:reduce){.lc-wrap,.lc-sorted li,.lc-bw i,.lc-m.bad,.lc-load i{animation:none}}
+/* Profile photos, initials and level rings */
+.av{--av:32px;--ring:transparent;position:relative;isolation:isolate;flex:none;display:inline-block;width:var(--av);height:var(--av);border-radius:50%;vertical-align:middle}
+.av b{position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;background:var(--card3);color:var(--accent2);font:700 calc(var(--av) * .38)/1 'Geist',sans-serif;letter-spacing:-.02em}
+.av img{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;background:var(--card3)}
+.av[class*="ring-"]::before{content:"";position:absolute;inset:-3px;border-radius:50%;z-index:-1;background:var(--ring)}
+.av[class*="ring-"] b,.av[class*="ring-"] img{box-shadow:0 0 0 2px var(--bg)}
+.av.ring-bronze{--ring:#c07a45}
+.av.ring-silver{--ring:#c3ccd5}
+.av.ring-gold{--ring:linear-gradient(135deg,#f6d365,#d4a017)}
+.av.ring-legend{--ring:conic-gradient(from 0deg,#a855f7,#22d3ee,#facc15,#f472b6,#a855f7)}
+.av.ring-legend::before{animation:avSpin 6s linear infinite}
+@keyframes avSpin{to{transform:rotate(360deg)}}
+#hdrAvatar.avatar{width:auto;height:auto;background:none;border:0;padding:0}
+button.prof-av{position:relative;padding:0;margin:0;border:0;background:none;cursor:pointer;width:auto;height:auto;border-radius:50%;display:inline-grid}
+button.prof-av:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.av-cam{position:absolute;right:-3px;bottom:-3px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;border:2px solid var(--card)}
+.av-cam svg{width:12px;height:12px}
+.ph-row-set{display:flex;align-items:center;gap:14px}
+.ph-btns{display:flex;gap:8px;flex-wrap:wrap}
+.ph-box{max-width:400px}
+.lesson-box p.ph-hint{font-size:.88rem!important;color:var(--text2)!important;margin:0 0 14px!important;line-height:1.55}
+.ph-crop{width:min(260px,100%);aspect-ratio:1;margin:0 auto 14px;border-radius:50%;overflow:hidden;background:var(--card2);box-shadow:0 0 0 1px var(--border2);touch-action:none;cursor:grab}
+.ph-crop:active{cursor:grabbing}
+.ph-crop canvas{display:block;width:100%;height:100%}
+.ph-zoom b{display:none}
+/* Level rewards in the Learn hub */
+.hub-reward{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border2);border-radius:13px;background:var(--card2);margin-bottom:8px}
+.hr-ico{flex:none;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--glow2);color:var(--accent2)}
+.hr-ico svg{width:17px;height:17px}
+.hr-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.hr-txt span{font-size:.72rem;color:var(--text3)}.hr-txt b{font-size:.9rem}
+.hr-xp{font-size:.76rem;font-weight:650;color:var(--accent2);white-space:nowrap}
+.hub-rewards{margin-bottom:16px}
+.hub-rewards summary{cursor:pointer;font-size:.8rem;color:var(--text2);padding:4px 2px;list-style:none}
+.hub-rewards summary::-webkit-details-marker{display:none}
+.hub-rewards summary::before{content:"+ ";color:var(--accent2)}
+.hub-rewards[open] summary::before{content:"\2212  "}
+.hub-rewards ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.hub-rewards li{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:10px;background:var(--card2);color:var(--text3)}
+.hub-rewards li.got{color:var(--text)}
+.hub-rewards li.got .hr-ico{color:var(--green)}
+.hub-rewards li div{display:flex;flex-direction:column;min-width:0}
+.hub-rewards li b{font-size:.84rem;font-weight:600}.hub-rewards li span{font-size:.76rem;color:var(--text3)}
+.hub-league{width:100%;display:flex;align-items:center;gap:12px;padding:12px;margin:0 0 16px;border:1px solid var(--border2);border-radius:13px;background:var(--card2);font:inherit;color:var(--text);text-align:left;cursor:pointer}
+.hub-league:hover{border-color:var(--accent)}
+.hl-txt{flex:1;display:flex;flex-direction:column;min-width:0}
+.hl-txt b{font-size:.9rem}.hl-txt span{font-size:.75rem;color:var(--text3)}
+.hub-league>svg{color:var(--text3);flex:none}
+.tog.locked{opacity:.55}
+.tog.locked::after{content:"Lvl 4";margin-left:6px;font-size:.62rem;font-weight:700;color:var(--text3)}
+body.accent-teal{--accent:#0f766e;--accent2:#5eead4;--accent3:#0d9488;--glow:rgba(13,148,136,0.22);--glow2:rgba(13,148,136,0.08)}
+body.accent-ruby{--accent:#be123c;--accent2:#fda4af;--accent3:#e11d48;--glow:rgba(190,18,60,0.22);--glow2:rgba(190,18,60,0.08)}
+/* Learn and Leagues pages */
+.learn-page{max-width:720px;margin:0 auto}
+.lg-page{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.lg-week{display:flex;justify-content:space-between;gap:6px 12px;flex-wrap:wrap;font-size:.8rem;color:var(--text3)}
+.lg-week b{color:var(--text)}
+.lg-list{display:flex;flex-direction:column;gap:10px}
+.lg-card{display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:1px solid var(--border2);border-radius:var(--r);background:var(--card);font:inherit;color:var(--text);text-align:left;cursor:pointer;transition:border-color .15s,transform .15s}
+.lg-card:hover{border-color:var(--accent)}.lg-card:active{transform:scale(.99)}
+.lg-card-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.lg-card-h b{font-size:1.02rem}.lg-card-h span{font-size:.75rem;color:var(--text3)}
+.lg-card-m{display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--text2)}
+.lg-rank{font-size:1.2rem;font-weight:750;color:var(--accent2);font-variant-numeric:tabular-nums}
+.lg-faces{margin-left:auto;display:flex;padding-left:6px}
+.lg-faces .av{margin-left:-6px}
+.lg-faces .av b,.lg-faces .av img{box-shadow:0 0 0 2px var(--card)}
+.lg-last{display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--text3)}
+.lg-last svg{width:14px;height:14px;color:var(--green)}
+.lg-empty{text-align:center;padding:28px 18px;border:1px dashed var(--border3);border-radius:var(--r)}
+.lg-empty h2{font-size:1.15rem;font-weight:700;margin:12px 0 6px;text-wrap:balance}
+.lg-empty p{color:var(--text2);font-size:.9rem;line-height:1.6;max-width:44ch;margin:0 auto}
+.lg-empty-ico{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:16px;background:var(--glow2);color:var(--accent2)}
+.lg-empty-ico svg{width:26px;height:26px}
+.lg-actions{display:flex;gap:10px;flex-wrap:wrap}
+.lg-actions .lesson-cta{width:auto;margin:0;padding:11px 20px}
+.lg-how{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:var(--r);background:var(--card2);font-size:.84rem;line-height:1.5;color:var(--text2)}
+.lg-how b{color:var(--text)}.lg-how .dash-btn{align-self:flex-start;margin-top:4px}
+.lg-back{display:inline-flex;align-items:center;gap:4px;background:none;border:0;padding:4px 0;font:500 .85rem 'Geist',sans-serif;color:var(--text2);cursor:pointer;align-self:flex-start}
+.lg-back svg{width:16px;height:16px}
+.lg-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.lg-head h2{font-size:1.35rem;font-weight:700;letter-spacing:-.02em}
+.lg-head span{font-size:.8rem;color:var(--text3)}
+.lesson-cta.lg-invite-btn{width:auto;margin:0;padding:9px 16px;display:inline-flex;align-items:center;gap:6px}
+.lg-invite-btn svg{width:16px;height:16px}
+.lg-status{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:12px;background:var(--glow2);border:1px solid var(--border2);font-size:.88rem;line-height:1.45}
+.lg-board{list-style:none;margin:0;padding:0;border:1px solid var(--border);border-radius:var(--r);background:var(--card);overflow:hidden}
+.lg-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--border)}
+.lg-row:first-child{border-top:0}
+.lg-row.me{background:var(--glow2)}
+.lg-pos{flex:none;width:22px;text-align:center;font-weight:700;color:var(--text3);font-variant-numeric:tabular-nums}
+.lg-pos.p1{color:#d4a017}.lg-pos.p2{color:#9aa6b2}.lg-pos.p3{color:#c07a45}
+.lg-who{flex:1;min-width:0;display:flex;flex-direction:column}
+.lg-who b{font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg-who em{font-style:normal;font-size:.68rem;font-weight:600;color:var(--accent2);margin-left:4px}
+.lg-who>span{font-size:.74rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg-xp{font-weight:750;font-size:1rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lg-xp small{font-size:.66rem;color:var(--text3);margin-left:3px;font-weight:600}
+.lg-kick{flex:none;background:none;border:0;color:var(--text3);cursor:pointer;padding:4px;display:grid;place-items:center}
+.lg-kick:hover{color:var(--red)}.lg-kick svg{width:15px;height:15px}
+.lg-podium{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:12px;background:var(--card2);font-size:.84rem;color:var(--text2)}
+.lg-podium b{color:var(--text)}.lg-podium i{font-style:normal;font-weight:700;color:var(--accent2);margin-right:8px}
+.lg-code{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px dashed var(--border3);border-radius:12px}
+.lg-code span{display:block;font-size:.72rem;color:var(--text3)}
+.lg-code b{font:700 1.3rem ui-monospace,'SF Mono',Menlo,monospace;letter-spacing:.12em}
+.lg-foot{display:flex;gap:8px;flex-wrap:wrap}
+.lg-danger{color:var(--red)!important}
+.lesson-box p.lg-err,.lg-page p.lg-err{color:var(--red)!important;font-size:.84rem!important;min-height:1em;margin:6px 0 0!important}
+.lg-box{max-width:420px}
+.lg-modal{display:flex;flex-direction:column}
+.lg-join{text-align:center;align-items:center}
+.lg-join .lesson-title{margin-top:12px}
+.lg-join .lesson-nav{width:100%}
+.lg-input{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid var(--border2);border-radius:11px;background:var(--card2);color:var(--text);font:500 1rem 'Geist',sans-serif}
+.lg-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+.lg-code-in{font:700 1.4rem ui-monospace,'SF Mono',Menlo,monospace;letter-spacing:.3em;text-align:center;text-transform:uppercase}
+.lesson-cta.lg-danger-btn{background:var(--red)}
+.dash-league{margin-top:12px}
+.dash-league:empty{display:none}
+.lg-dash{width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border2);border-radius:var(--r);background:var(--card);font:inherit;color:var(--text);text-align:left;cursor:pointer}
+.lg-dash:hover{border-color:var(--accent)}
+.lg-dash-ico{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--glow2);color:var(--accent2)}
+.lg-dash-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.lg-dash-txt b{font-size:.9rem}.lg-dash-txt span{font-size:.76rem;color:var(--text3)}
+/* Phone: More sheet, native lists */
+.m-title{display:none}
+.more-ov{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;opacity:0;transition:opacity .2s}
+.more-ov.in{opacity:1}
+.more-box{width:100%;background:var(--card);border-radius:20px 20px 0 0;padding:8px 16px max(18px,env(safe-area-inset-bottom));transform:translateY(24px);transition:transform .25s var(--ease-out)}
+.more-ov.in .more-box{transform:none}
+.more-grab{width:36px;height:4px;border-radius:2px;background:var(--border2);margin:4px auto 14px}
+.more-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.more-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;border:1px solid var(--border);border-radius:14px;background:var(--card2);font:600 .78rem 'Geist',sans-serif;color:var(--text);cursor:pointer}
+.more-item span{color:var(--accent2);display:grid}.more-item.on{border-color:var(--accent)}
+.more-list{display:flex;flex-direction:column}
+.more-list button{display:flex;align-items:center;gap:12px;padding:13px 4px;border:0;border-top:1px solid var(--border);background:none;font:500 .92rem 'Geist',sans-serif;color:var(--text);text-align:left;cursor:pointer}
+.more-list button>svg{color:var(--text2);width:22px;height:22px}
+.ph-home{display:flex;flex-direction:column;gap:18px}
+.ph-sec-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 4px 7px}
+.ph-sec-h h2{font-size:.76rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)}
+.ph-sec-h button{background:none;border:0;padding:0;color:var(--accent2);font:600 .84rem 'Geist',sans-serif;cursor:pointer}
+.ph-list{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.ph-row{width:100%;display:grid;grid-template-columns:minmax(0,1fr) 64px 86px;align-items:center;gap:12px;padding:11px 14px;border:0;border-top:1px solid var(--border);background:none;font:inherit;color:var(--text);text-align:left;cursor:pointer}
+.ph-row:first-child{border-top:0}
+.ph-row:active{background:var(--card2)}
+.ph-tk{display:flex;flex-direction:column;min-width:0}
+.ph-tk b{font-size:.95rem;font-weight:650}
+.ph-tk small{font-size:.74rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph-spark{display:block;width:64px;height:26px}
+.ph-spark.up polyline{stroke:var(--green)}.ph-spark.dn polyline{stroke:var(--red)}
+.ph-px{display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-variant-numeric:tabular-nums}
+.ph-px b{font-size:.92rem;font-weight:600}
+.ph-px i{font-style:normal;font-size:.74rem;font-weight:650;padding:2px 6px;border-radius:6px;min-width:60px;text-align:center;background:var(--card3);color:var(--text2)}
+.ph-px i.up{background:var(--green2);color:var(--green)}.ph-px i.dn{background:var(--red2);color:var(--red)}
+.ph-skel{cursor:default}
+.ph-skel span{display:block;height:12px;border-radius:6px;background:var(--card3);animation:phPulse 1.2s ease-in-out infinite}
+@keyframes phPulse{50%{opacity:.45}}
+.ph-movers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.ph-mover{display:flex;flex-direction:column;gap:3px;padding:10px;border:1px solid var(--border);border-radius:12px;background:var(--card);font:inherit;color:var(--text);text-align:left;cursor:pointer;min-width:0}
+.ph-mover b{font-size:.86rem}.ph-mover i{font-style:normal;font-size:.76rem;font-weight:650;font-variant-numeric:tabular-nums}
+.ph-mover i.up{color:var(--green)}.ph-mover i.dn{color:var(--red)}
+@media (prefers-reduced-motion:reduce){.av.ring-legend::before,.ph-skel span{animation:none}.more-ov,.more-box{transition:none}}
 .xp-pop{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:10000;padding:8px 16px;border-radius:999px;background:var(--accent);color:#fff;font:700 .95rem 'Geist',sans-serif;pointer-events:none;animation:xpPop 1.3s var(--ease-out) forwards}
 @keyframes xpPop{0%{opacity:0;transform:translate(-50%,10px) scale(.9)}20%{opacity:1;transform:translate(-50%,0) scale(1.05)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px)}}
 .tut-xp{margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--glow2);color:var(--accent2);font-weight:650}.tut-xp.got{background:var(--green2);color:var(--green)}
@@ -2851,12 +3013,38 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
  #S-gate header .hdr-actions .btn{flex:1;text-align:center;padding:10px 8px}
  .btn-gate-main,.btn-gate-ghost{width:100%;text-align:center}
 }
+/* ══════════════════════════════════════════
+   PHONE LAYOUT, "clean native": a big title, the search under it, simple lists, a 5-tab bar
+   (kept last so it overrides the older phone rules above)
+   ══════════════════════════════════════════ */
+@media (max-width:768px){
+ header.ss-top{display:grid!important;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"title actions" "search search";align-items:center;gap:10px 8px;padding:12px 16px 10px!important;position:sticky!important;top:0;z-index:60;background:var(--bg)!important}
+ .m-title{display:block;grid-area:title;min-width:0;font:750 1.9rem/1.1 'Geist',sans-serif;letter-spacing:-.035em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ header.ss-top .ss-top-logo,header.ss-top .welcome-bar,header.ss-top #tbMarket,header.ss-top #railToggle,header.ss-top #streakBadge{display:none!important}
+ header.ss-top .ss-top-right{grid-area:actions;display:flex;align-items:center;gap:6px;margin:0}
+ header.ss-top .ss-top-search{grid-area:search;order:0;width:100%;max-width:none}
+ header.ss-top #si{height:42px;border-radius:12px;font-size:16px;background:var(--card2);border:0}
+ #appHdrActions .btn-help,#appHdrActions #themeBtn,#appHdrActions #modeBtn,#appHdrActions .user-name,#appHdrActions .user-pill>div:last-child{display:none!important}
+ #appHdrActions .user-pill{padding:2px!important;background:none!important;border:0!important;gap:0!important}
+ #appHdrActions #notifBtn{background:none!important;border:0!important}
+ #tickerTape,#marketStatusBar,#searchHist,#searchSection{display:none!important}
+ #marketFilter{position:static!important;background:var(--card2);border-radius:10px;padding:3px;gap:2px!important;margin:4px 16px 16px!important;flex-wrap:nowrap!important}
+ .ss-content:has(.ph-home) #marketFilter[style*="flex"]{display:flex!important}
+ #marketFilter .mf-pill{flex:1;border:0!important;background:none!important;border-radius:8px!important;padding:7px 4px!important;font-size:.82rem!important;font-weight:600!important;color:var(--text2)!important;box-shadow:none!important;transform:none!important}
+ #marketFilter .mf-pill.mf-on{background:var(--card3)!important;color:var(--text)!important}
+ .view-head .vh-ico,.view-head h1{display:none!important}
+ #mainContent>.ph-home,#mainContent>.lg-page,#mainContent>.learn-page{padding:0 16px 28px}
+ .ph-home .dash-learn,.ph-home .dash-league{margin:0!important}
+ #mobileNav .mbn-tab{font-size:.66rem;gap:4px}
+ #mobileNav .mbn-icon svg{width:22px;height:22px}
+ .hub-modes{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 <script>
  // No saved session: show the landing screen now instead of waiting for app.js (it takes over when it loads)
- var onStock = location.pathname.indexOf('/stock/') === 0;
+ var onStock = /^\/(stock|join)\//.test(location.pathname);
  try { if (!onStock && !localStorage.getItem('ss_ss3_s')) document.body.dataset.screen = 'gate'; } catch (e) { if (!onStock) document.body.dataset.screen = 'gate'; }
 </script>
 
@@ -2937,7 +3125,8 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
  <button class="tab" id="tab-cmp" onclick="switchTab('cmp')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></svg></span> Compare</button>
  <button class="tab" id="tab-pt" onclick="switchTab('pt')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></span> Paper Trade</button>
  <button class="tab" id="tab-day" onclick="switchTab('day')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span> Day Trade</button>
- <button class="tab" id="tab-learn" onclick="openLearnHub()"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/></svg></span> Learn</button>
+ <button class="tab" id="tab-learn" onclick="switchTab('learn')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/></svg></span> Learn</button>
+ <button class="tab" id="tab-leagues" onclick="switchTab('leagues')"><span class="tab-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span> Leagues</button>
 
  </nav>
  <div class="ss-side-card">
@@ -2963,6 +3152,7 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
 
  <div class="ss-main">
  <header class="ss-top">
+ <div class="m-title" id="mTitle" role="heading" aria-level="1">Markets</div>
  <div class="logo ss-top-logo" onclick="goHome()">
  <div class="logo-icon"><img src="/stocksight-logo-96.png" alt="StockSight" width="96" height="96"></div>
  <div class="logo-name">Stock<span>Sight</span></div>
@@ -3344,8 +3534,8 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
  TUTORIAL OVERLAY
 ═══════════════════════════════ -->
 <div id="tutorialOverlay" style="display:none">
+ <div class="tut-shade" id="tutShadeT"></div><div class="tut-shade" id="tutShadeB"></div><div class="tut-shade" id="tutShadeL"></div><div class="tut-shade" id="tutShadeR"></div>
  <div class="tut-spotlight" id="tutSpotlight"></div>
- <div class="tut-arrow" id="tutArrow" style="display:none"></div>
  <div class="tut-card" id="tutCard">
  <div class="tut-step-label" id="tutStepLabel"></div>
  <div class="tut-title" id="tutTitle"></div>
@@ -3369,13 +3559,11 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
 
 
 <div id="mobileNav" style="display:none">
- <button class="mbn-tab mbn-on-s" id="mbn-s" onclick="switchTab('s')"><span class="mbn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span><span>Markets</span></button>
- <button class="mbn-tab" id="mbn-w" onclick="switchTab('w')"><span class="mbn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><span>Watchlist</span></button>
- <button class="mbn-tab" id="mbn-port" onclick="switchTab('port')"><span class="mbn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span><span>Portfolio</span></button>
- <button class="mbn-tab" id="mbn-screen" onclick="switchTab('screen')"><span class="mbn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><span>Screener</span></button>
- <button class="mbn-tab" id="mbn-cmp" onclick="switchTab('cmp')"><span class="mbn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></svg></span><span>Compare</span></button>
- <button class="mbn-tab" id="mbn-pt" onclick="switchTab('pt')"><span class="mbn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></span><span>Paper Trade</span></button>
- <button class="mbn-tab" id="mbn-day" onclick="switchTab('day')"><span class="mbn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span>Day Trade</span></button>
+ <button class="mbn-tab mbn-on-s" id="mbn-s" onclick="switchTab('s')"><span class="mbn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></span><span>Markets</span></button>
+ <button class="mbn-tab" id="mbn-w" onclick="switchTab('w')"><span class="mbn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><span>Watchlist</span></button>
+ <button class="mbn-tab" id="mbn-learn" onclick="switchTab('learn')"><span class="mbn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/></svg></span><span>Learn</span></button>
+ <button class="mbn-tab" id="mbn-pt" onclick="switchTab('pt')"><span class="mbn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 13h.01"/><path d="M2 10h20"/></svg></span><span>Practice</span></button>
+ <button class="mbn-tab" id="mbn-more" onclick="openMoreSheet()" aria-haspopup="dialog"><span class="mbn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></span><span>More</span></button>
 </div>
 
 <!-- ═══════════════════════════════
@@ -3390,11 +3578,7 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
   </div>
   <button type="button" class="set-back" onclick="show('app')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to dashboard</button>
   <div class="set-user">
-   <div class="prof-av" id="profAv" onclick="toggleAvatarPopup()" title="Change avatar"></div>
-   <div id="avatarPopup" class="set-avatar-pop" style="display:none">
-    <div class="set-avatar-pop-title">Choose an avatar</div>
-    <div id="avatarPopupGrid"></div>
-   </div>
+   <button type="button" class="prof-av" id="profAv" onclick="openPhotoPicker()" aria-label="Change profile photo"></button>
    <div class="set-user-txt"><div class="prof-uname" id="profUN"></div><div class="prof-uemail" id="profUE"></div></div>
   </div>
   <nav class="prof-nav" aria-label="Settings sections">
@@ -3415,6 +3599,12 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
    <div class="set-stats" id="ovStats"></div>
 
    <div class="set-grid">
+    <div class="sg">
+     <div class="sg-lbl">Profile photo</div>
+     <div class="sg-row sg-stack"><div class="ph-row-set"><span id="photoPreview"></span><div><div class="sg-label">Your photo</div><div class="sg-desc">Friends see it in your leagues. The ring around it shows your learning level.</div></div></div>
+      <div class="ph-btns"><button type="button" class="set-btn set-btn-main" onclick="openPhotoPicker()">Change photo</button><button type="button" class="set-btn" id="photoRemoveBtn" onclick="removePhoto()" hidden>Remove</button></div></div>
+    </div>
+
     <div class="sg">
      <div class="sg-lbl">Account</div>
      <div class="sg-row"><div><div class="sg-desc">Name</div><div class="sg-label" id="ov-n"></div></div></div>
@@ -3538,6 +3728,13 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
      <div class="set-toggle-wrap"><span id="alert-mail-lbl" class="sg-desc">On</span><div class="notif-tog on" id="alert-mail-tog" role="switch" aria-label="Email me when an alert is hit" aria-checked="true" tabindex="0" onclick="toggleAlertEmails()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleAlertEmails()}"></div></div>
     </div>
    </div>
+   <div class="sg">
+    <div class="sg-lbl">Leagues</div>
+    <div class="sg-row">
+     <div><div class="sg-label">Weekly league results</div><div class="sg-desc">An email each Monday with how your leagues ended. Only sent if you're in one.</div></div>
+     <div class="set-toggle-wrap"><span id="league-mail-lbl" class="sg-desc">On</span><div class="notif-tog on" id="league-mail-tog" role="switch" aria-label="Weekly league results email" aria-checked="true" tabindex="0" onclick="toggleLeagueEmails()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleLeagueEmails()}"></div></div>
+    </div>
+   </div>
   </section>
 
   <!-- HOLDINGS -->
@@ -3559,6 +3756,8 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
        <button class="tog" id="ac-orange" onclick="setAccent('orange')"><i style="background:#ea580c"></i>Orange</button>
        <button class="tog" id="ac-pink" onclick="setAccent('pink')"><i style="background:#db2777"></i>Pink</button>
        <button class="tog" id="ac-gold" onclick="setAccent('gold')"><i style="background:#ca8a04"></i>Gold</button>
+       <button class="tog" id="ac-teal" onclick="setAccent('teal')"><i style="background:#0d9488"></i>Teal</button>
+       <button class="tog" id="ac-ruby" onclick="setAccent('ruby')"><i style="background:#be123c"></i>Ruby</button>
       </div></div>
      <div class="sg-row"><div><div class="sg-label">Compact mode</div><div class="sg-desc">Tighter spacing</div></div>
       <div class="tog-row"><button class="tog" id="cmOn" onclick="setCompact(true)">On</button><button class="tog on-a" id="cmOff" onclick="setCompact(false)">Off</button></div></div>
@@ -3591,9 +3790,9 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
     </div>
 
     <div class="sg">
-     <div class="sg-lbl">App</div>
-     <div class="sg-row sg-stack"><div><div class="sg-label">Install StockSight</div><div class="sg-desc" id="installDesc">Add it to your home screen to open it like an app.</div></div>
-      <button type="button" id="installBtn" class="set-btn set-btn-main" style="display:none" onclick="installApp()">Install app</button></div>
+     <div class="sg-lbl">Home screen</div>
+     <div class="sg-row sg-stack"><div><div class="sg-label">Add StockSight to your home screen</div><div class="sg-desc" id="installDesc">It opens full screen from its own icon. No app store needed.</div></div>
+      <button type="button" id="installBtn" class="set-btn set-btn-main" style="display:none" onclick="installApp()">Add to Home Screen</button></div>
     </div>
     <div class="sg">
      <div class="sg-lbl">Preferred broker</div>

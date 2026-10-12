@@ -9,6 +9,7 @@
  * GET /api/send-digest?to=you@x.com             send only to that account (a test)
  * GET /api/send-digest?preview=1[&to=you@x.com] show the email in the browser, send nothing
  * GET /api/send-digest?job=alerts               the daily job: price-alert emails + the site error summary
+ * GET /api/send-digest?job=leagues              last week's league results only (the Monday run does this first)
  * Outside the cron, add &secret=<CRON_SECRET>.
  *
  * Env vars (Vercel dashboard): RESEND_API_KEY, SUPABASE_SERVICE_KEY, CRON_SECRET
@@ -19,6 +20,7 @@
 import { db, unsubscribeUrl } from './_auth.js';
 import { gatherMarket, buildEmail, healthOf } from './_digest.js';
 import { runAlerts, runErrorSummary } from './_daily.js';
+import { runLeagueWeek } from './_leagues.js';
 
 // The daily schedule in vercel.json (weekdays, after the US close). Vercel sends the triggering schedule
 // in x-vercel-cron-schedule, so one function serves both jobs.
@@ -92,6 +94,13 @@ export default async function handler(req, res) {
   }
 
   const to = String(req.query?.to || '').trim().toLowerCase();
+  // League results go out with the Monday run (before the digest, which can stop early), or alone with ?job=leagues
+  if (req.query?.job === 'leagues' || (!to && !preview)) {
+    let leagues = null;
+    try { leagues = await runLeagueWeek({ resendKey }); console.log('leagues:', JSON.stringify(leagues)); }
+    catch (e) { console.error('league week failed:', e); }
+    if (req.query?.job === 'leagues') return leagues ? res.status(200).json({ ok: true, leagues }) : res.status(500).json({ error: 'League week failed' });
+  }
   const report = (to || preview) ? async () => {} : opts => sendReport(resendKey, { started, ...opts });
   try {
     return await run();

@@ -91,6 +91,18 @@ ok(!fdup.length, 'no duplicate function names', fdup);
   ok(!/<script|on\w+=|javascript:/i.test(raw), 'lessons hold no scripts or handlers');
 }
 
+// Levels and rings are computed in two places (app.js for you, api/_leagues.js for your friends' boards): they must agree
+{
+  const appSrc = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+  const lg = fs.readFileSync(path.join(root, 'api', '_leagues.js'), 'utf8');
+  const appMins = [...(appSrc.match(/const LEARN_LEVELS = \[[\s\S]*?\];/)?.[0] || '').matchAll(/min: (\d+)/g)].map(m => +m[1]);
+  const srvMins = (lg.match(/export const LEVEL_MINS = \[([^\]]*)\]/)?.[1] || '').split(',').map(Number);
+  ok(appMins.length >= 8 && JSON.stringify(appMins) === JSON.stringify(srvMins), 'level ladder matches between app and leagues', { appMins, srvMins });
+  const ring = re => (re.exec(appSrc + '\n' + lg) || [])[1];
+  const appRing = /const ringForLevel = n => ([^;]*);/.exec(appSrc)?.[1], srvRing = /export const ringOf = n => ([^;]*);/.exec(lg)?.[1];
+  ok(appRing && appRing === srvRing, 'ring rules match between app and leagues', { appRing, srvRing });
+}
+
 // Every API file loads (a syntax error here would break that endpoint on Vercel)
 for (const f of fs.readdirSync(path.join(root, 'api')).filter(f => f.endsWith('.js'))) {
   try { await import(pathToFileURL(path.join(root, 'api', f)).href); pass++; }

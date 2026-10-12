@@ -111,9 +111,19 @@ const tables = {
   ],
   pt_leaderboard: [{ email: 'someone@test.dev', display_name: 'som***', value: 10500, return_pct: 5, holdings_count: 2, updated_at: now() }],
 };
-const DEFAULTS = { users: () => ({ created_at: now(), token_version: 0, reset_attempts: 0, mode: 'simple' }), client_errors: () => ({ at: now() }) };
-const UNIQUE = { users: ['email'], pt_leaderboard: ['email'], searches: ['ticker', 'date', 'ip_hash'], votes: ['ticker', 'voter_hash'] };
-const SERVICE_ONLY = new Set(['users', 'searches', 'votes', 'vote_counts', 'client_errors']);
+const DEFAULTS = {
+  users: () => ({ created_at: now(), token_version: 0, reset_attempts: 0, mode: 'simple' }), client_errors: () => ({ at: now() }),
+  leagues: () => ({ id: crypto.randomUUID(), created_at: now() }), league_members: () => ({ joined_at: now() }),
+};
+const UNIQUE = {
+  users: ['email'], pt_leaderboard: ['email'], searches: ['ticker', 'date', 'ip_hash'], votes: ['ticker', 'voter_hash'],
+  leagues: ['code'], league_members: ['league_id', 'email'], xp_weeks: ['email', 'week'], league_results: ['league_id', 'week'],
+};
+const SERVICE_ONLY = new Set(['users', 'searches', 'votes', 'vote_counts', 'client_errors', 'leagues', 'league_members', 'xp_weeks', 'league_results']);
+// Foreign keys with ON DELETE CASCADE in the real schema
+const CASCADE = { leagues: [['league_members', 'league_id'], ['league_results', 'league_id']] };
+// Supabase Storage stand-in: { 'avatars/x.jpg': { type, buf } }
+const storage = {};
 
 function filterRows(rows, params) {
   let out = rows;
@@ -123,6 +133,10 @@ function filterRows(rows, params) {
     if (v.startsWith('gte.')) out = out.filter(r => String(r[k]) >= decodeURIComponent(v.slice(4)));
     if (v.startsWith('lt.')) out = out.filter(r => String(r[k]) < decodeURIComponent(v.slice(3)));
     if (v === 'not.is.null') out = out.filter(r => r[k] != null);
+    if (v.startsWith('in.(')) {
+      const vals = decodeURIComponent(v.slice(4, -1)).match(/"[^"]*"|[^,]+/g)?.map(x => x.replace(/^"|"$/g, '')) || [];
+      out = out.filter(r => vals.includes(String(r[k])));
+    }
   }
   return out;
 }
@@ -180,6 +194,10 @@ function fakeRest(req, res, url, body) {
   if (req.method === 'DELETE') {
     const hit = new Set(filterRows(rows, p));
     tables[table] = rows.filter(r => !hit.has(r));
+    for (const [child, col] of CASCADE[table] || []) {
+      const ids = new Set([...hit].map(r => r.id));
+      if (tables[child]) tables[child] = tables[child].filter(r => !ids.has(r[col]));
+    }
     return send(204);
   }
   return send(405, { message: 'no' });
@@ -190,17 +208,37 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const chunks = [];
   for await (const c of req) chunks.push(c);
-  const raw = Buffer.concat(chunks).toString();
+  const rawBuf = Buffer.concat(chunks);
+  if (url.pathname.startsWith('/fakesb/storage/v1/object/')) {
+    const pub = url.pathname.match(/^\/fakesb\/storage\/v1\/object\/public\/(.+)$/);
+    if (pub && req.method === 'GET') {
+      const o = storage[decodeURIComponent(pub[1])];
+      if (!o) { res.statusCode = 404; return res.end('not found'); }
+      res.setHeader('Content-Type', o.type);
+      return res.end(o.buf);
+    }
+    if ((req.headers.authorization || '') !== `Bearer ${process.env.SUPABASE_SERVICE_KEY}`) { res.statusCode = 403; return res.end('{"error":"Unauthorized"}'); }
+    const key = decodeURIComponent(url.pathname.replace('/fakesb/storage/v1/object/', ''));
+    if (req.method === 'DELETE') { delete storage[key]; res.statusCode = 200; return res.end('{}'); }
+    if (req.method === 'POST' || req.method === 'PUT') { storage[key] = { type: req.headers['content-type'], buf: rawBuf }; res.statusCode = 200; return res.end(JSON.stringify({ Key: key })); }
+  }
+  const raw = rawBuf.toString();
   let body;
   try { body = raw ? JSON.parse(raw) : undefined; } catch { body = raw; }
 
   if (url.pathname === '/__yahoo') { yahooDown = url.searchParams.get('down') === '1'; return res.end('yahoo down: ' + yahooDown); }
-  if (url.pathname === '/__db') { res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify({ tables, codes, mail })); }
+  // Test-only: add rows directly (for example a past week's XP), as POST { table, rows }
+  if (url.pathname === '/__seed' && req.method === 'POST') { (tables[body.table] ||= []).push(...body.rows); res.statusCode = 204; return res.end(); }
+  if (url.pathname === '/__db') { res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify({ tables, codes, mail, storage: Object.fromEntries(Object.entries(storage).map(([k, o]) => [k, { type: o.type, bytes: o.buf.length }])) })); }
   if (url.pathname.startsWith('/fakesb/rest/v1/')) return fakeRest(req, res, url, body);
   // vercel.json rewrite: /stock/:ticker -> /api/page?t=:ticker
   const stockPage = url.pathname.match(/^\/stock\/([^/]+)\/?$/);
   if (stockPage) url.searchParams.set('t', decodeURIComponent(stockPage[1]));
-  const api = stockPage ? [null, 'page'] : url.pathname.match(/^\/api\/([a-z-]+)$/);
+  // ... and /join/:code -> /api/page?league=:code, /leagues -> the app
+  const joinPage = url.pathname.match(/^\/join\/([^/]+)\/?$/);
+  if (joinPage) url.searchParams.set('league', decodeURIComponent(joinPage[1]));
+  if (url.pathname === '/leagues') url.pathname = '/';
+  const api = stockPage || joinPage ? [null, 'page'] : url.pathname.match(/^\/api\/([a-z-]+)$/);
   if (api && fs.existsSync(path.join(root, 'api', api[1] + '.js'))) {
     const { default: handler } = await import(pathToFileURL(path.join(root, 'api', api[1] + '.js')).href);
     req.query = Object.fromEntries(url.searchParams);

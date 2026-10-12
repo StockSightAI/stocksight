@@ -4,8 +4,15 @@
 //   POST { action: 'error', message, ... }   a crash in someone's browser, kept for the daily error summary
 //   GET  ?trending=1&days=1                  the most-searched real tickers (1 = today, up to 7)
 //   GET  ?votes=TICKER                       vote counts, plus your own vote when signed in
+// Friend leagues (api/_leagues.js), signed in:
+//   GET  ?leagues=1                          your leagues, ranks and last week's winners
+//   GET  ?league=CODE                        one league's board (members only)
+//   GET  ?invite=CODE                        what an invite shows before joining (no sign-in needed)
+//   POST { action: 'league-create', name } | 'league-join' { code } | 'league-leave' { code }
+//        'league-rename' { code, name } | 'league-remove' { code, member } | 'league-delete' { code }
 import crypto from 'node:crypto';
 import { configured, fail, readBody, limited, ipOf, db, sessionRow, readSession } from './_auth.js';
+import * as L from './_leagues.js';
 import { logSearch, trending } from './_trending.js';
 import { TICKER_RE } from './_symbols.js';
 
@@ -35,6 +42,22 @@ export default async function handler(req, res) {
         return res.status(204).end();
       }
 
+      if (String(b.action || '').startsWith('league-')) {
+        const row = await sessionRow(req);
+        if (!row) return fail(res, 401, 'Sign in to use leagues');
+        if (limited('league:' + row.email, 60, 600e3)) return fail(res, 429, 'Too many changes. Try again in a few minutes.');
+        const code = String(b.code || '').toUpperCase().trim();
+        const out = b.action === 'league-create' ? (limited('league-new:' + row.email, 20, 864e5) ? { error: 429, message: 'You can start up to 20 leagues a day.' } : await L.create(row.email, b.name))
+          : b.action === 'league-join' ? await L.join(row.email, code)
+          : b.action === 'league-leave' ? await L.leave(row.email, code)
+          : b.action === 'league-rename' ? await L.manage(row.email, code, { rename: b.name })
+          : b.action === 'league-remove' ? await L.manage(row.email, code, { remove: String(b.member || '') })
+          : b.action === 'league-delete' ? await L.manage(row.email, code, { del: true })
+          : { error: 400, message: 'Unknown league action' };
+        if (out.error) return fail(res, out.error, out.message || 'Could not do that');
+        return res.status(200).json({ ok: true, ...out });
+      }
+
       const ticker = String(b.ticker || '').toUpperCase().trim();
       if (!TICKER_RE.test(ticker)) return fail(res, 400, 'Invalid ticker');
 
@@ -58,6 +81,21 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
+      if (req.query?.invite) {
+        if (limited('invite:' + ipOf(req), 60, 600e3)) return fail(res, 429, 'Too many requests');
+        const p = await L.invitePreview(String(req.query.invite).toUpperCase().trim());
+        res.setHeader('Cache-Control', 'no-store');
+        return p ? res.status(200).json(p) : fail(res, 404, "That invite doesn't match a league.");
+      }
+      if (req.query?.leagues || req.query?.league) {
+        res.setHeader('Cache-Control', 'private, no-store');
+        const row = await sessionRow(req);
+        if (!row) return fail(res, 401, 'Sign in to see your leagues');
+        if (req.query.leagues) return res.status(200).json(await L.summary(row.email));
+        const d = await L.detail(row.email, String(req.query.league).toUpperCase().trim());
+        if (d.error) return fail(res, d.error, d.error === 403 ? "You're not in this league." : 'League not found.');
+        return res.status(200).json(d);
+      }
       if (req.query?.votes) {
         const ticker = String(req.query.votes).toUpperCase().trim();
         if (!TICKER_RE.test(ticker)) return fail(res, 400, 'Invalid ticker');

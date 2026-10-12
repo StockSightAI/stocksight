@@ -726,7 +726,8 @@ async function loadUserData(){
  if (data.broker) { try { localStorage.setItem('ss_broker_'+e, data.broker); } catch {} }
  if (data.tutorial_done) { try { localStorage.setItem('ss_tutorial_done_'+e, '1'); } catch {} }
  if (data.onboarding_done){ try { localStorage.setItem('ss_onboarding_'+e, '1'); } catch {} }
- if (data.avatar) { try { localStorage.setItem('ss_avatar_'+e, data.avatar); } catch {} }
+ try { const av = avatarUrlOf(data.avatar); av ? localStorage.setItem('ss_avatar_'+e, av) : localStorage.removeItem('ss_avatar_'+e); } catch {}
+ if (typeof data.league_emails === 'boolean') { try { localStorage.setItem('ss_lgmail_'+e, data.league_emails ? '1' : '0'); } catch {} }
  if (typeof data.digest === 'boolean') { try { data.digest ? localStorage.setItem('ss_digest_'+e, '1') : localStorage.removeItem('ss_digest_'+e); } catch {} }
  // Learning progress: this browser's copy and the account's, combined; the account gets the result if it was missing anything
  try {
@@ -819,6 +820,11 @@ window.addEventListener('DOMContentLoaded', async () => {
  if (!user) return;
  setTimeout(captureWlLoginSnapshot, 300);
  bootApp();
+ } else if (leagueDeepLink()) {
+ // A league invite (stocksightai.com/join/ABC123): show the app with the invite, not the landing page
+ applyTheme(false);
+ bootGuest();
+ openLeagueDeepLink();
  } else if (deepLinkTicker() && location.pathname.startsWith('/stock/')) {
  // Someone opened stocksightai.com/stock/NVDA (from Google or a shared link): show the stock right away
  applyTheme(false);
@@ -888,7 +894,7 @@ function bootApp() {
  <button onclick="toggleMode()" id="modeBtn" data-tip="Beginner / Advanced mode" style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 11px;font-family:inherit;font-size:.7rem;font-weight:700;cursor:pointer;color:var(--text2);transition:all .15s"></button>
  <button id="notifBtn" onclick="openNotificationCenter()" data-tip="Notifications" style="position:relative;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:.85rem;cursor:pointer;transition:all .15s">🔔</button>
  <div class="user-pill" onclick="show('profile')">
- <div class="avatar" id="hdrAvatar">${getAvatar()}</div>
+ <div class="avatar" id="hdrAvatar">${myAvatarHTML(30)}</div>
  <div class="user-name">${displayName}</div>
  <div style="font-size:.52rem;color:var(--text3);margin-left:2px">▾</div>
  </div>`;
@@ -911,6 +917,9 @@ function bootApp() {
  setTimeout(applyModeLabels, 100);
  setTimeout(checkWatchlistNotifications, 2000);
  openDeepLink();
+ openLeagueDeepLink();
+ lgAfterLogin();
+ setTimeout(() => loadLeagues().then(lgNotices), 2500);
 
  const isNewUser = !localStorage.getItem('ss_onboarding_'+(user?.email||''));
  const tutDone = !!localStorage.getItem('ss_tutorial_done_'+(user?.email||''));
@@ -931,7 +940,7 @@ function bootApp() {
 // Google Analytics events for the moments that matter (gtag is defined in index.html)
 function track(name, params) { try { gtag('event', name, params || {}); } catch {} }
 
-// Installing StockSight as an app: Chrome and Edge offer their own prompt; iPhone uses Share, Add to Home Screen
+// Adding StockSight to the home screen (it's a web app, not an app-store app): Chrome and Edge offer their own prompt; iPhone uses Share, Add to Home Screen
 let _installPrompt = null, _justInstalled = false;
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); _installPrompt = e; syncInstallUI(); });
 addEventListener('appinstalled', () => { _installPrompt = null; _justInstalled = true; track('app_installed'); syncInstallUI(); });
@@ -941,11 +950,11 @@ function syncInstallUI() {
  if (!btn || !desc) return;
  const iphone = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
  btn.style.display = !isInstalledApp() && _installPrompt ? '' : 'none';
- desc.textContent = isInstalledApp() ? "You're using the installed app."
-  : _justInstalled ? 'Installed. Open StockSight from your home screen or app list.'
-  : _installPrompt ? 'Opens full screen with its own icon, like any other app.'
+ desc.textContent = isInstalledApp() ? "You're using StockSight from your home screen."
+  : _justInstalled ? 'Added. Open StockSight from your home screen or app list.'
+  : _installPrompt ? 'It opens full screen from its own icon. No app store needed.'
   : iphone ? 'In Safari, tap the Share button, then "Add to Home Screen".'
-  : 'In your browser menu, choose "Install app" or "Add to Home screen".';
+  : 'In your browser menu, choose "Add to Home screen" (some browsers call it "Install").';
 }
 async function installApp() {
  if (!_installPrompt) return syncInstallUI();
@@ -2367,18 +2376,18 @@ function applyMode(save=true){
 function setMode(m){ mode=m; applyMode(); setTimeout(()=>{ applyModeLabels(); reRenderCurrentView(); }, 0); }
 
 /* ── ACCENT COLOR ── */
-const ACCENT_COLORS = ['purple','blue','green','orange','pink','gold'];
+const ACCENT_COLORS = ['purple','blue','green','orange','pink','gold','teal','ruby'];
 function applyAccent(save=true){
  ACCENT_COLORS.forEach(c => document.body.classList.remove('accent-'+c));
  if(accentColor !== 'purple') document.body.classList.add('accent-'+accentColor);
  // Update setting toggles
  ACCENT_COLORS.forEach(c => {
  const btn = document.getElementById('ac-'+c);
- if(btn) btn.className = 'tog' + (c===accentColor?' on-a':'');
+ if(btn) { btn.className = 'tog' + (c===accentColor?' on-a':'') + (accentUnlocked(c) ? '' : ' locked'); if (ACCENT_LOCKS[c]) btn.title = accentUnlocked(c) ? '' : `Unlocks at Level ${ACCENT_LOCKS[c]}`; }
  });
  if(save) saveP();
 }
-function setAccent(c){ accentColor=c; applyAccent(); setTimeout(reRenderCurrentView, 50); }
+function setAccent(c){ if (!accentUnlocked(c)) { toast(`Reach Level ${ACCENT_LOCKS[c]} to unlock this color. Earn XP in Learn.`, 'info', 3500); return; } accentColor=c; applyAccent(); setTimeout(reRenderCurrentView, 50); }
 
 /* ── COMPACT MODE ── */
 function applyCompact(save=true){
@@ -2604,6 +2613,7 @@ function initSearch() {
 ════════════════════════════════ */
 function switchTab(t, skipRender=false) {
  _viewSeq++;
+ tutOnTab(t);
  const mc = document.getElementById('mainContent');
  if (mc) {
  mc.style.transition = 'opacity .15s, transform .15s';
@@ -2612,16 +2622,18 @@ function switchTab(t, skipRender=false) {
  }
  setTimeout(() => {
  tab = t;
+ setPhoneTitle(t);
  currentAsset = null;
  syncStockUrl(null);
- setViewHead(user || !['w','port','pt','day'].includes(t) ? t : null);
- if (mc && (user || !['w','port','pt','day'].includes(t))) mc.dataset.view = ['s','i','c'].includes(t) ? 'home' : t;
+ setViewHead(user || !['w','port','pt','day','leagues'].includes(t) ? t : null);
+ if (mc && (user || !['w','port','pt','day','leagues'].includes(t))) mc.dataset.view = ['s','i','c'].includes(t) ? 'home' : t;
  renderRail();
- ['s','w','cmp','port','screen','pt','day'].forEach(id => {
+ ['s','w','cmp','port','screen','pt','day','learn','leagues','more'].forEach(id => {
  const b = document.getElementById('tab-'+id);
  if (b) b.className = 'tab' + (id===t ? ' on-'+id : '');
  const mb = document.getElementById('mbn-'+id);
- if (mb) mb.className = 'mbn-tab' + (id===t ? ' mbn-on-'+id : '');
+ const mOn = id === t || (id === 'more' && MORE_ITEMS.some(m => m[0] === t)) || (id === 's' && ['i','c'].includes(t));
+ if (mb) mb.className = 'mbn-tab' + (mOn ? ' mbn-on-'+id : '');
  });
  moveNavPill();
 
@@ -2636,6 +2648,8 @@ function switchTab(t, skipRender=false) {
  if (t==='port') { if(!requireAuth('Portfolio')) return; ss2.style.display='none'; document.title='Portfolio — StockSight'; showPortfolioSkeleton(); setTimeout(()=>{renderPortfolio();mcRestore();},60); return; }
  if (t==='screen') { ss2.style.display='none'; document.title='Screener — StockSight'; renderScreener(); mcRestore(); return; }
  if (t==='pt') { if(!requireAuth('Paper Trading')) return; ss2.style.display='none'; document.title='Paper Trading — StockSight'; renderPaperTradeTab(); mcRestore(); return; }
+ if (t==='learn') { ss2.style.display='none'; document.title='Learn — StockSight'; renderLearnView(); mcRestore(); return; }
+ if (t==='leagues') { if(!requireAuth('Leagues')) return; ss2.style.display='none'; document.title='Leagues — StockSight'; if (!skipRender) renderLeaguesView(); mcRestore(); return; }
  if (t==='day') { if(!requireAuth('Day Trading')) return; ss2.style.display='none'; document.title='Day Trade — StockSight'; renderDayTradeTab(); mcRestore(); return; }
 
  ss2.style.display = 'block';
@@ -3004,6 +3018,7 @@ function learnShape(s) {
   xp: s.xp || 0, lessons, tour: Array.isArray(s.tour) ? s.tour : [], tourDone: !!s.tourDone, guides: s.guides || {},
   review: s.review || {}, daily: s.daily || null, dstreak: s.dstreak || 0, dlast: s.dlast || null,
   stocks: s.stocks || {}, practice: s.practice || { n: 0, right: 0 }, at: s.at || 0,
+  freezes: s.freezes || 0, freezeLevel: s.freezeLevel ?? null,
  };
 }
 function getLearn() { return learnShape(safeParse(learnKey(), {})); }
@@ -3037,6 +3052,7 @@ function mergeLearn(a, b) {
   guides: { ...a.guides, ...b.guides }, review: newer.review, stocks, practice: newer.practice,
   daily: (a.daily?.date || '') >= (b.daily?.date || '') ? a.daily : b.daily,
   dstreak: streakFrom.dstreak, dlast: streakFrom.dlast, at: Math.max(a.at, b.at),
+  freezes: newer.freezes, freezeLevel: newer.freezeLevel ?? a.freezeLevel ?? b.freezeLevel,
  };
 }
 function learnLevel(xp) {
@@ -3065,11 +3081,19 @@ function learnAddXP(n) {
  const s = getLearn();
  const before = learnLevel(s.xp).n;
  s.xp += n;
+ grantFreezes(s);
  saveLearn(s);
  showXpPop(n);
  const after = learnLevel(s.xp);
  if (after.n > before) {
-  setTimeout(() => { toast(`Level up! You reached Level ${after.n}: ${after.name}`, 'success', 3500); try { launchConfetti(); } catch {} }, 500);
+  const got = [];
+  for (let k = before + 1; k <= after.n; k++) got.push(...rewardsAt(k));
+  setTimeout(() => {
+   toast(`Level up! Level ${after.n}: ${after.name}.${got.length ? ` Unlocked: ${got.map(r => r.title).join(', ')}.` : ''}`, 'success', 5500);
+   try { launchConfetti(); } catch {}
+   refreshMyAvatar();
+   applyAccent(false);
+  }, 500);
  }
  refreshLearnRow();
  if (user) checkAndAwardBadges();
@@ -3223,7 +3247,7 @@ const stockOfDay = () => { const p = quizPool(); return p[Math.floor(seededRand(
 function learnTiles(s) {
  const today = learnToday(), tiles = [];
  const dailyDone = s.daily?.date === today && s.daily.done;
- const streakOn = s.dstreak && (s.dlast === today || s.dlast === dayShift(today, -1));
+ const streakOn = streakAlive(s, today);
  if (!dailyDone) tiles.push({ icon: 'bolt', title: 'Today\'s challenge', sub: streakOn ? `${s.dstreak}-day streak, keep it going` : '5 real-market questions · +70 XP', go: 'startDaily()' });
  allLessonIds().filter(id => !lessonDone(id)).slice(0, 3).forEach(id => {
   const l = lessonById(id), st = s.lessons[id] || {};
@@ -3266,7 +3290,7 @@ function learnHubHTML(openTracks) {
  const done = ids.filter(id => lessonDone(id)).length;
  const today = learnToday();
  const dailyDone = s.daily?.date === today && s.daily.done;
- const streak = s.dstreak && (s.dlast === today || s.dlast === dayShift(today, -1)) ? s.dstreak : 0;
+ const streak = streakAlive(s, today) ? s.dstreak : 0;
  const due = reviewDue(s, today).length;
  const firstOpen = LEARN_LIB.tracks.find(t => t.lessons.some(id => !lessonDone(id)))?.id;
  const stockT = stockOfDay();
@@ -3284,6 +3308,7 @@ function learnHubHTML(openTracks) {
   <div><b>${streak}</b><span>Day streak</span></div>
   <div><b>${Object.values(s.lessons).filter(l => l.best === 3).length}</b><span>Perfect quizzes</span></div>
  </div>
+ ${rewardsHubHTML(s, lv)}
  <div class="hub-modes">
   <button type="button" class="hub-mode hm-daily${dailyDone ? ' is-done' : ''}" onclick="startDaily()">
    <span class="hm-ico">${learnIcon(dailyDone ? 'check' : 'bolt')}</span>
@@ -3298,6 +3323,7 @@ function learnHubHTML(openTracks) {
    <b>Learn from ${escapeHTML(tName(stockT))}</b><span>Today's real stock, explained</span>
   </button>
  </div>
+ ${hubLeagueHTML()}
  <div class="hub-tracks">
   ${LEARN_LIB.tracks.map((t, ti) => {
    const n = t.lessons.filter(id => lessonDone(id)).length;
@@ -3506,7 +3532,7 @@ function doneHTML(R) {
   return `${score}<div class="lesson-nav"><button type="button" class="dash-btn" onclick="${learnCta(L.cta)}">${escapeHTML(L.cta.label)}</button><button type="button" class="lesson-cta" onclick="openStockLesson('${other}')">Another stock</button></div>`;
  }
  if (R.kind === 'daily') {
-  return `${score}<p class="lc-streak">${learnIcon('fire')}<span><b>${s.dstreak}-day streak.</b> ${s.dstreak > 1 ? 'Come back tomorrow to keep it going.' : 'Come back tomorrow to start a streak.'}</span></p>
+  return `${score}<p class="lc-streak">${learnIcon('fire')}<span><b>${s.dstreak}-day streak.</b>${R.froze ? ` A streak freeze saved it${R.froze > 1 ? ` (${R.froze} used)` : ''}.` : ''} ${s.dstreak > 1 ? 'Come back tomorrow to keep it going.' : 'Come back tomorrow to start a streak.'}</span></p>
   <div class="lesson-nav"><button type="button" class="dash-btn" onclick="openLearnHub()">All lessons</button><button type="button" class="lesson-cta" onclick="startPractice()">Keep practicing</button></div>`;
  }
  return `${score}<div class="lesson-nav"><button type="button" class="dash-btn" onclick="openLearnHub()">All lessons</button><button type="button" class="lesson-cta" onclick="startPractice()">Another round</button></div>`;
@@ -3562,7 +3588,11 @@ function lessonNextQ() {
   if (!(s.daily?.date === today && s.daily.done)) {
    earned = R.score * 10 + (R.score === n ? 20 : 0);
    s.daily = { date: today, score: R.score, total: n, done: true };
-   s.dstreak = s.dlast === dayShift(today, -1) ? (s.dstreak || 0) + 1 : s.dlast === today ? s.dstreak : 1;
+   // Missed days are forgiven if you have enough streak freezes saved
+   const gap = s.dlast ? daysFrom(s.dlast, today) : null;
+   if (gap === 1) s.dstreak = (s.dstreak || 0) + 1;
+   else if (gap > 1 && s.dstreak && gap - 1 <= (s.freezes || 0)) { s.freezes -= gap - 1; s.dstreak += 1; R.froze = gap - 1; }
+   else if (gap !== 0) s.dstreak = 1;
    s.dlast = today;
   }
  } else {
@@ -3909,6 +3939,7 @@ function renderHome(t) {
  // Guard: only render for market tabs
  const validTabs = ['s','i','c'];
  if (!validTabs.includes(t)) t = marketFilter || 's';
+ if (isPhone()) { renderPhoneHome(t); return; }
  // Always restore the search bar when returning to home
  const _ss = document.getElementById('searchSection');
  if (_ss) _ss.style.display = 'block';
@@ -4019,6 +4050,7 @@ function renderHome(t) {
  </div>
 
  <section class="dash-learn">${learnRowHTML()}</section>
+ <section class="dash-league" id="dashLeague"></section>
 
  <div class="card">
  <div class="card-hdr">
@@ -4052,7 +4084,7 @@ function renderHome(t) {
  }, 50);
 
  applyModeLabels();
- setTimeout(()=>{ renderHomeSections(t); ssApplyTabGroups(); staggerCards(document.getElementById('mainContent')); }, 120);
+ setTimeout(()=>{ renderHomeSections(t); ssApplyTabGroups(); staggerCards(document.getElementById('mainContent')); renderDashLeague(); }, 120);
  if (user) {
  setTimeout(() => {
  renderOnboardingChecklist('obChecklistWrap');
@@ -7258,7 +7290,7 @@ function loadProfilePage() {
  syncSecurityUI();
  syncInstallUI();
  if (!user) return;
- document.getElementById('profAv').textContent = user.name[0].toUpperCase();
+ refreshMyAvatar();
  document.getElementById('profUN').textContent = user.name;
  document.getElementById('profUE').textContent = user.email;
  document.getElementById('ov-n').textContent = user.name;
@@ -7288,7 +7320,6 @@ function loadProfilePage() {
  renderProfileStats();
  updateNotifToggleUI(localStorage.getItem('ss_browser_notifs') === '1');
  setHoldInputMode(typeof holdInputMode === 'string' ? holdInputMode : 'shares');
- renderAvatarPicker('avatarPickerContainer');
  checkMilestones();
  loadQuizResult();
  loadRiskTolerance();
@@ -7369,6 +7400,7 @@ function showP(name) {
  if(emailInp && user?.email) emailInp.value = user.email;
  renderNotifAlerts();
  syncAlertMailUI();
+ syncLeagueMailUI();
  }
 }
 
@@ -7930,83 +7962,116 @@ function setBrokerFromSettings(id) {
 const TUTORIAL_STEPS = [
  {
  title: 'Welcome to StockSight',
- desc: 'This quick tour teaches you the site by having you actually try things. Each step you complete earns 10 XP, and finishing the tour adds a 50 XP bonus. Takes about 2 minutes.',
+ desc: 'This quick tour has you try the real thing. Each hands-on step earns 10 XP, and finishing the tour adds a 50 XP bonus. It takes about 2 minutes.',
  target: null, action: null,
  },
  {
- title: 'Your Homepage',
- desc: 'This is your dashboard: live index tiles, a big chart, and tabs for top movers, sectors and news, all on one screen. Every hands-on step in this tour earns XP.',
+ title: 'Your home screen',
+ desc: 'Live markets, the day\'s biggest movers and your learning, all in one place. Every hands-on step in this tour earns XP.',
  target: '#mainContent', action: null,
  },
  {
- title: 'Search for a Stock',
- desc: 'Type any company name or ticker here — like "Apple" or "AAPL". The live search finds any stock, index, or crypto in the world.',
+ title: 'Search for a stock',
+ desc: 'Type any company or ticker, like "Apple" or "AAPL". Search covers stocks, funds, indexes and crypto.',
  target: '#si',
- action: { prompt: 'Type something in the search bar ↑', doneText: 'Great — search works!', detect: 'search-input' },
+ action: { prompt: 'Type a company name in the search bar', doneText: 'Search works. Press Next to keep going.', detect: 'search-input' },
  },
  {
- title: 'Switch Market Types',
- desc: 'These pills switch the homepage between Stocks, Indexes (S&P 500, NASDAQ...) and Crypto. The charts and movers update instantly.',
+ title: 'Switch market types',
+ desc: 'Switch the home screen between Stocks, Indexes and Crypto. Everything on it updates right away.',
  target: '#marketFilter', showMarketFilter: true,
- action: { prompt: 'Click Indexes or Crypto ↑', doneText: 'Nice — the homepage just updated!', detect: 'market-filter' },
+ action: { prompt: 'Tap Indexes or Crypto', doneText: 'The home screen just updated.', detect: 'market-filter' },
  },
  {
- title: 'Your Watchlist ',
- desc: 'Save stocks you\'re keeping an eye on. When viewing any stock, hit the Save button to add it here for quick access.',
- target: '#tab-w', mobileTarget: '#mbn-w',
- action: { prompt: 'Click the Watchlist tab ↑', doneText: 'This is where your saved stocks live.', detect: 'tab-click-w' },
+ title: 'Your watchlist', name: 'Watchlist', tab: 'w',
+ desc: 'Keep an eye on stocks you like. On any stock page, tap Watch to add it here.',
+ action: { prompt: 'Open the Watchlist tab', doneText: 'This is where your saved stocks live.' },
  },
  {
- title: 'Compare Stocks ',
- desc: 'Put two stocks side by side to compare their price history, performance, and AI analysis. Great for deciding between two options.',
- target: '#tab-cmp', mobileTarget: '#mbn-cmp',
- action: { prompt: 'Click the Compare tab ↑', doneText: 'Try typing two tickers to compare them!', detect: 'tab-click-cmp' },
+ title: 'Compare stocks', name: 'Compare', tab: 'cmp',
+ desc: 'Put two stocks side by side: price history, performance and our verdict on each.',
+ action: { prompt: 'Open Compare', doneText: 'Type two tickers to compare them.' },
  },
  {
- title: 'Stock Screener ',
- desc: 'Not sure what to invest in? Filter hundreds of stocks by sector, risk level, and growth rate to find ones that match your strategy.',
- target: '#tab-screen', mobileTarget: '#mbn-screen',
- action: { prompt: 'Click the Screener tab ↑', doneText: 'Try setting a filter!', detect: 'tab-click-screen' },
+ title: 'Stock screener', name: 'Screener', tab: 'screen',
+ desc: 'Not sure where to start? Filter hundreds of stocks by sector, risk and growth.',
+ action: { prompt: 'Open the Screener', doneText: 'Try setting a filter.' },
  },
  {
- title: 'Your Portfolio ',
- desc: 'Add your real holdings to track P&L, see a pie chart breakdown, and get an AI portfolio summary. All stored privately in your browser.',
- target: '#tab-port', mobileTarget: '#mbn-port',
- action: { prompt: 'Click the Portfolio tab ↑', doneText: 'Add a holding to track your investments!', detect: 'tab-click-port' },
+ title: 'Your portfolio', name: 'Portfolio', tab: 'port',
+ desc: 'Add what you really own to track gains and losses and see your mix. It\'s saved to your account.',
+ action: { prompt: 'Open Portfolio', doneText: 'Add a holding to start tracking.' },
  },
  {
- title: 'Paper Trading ',
- desc: 'Practice investing with $10,000 of virtual money — no real cash at risk. Buy and sell stocks at live prices to build your confidence before going real.',
- target: '#tab-pt', mobileTarget: '#mbn-pt',
- action: { prompt: 'Click the Paper Trade tab ↑', doneText: 'Try placing a practice trade!', detect: 'tab-click-pt' },
+ title: 'Paper trading', name: 'Practice', tab: 'pt',
+ desc: 'Practice investing with $10,000 of pretend money at real prices, before you risk your own.',
+ action: { prompt: 'Open Paper Trade', doneText: 'Try placing a practice trade.' },
  },
  {
- title: 'Day Trade Simulator ⚡',
- desc: 'Simulate fast-paced intraday trading with $25,000 in virtual cash. Watch live minute-by-minute price bars and buy/sell to close your position before the bell.',
- target: '#tab-day', mobileTarget: '#mbn-day',
- action: { prompt: 'Click the Day Trade tab ↑', doneText: 'Watch the price bars tick in real time!', detect: 'tab-click-day' },
+ title: 'Day trade simulator', name: 'Day Trade', tab: 'day',
+ desc: 'Replay real minute-by-minute trading days with $25,000 of pretend cash.',
+ action: { prompt: 'Open Day Trade', doneText: 'Watch the price bars tick by.' },
  },
  {
- title: 'Your Profile ',
- desc: 'Access your profile from the top-right button. Change your theme, set your preferred broker, manage your holdings, and update account settings.',
+ title: 'Your profile',
+ desc: 'Your photo, settings, badges and leagues live here.',
  target: '#appHdrActions',
- action: { prompt: 'Click the profile button (top right) ↑', doneText: 'That\'s your control panel!', detect: 'profile-click' },
+ action: { prompt: 'Tap your profile picture', doneText: 'That\'s your control panel.', detect: 'profile-click' },
  },
  {
  title: 'You\'re all set',
- desc: 'Tour complete. Press Finish to collect your 50 XP bonus, then try a lesson in Learn & grow to keep leveling up.',
+ desc: 'Press Finish to collect your 50 XP bonus, then try today\'s challenge in Learn to keep leveling up.',
  target: null, action: null,
  },
 ];
+// Where each tab lives: the sidebar on big screens, the bottom bar (or its More sheet) on phones
+const TUT_TAB_TARGET = { w: ['#tab-w', '#mbn-w'], pt: ['#tab-pt', '#mbn-pt'], cmp: ['#tab-cmp', '#mbn-more'], screen: ['#tab-screen', '#mbn-more'], port: ['#tab-port', '#mbn-more'], day: ['#tab-day', '#mbn-more'] };
 
 let tutStep = 0;
 let tutListeners = [];
-let tutElevated = null;
+let tutTarget = null;
 
 function tutorialActive() {
  const el = document.getElementById('tutorialOverlay');
- return el && el.style.display !== 'none';
+ return !!el && el.style.display !== 'none';
 }
+const tutVisible = el => !!el && el.getClientRects().length > 0 && el.getBoundingClientRect().width > 0;
+function tutFindTarget(step) {
+ const sels = step.tab ? (TUT_TAB_TARGET[step.tab] || []) : [step.target, step.mobileTarget].filter(Boolean);
+ for (const s of sels) { const el = document.querySelector(s); if (tutVisible(el)) return el; }
+ return null;
+}
+
+// Darkens everything except a hole around the target. The target itself is never moved or re-layered,
+// so it stays fully usable (typing, tapping) wherever it sits in the page.
+function tutPlace() {
+ if (!tutorialActive()) return;
+ const card = document.getElementById('tutCard'), spot = document.getElementById('tutSpotlight');
+ const shades = ['T', 'B', 'L', 'R'].map(k => document.getElementById('tutShade' + k));
+ if (!card || shades.some(s => !s)) return;
+ const W = innerWidth, H = innerHeight;
+ const el = tutTarget && tutVisible(tutTarget) ? tutTarget : null;
+ if (!el) {
+  shades[0].style.cssText = `left:0;top:0;width:${W}px;height:${H}px`;
+  shades.slice(1).forEach(s => { s.style.cssText = 'display:none'; });
+  spot.style.cssText = 'display:none';
+  card.style.cssText = 'top:50%;left:50%;transform:translate(-50%,-50%)';
+  return;
+ }
+ const r = el.getBoundingClientRect(), pad = 6;
+ const x0 = Math.max(0, r.left - pad), y0 = Math.max(0, r.top - pad), x1 = Math.min(W, r.right + pad), y1 = Math.min(H, r.bottom + pad);
+ shades[0].style.cssText = `left:0;top:0;width:${W}px;height:${y0}px`;
+ shades[1].style.cssText = `left:0;top:${y1}px;width:${W}px;height:${Math.max(0, H - y1)}px`;
+ shades[2].style.cssText = `left:0;top:${y0}px;width:${x0}px;height:${Math.max(0, y1 - y0)}px`;
+ shades[3].style.cssText = `left:${x1}px;top:${y0}px;width:${Math.max(0, W - x1)}px;height:${Math.max(0, y1 - y0)}px`;
+ spot.style.cssText = `display:block;left:${x0}px;top:${y0}px;width:${x1 - x0}px;height:${y1 - y0}px;border-radius:12px`;
+ const cardW = Math.min(300, W - 24), cardH = card.offsetHeight || 240;
+ const top = H - y1 >= cardH + 24 ? y1 + 14 : y0 >= cardH + 24 ? y0 - cardH - 14 : Math.max(12, H - cardH - 12);
+ const left = Math.min(Math.max(12, r.left), W - cardW - 12);
+ card.style.cssText = `top:${top}px;left:${left}px;bottom:auto;transform:none`;
+}
+addEventListener('resize', () => { if (tutorialActive()) { tutTarget = tutFindTarget(TUTORIAL_STEPS[tutStep]); tutPlace(); } });
+addEventListener('scroll', () => { if (tutorialActive()) tutPlace(); }, true);
 
 function skipStepAction() {
  const step = TUTORIAL_STEPS[tutStep];
@@ -8015,7 +8080,7 @@ function skipStepAction() {
  document.getElementById('tutActionPrompt')?.classList.remove('show');
  document.getElementById('tutSpotlight')?.classList.remove('pulse');
  const doneTxt = document.getElementById('tutDoneText');
- if (doneTxt) doneTxt.textContent = 'Step skipped — click Next to continue.';
+ if (doneTxt) doneTxt.textContent = 'Step skipped. Press Next to continue.';
  document.getElementById('tutDoneBadge')?.classList.add('show');
  const btn = document.getElementById('tutNextBtn');
  if (btn) btn.disabled = false;
@@ -8027,115 +8092,54 @@ function startTutorial() {
  renderTutStep();
 }
 
+function tutShowMarketFilter(on) {
+ const mf = document.getElementById('marketFilter');
+ if (!mf) return;
+ if (on && !('tutPrev' in mf.dataset)) { mf.dataset.tutPrev = mf.style.display; if (getComputedStyle(mf).display === 'none') mf.style.display = 'flex'; }
+ if (!on && 'tutPrev' in mf.dataset) { mf.style.display = mf.dataset.tutPrev; delete mf.dataset.tutPrev; }
+}
+
 function renderTutStep() {
  const step = TUTORIAL_STEPS[tutStep];
- const card = document.getElementById('tutCard');
- const spot = document.getElementById('tutSpotlight');
- const arrow = document.getElementById('tutArrow');
- const dots = document.getElementById('tutDots');
- const label = document.getElementById('tutStepLabel');
- const title = document.getElementById('tutTitle');
- const desc = document.getElementById('tutDesc');
- const btn = document.getElementById('tutNextBtn');
- const prompt = document.getElementById('tutActionPrompt');
- const done = document.getElementById('tutDoneBadge');
- const actTxt = document.getElementById('tutActionText');
- const doneTxt= document.getElementById('tutDoneText');
+ const $ = id => document.getElementById(id);
+ const card = $('tutCard'), spot = $('tutSpotlight'), btn = $('tutNextBtn'), prompt = $('tutActionPrompt'), done = $('tutDoneBadge'), skipBtn = $('tutSkipBtn');
  if (!card) return;
-
- // Hide market filter if previous step showed it and this step doesn't need it
- if (!step.showMarketFilter) {
- const mf = document.getElementById('marketFilter');
- if (mf && mf.style.display === 'flex') mf.style.display = 'none';
- }
-
- // Remove elevation from previous target
- restoreTutElevated();
  cleanTutListeners();
+ tutShowMarketFilter(!!step.showMarketFilter);
 
  const tourXp = getLearn().tour;
- label.innerHTML = `<span>Step ${tutStep + 1} of ${TUTORIAL_STEPS.length}</span>${step.action ? `<span class="tut-xp${tourXp.includes(tutStep) ? ' got' : ''}">${tourXp.includes(tutStep) ? 'XP earned' : '+10 XP'}</span>` : ''}`;
- title.textContent = step.title;
- desc.textContent = step.desc;
- btn.textContent = tutStep === TUTORIAL_STEPS.length - 1 ? 'Finish ' : 'Next →';
+ $('tutStepLabel').innerHTML = `<span>Step ${tutStep + 1} of ${TUTORIAL_STEPS.length}</span>${step.action ? `<span class="tut-xp${tourXp.includes(tutStep) ? ' got' : ''}">${tourXp.includes(tutStep) ? 'XP earned' : '+10 XP'}</span>` : ''}`;
+ $('tutTitle').textContent = step.title;
+ $('tutDesc').textContent = step.desc;
+ btn.textContent = tutStep === TUTORIAL_STEPS.length - 1 ? 'Finish' : 'Next →';
+ $('tutDots').innerHTML = `<div class="tut-prog"><i style="width:${((tutStep + 1) / TUTORIAL_STEPS.length * 100).toFixed(0)}%"></i></div>`;
 
- dots.innerHTML = `<div class="tut-prog"><i style="width:${((tutStep + 1) / TUTORIAL_STEPS.length * 100).toFixed(0)}%"></i></div>`;
-
+ tutTarget = step.target || step.tab ? tutFindTarget(step) : null;
  if (step.action) {
- prompt.classList.add('show');
- done.classList.remove('show');
- actTxt.textContent = step.action.prompt;
- doneTxt.textContent = step.action.doneText;
- btn.disabled = true;
- const skipBtn = document.getElementById('tutSkipBtn');
- if (skipBtn) skipBtn.style.display = 'inline-block';
- attachTutAction(step.action.detect);
+  const viaMore = step.tab && tutTarget?.id === 'mbn-more';
+  $('tutActionText').textContent = viaMore ? `Tap More, then ${step.name}` : step.action.prompt;
+  $('tutDoneText').textContent = step.action.doneText;
+  prompt.classList.add('show');
+  done.classList.remove('show');
+  btn.disabled = true;
+  if (skipBtn) skipBtn.style.display = 'inline-block';
+  attachTutAction(step);
  } else {
- prompt.classList.remove('show');
- done.classList.remove('show');
- btn.disabled = false;
- const skipBtn = document.getElementById('tutSkipBtn');
- if (skipBtn) skipBtn.style.display = 'none';
+  prompt.classList.remove('show');
+  done.classList.remove('show');
+  btn.disabled = false;
+  if (skipBtn) skipBtn.style.display = 'none';
  }
-
- // Show marketFilter for the step that needs it
- if (step.showMarketFilter) {
- const mf = document.getElementById('marketFilter');
- if (mf) mf.style.display = 'flex';
- }
-
- if (step.target) {
- // Try primary target; fall back to mobileTarget if primary is not visible
- let el = document.querySelector(step.target);
- const isVisible = el => el && el.offsetParent !== null && el.getBoundingClientRect().width > 0;
- if (!isVisible(el) && step.mobileTarget) {
- el = document.querySelector(step.mobileTarget);
- }
- if (el && isVisible(el)) {
- // Elevate target above the blocker so it's clickable
- el.classList.add('tut-target-active');
- tutElevated = el;
-
- const r = el.getBoundingClientRect();
- spot.style.cssText = `display:block;left:${r.left-6}px;top:${r.top-6}px;width:${r.width+12}px;height:${r.height+12}px;border-radius:12px;transition:all .35s cubic-bezier(.16,1,.3,1)`;
- spot.classList.add('pulse');
-
- arrow.style.cssText = `display:block;left:${r.left + r.width/2 - 16}px;top:${r.top - 50}px`;
-
- const spaceBelow = window.innerHeight - r.bottom;
- const cardTop = spaceBelow > 200 ? r.bottom + 14 : r.top - 240;
- const cardLeft = Math.min(Math.max(r.left, 12), window.innerWidth - 316);
- card.style.cssText = `top:${cardTop}px;left:${cardLeft}px;bottom:auto;transform:none`;
- } else {
- // Target not visible — center the card
- spot.style.cssText = 'display:none';
- spot.classList.remove('pulse');
- arrow.style.display = 'none';
- card.style.cssText = 'top:50%;left:50%;transform:translate(-50%,-50%)';
- }
- } else {
- spot.style.cssText = 'display:none';
- spot.classList.remove('pulse');
- arrow.style.display = 'none';
- card.style.cssText = 'top:50%;left:50%;transform:translate(-50%,-50%)';
- }
+ spot.classList.toggle('pulse', !!step.action);
+ tutPlace();
+ requestAnimationFrame(tutPlace);   // again once the card has its final height
 }
 
-function restoreTutElevated() {
- if (tutElevated) {
- tutElevated.classList.remove('tut-target-active');
- tutElevated = null;
- }
-}
-
-function attachTutAction(detect) {
- const prompt = document.getElementById('tutActionPrompt');
- const done = document.getElementById('tutDoneBadge');
+function tutMarkDone() {
  const btn = document.getElementById('tutNextBtn');
-
- function markDone() {
- prompt.classList.remove('show');
- done.classList.add('show');
+ if (!btn || !btn.disabled) return;
+ document.getElementById('tutActionPrompt').classList.remove('show');
+ document.getElementById('tutDoneBadge').classList.add('show');
  btn.disabled = false;
  const ls = getLearn();
  if (!ls.tour.includes(tutStep)) {
@@ -8147,41 +8151,19 @@ function attachTutAction(detect) {
  }
  document.getElementById('tutSpotlight').classList.remove('pulse');
  cleanTutListeners();
- }
+ btn.focus({ preventScroll: true });
+}
 
- if (detect === 'search-input') {
- const el = document.getElementById('si');
- if (el) { const fn = () => { if(el.value.trim().length>0) markDone(); }; el.addEventListener('input',fn); tutListeners.push({el,type:'input',fn}); }
- }
- if (detect === 'market-filter') {
- document.querySelectorAll('.mf-pill').forEach(el => { const fn=()=>markDone(); el.addEventListener('click',fn); tutListeners.push({el,type:'click',fn}); });
- }
- if (detect === 'tab-click-w') {
- ['tab-w','mbn-w'].forEach(id => { const el=document.getElementById(id); if(el){const fn=()=>markDone();el.addEventListener('click',fn);tutListeners.push({el,type:'click',fn});} });
- }
- if (detect === 'tab-click-cmp') {
- ['tab-cmp','mbn-cmp'].forEach(id => { const el=document.getElementById(id); if(el){const fn=()=>markDone();el.addEventListener('click',fn);tutListeners.push({el,type:'click',fn});} });
- }
- if (detect === 'tab-click-screen') {
- ['tab-screen','mbn-screen'].forEach(id => { const el=document.getElementById(id); if(el){const fn=()=>markDone();el.addEventListener('click',fn);tutListeners.push({el,type:'click',fn});} });
- }
- if (detect === 'tab-click-port') {
- ['tab-port','mbn-port'].forEach(id => { const el=document.getElementById(id); if(el){const fn=()=>markDone();el.addEventListener('click',fn);tutListeners.push({el,type:'click',fn});} });
- }
- if (detect === 'tab-click-pt') {
- ['tab-pt','mbn-pt'].forEach(id => { const el=document.getElementById(id); if(el){const fn=()=>markDone();el.addEventListener('click',fn);tutListeners.push({el,type:'click',fn});} });
- }
- if (detect === 'tab-click-day') {
- ['tab-day','mbn-day'].forEach(id => { const el=document.getElementById(id); if(el){const fn=()=>markDone();el.addEventListener('click',fn);tutListeners.push({el,type:'click',fn});} });
- }
- if (detect === 'profile-click') {
- const el = document.getElementById('appHdrActions');
- if (el) {
- const fn = () => markDone();
- el.addEventListener('click', fn);
- tutListeners.push({el, type:'click', fn});
- }
- }
+function attachTutAction(step) {
+ const detect = step.action.detect;
+ const on = (el, type, fn = tutMarkDone) => { if (!el) return; el.addEventListener(type, fn); tutListeners.push({ el, type, fn }); };
+ if (detect === 'search-input') { const el = document.getElementById('si'); on(el, 'input', () => { if (el.value.trim()) tutMarkDone(); }); }
+ if (detect === 'market-filter') document.querySelectorAll('.mf-pill').forEach(el => on(el, 'click'));
+ if (detect === 'profile-click') on(document.getElementById('appHdrActions'), 'click');
+ // Tab steps finish in tutOnTab(), whichever way the tab was opened (sidebar, bottom bar or More)
+}
+function tutOnTab(t) {
+ if (tutorialActive() && TUTORIAL_STEPS[tutStep]?.tab === t) setTimeout(() => { tutMarkDone(); tutTarget = tutFindTarget(TUTORIAL_STEPS[tutStep]); tutPlace(); }, 200);
 }
 
 function cleanTutListeners() {
@@ -8207,7 +8189,8 @@ function tutNext() {
 }
 
 function skipTutorial() {
- restoreTutElevated();
+ tutTarget = null;
+ tutShowMarketFilter(false);
  cleanTutListeners();
  document.getElementById('tutorialOverlay').style.display = 'none';
  try { localStorage.setItem('ss_tutorial_done_'+(user?.email||''), '1'); } catch {}
@@ -10348,6 +10331,8 @@ const BADGES = [
  { id:'daily_first', icon:'⚡', name:'Daily Brain', desc:'Finished a daily challenge', check: () => !!getLearn().dlast },
  { id:'learn_streak_7', icon:'🔥', name:'On a Roll', desc:'Did the daily challenge 7 days in a row', check: () => getLearn().dstreak >= 7 },
  { id:'stock_study', icon:'🔍', name:'Stock Detective', desc:'Finished a real-stock lesson', check: () => Object.values(getLearn().stocks).some(v => v.best != null) },
+ { id:'league_join', icon:'🤝', name:'Team Player', desc:'Started or joined a league with friends', check: () => (safeParse('ss_lg_'+(user?.email||''), {}).n || 0) > 0 },
+ { id:'league_champ', icon:'🏆', name:'Champion', desc:'Won a week in one of your leagues', check: () => (safeParse('ss_lg_'+(user?.email||''), {}).wins || 0) > 0 },
  { id:'checklist_done', icon:'✅', name:'Ready to Go', desc:'Completed the getting started checklist', check: () => isChecklistComplete() },
  // ── SECRET ──
  { id:'secret_1', icon:'🎰', name:'Lucky Dip', desc:'You found it! Searched for a stock that doesn\'t exist — curiosity rewarded.',
@@ -10393,7 +10378,7 @@ const BADGE_GROUPS = [
  ['Streaks', ['streak_3','streak_7','streak_14','streak_30','streak_100']],
  ['Research', ['five_searches','twenty_searches','fifty_searches','crypto_search','index_search','screener_used','compare_used','prediction_used']],
  ['Portfolio and trading', ['five_watchlist','ten_watchlist','five_holdings','ten_holdings','paper_profit','paper_big','paper_five_pos','custom_home']],
- ['Community', ['five_votes','ten_votes','digest_sub']],
+ ['Community', ['five_votes','ten_votes','digest_sub','league_join','league_champ']],
  ['Just for fun', ['dark_mode','after_hours','early_bird','night_trader','weekend_warrior','secret_1','secret_2']],
 ];
 
@@ -11451,54 +11436,6 @@ function openNotificationCenter() {
 /* ════════════════════════════════
  AVATAR / PROFILE CUSTOMIZATION
 ════════════════════════════════ */
-const AVATAR_OPTIONS = ['😀','😎','🤑','🧠','🦊','🐻','🐯','🦁','🐉','🚀','⚡','🔥','💎','🎯','🌙','🌟','🏆','📈','💰','🤖'];
-
-function toggleAvatarPopup() {
- const popup = document.getElementById('avatarPopup'); if(!popup) return;
- if (popup.style.display === 'none') {
- // Populate grid
- const grid = document.getElementById('avatarPopupGrid'); if(!grid) return;
- const saved = localStorage.getItem('ss_avatar_'+(user?.email||'')) || user?.name[0]?.toUpperCase() || '?';
- grid.innerHTML = [...AVATAR_OPTIONS, user?.name[0]?.toUpperCase()].map(a => `
- <button onclick="setAvatar('${a}');document.getElementById('avatarPopup').style.display='none'"
- style="aspect-ratio:1;border-radius:8px;border:2px solid ${saved===a?'var(--accent)':'transparent'};background:${saved===a?'rgba(108,92,231,.15)':'var(--card2)'};cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .15s;${!AVATAR_OPTIONS.includes(a)?'font-weight:800;color:var(--accent2);font-size:.85rem':''}"
- onmouseover="this.style.borderColor='var(--accent)';this.style.transform='scale(1.1)'"
- onmouseout="this.style.borderColor='${saved===a?'var(--accent)':'transparent'}';this.style.transform=''">${a}</button>`).join('');
- popup.style.display = 'block';
- // Close on outside click
- setTimeout(() => document.addEventListener('click', function handler(e) {
- if (!popup.contains(e.target) && e.target.id !== 'profAv') {
- popup.style.display = 'none';
- document.removeEventListener('click', handler);
- }
- }), 50);
- } else {
- popup.style.display = 'none';
- }
-}
-
-function renderAvatarPicker(containerId) {
- // No-op — avatar picking is now done via hover on the profile picture
-}
-function setAvatar(av) {
- if(!user) return;
- localStorage.setItem('ss_avatar_'+(user?.email||''), av);
- // Sync avatar to Supabase so it persists across devices
- if (user.email) {
- usersTable().update({ avatar: av }).eq('email', user.email)
- .then(({error}) => { if(error) console.warn('avatar sync failed'); });
- }
- // Update all avatar displays
- document.querySelectorAll('.avatar, #hdrAvatar, #profAv').forEach(a => a.textContent = av);
- // Update selected state in popup if open
- document.querySelectorAll('[data-av]').forEach(btn => {
- const isNow = btn.dataset.av === av;
- btn.classList.toggle('av-sel', isNow);
- btn.style.borderColor = isNow ? 'var(--accent)' : 'transparent';
- btn.style.background = isNow ? 'rgba(108,92,231,.15)' : 'var(--card2)';
- });
- toast('Avatar updated!', 'success', 2000);
-}
 /* ════════════════════════════════
  STREAK TRACKING
 ════════════════════════════════ */
@@ -11528,10 +11465,6 @@ function updateStreak() {
 /* ════════════════════════════════
  AVATAR HELPER
 ════════════════════════════════ */
-function getAvatar() {
- if (!user) return '?';
- return localStorage.getItem('ss_avatar_' + (user?.email || '')) || user.name[0].toUpperCase();
-}
 
 /* ════════════════════════════════
  SCREENER
@@ -13916,4 +13849,618 @@ function restartTutorial() {
  closeHelp();
  localStorage.removeItem('ss_tutorial_done_' + (user?.email || ''));
  setTimeout(startTutorial, 300);
+}
+
+/* ════════════════════════════════
+ PROFILE PHOTOS
+ Picked here, cropped to a 256px square JPEG, and uploaded through /api/user to our own storage.
+ Without a photo, people show their initials. The ring around it comes from their learning level.
+════════════════════════════════ */
+const AVATAR_URL_RE = /^https?:\/\/[^\s"'<>]+\/storage\/v1\/object\/public\/avatars\/[0-9a-f]{24}\.jpg(\?v=[a-z0-9]+)?$/;
+const avatarUrlOf = a => typeof a === 'string' && AVATAR_URL_RE.test(a) ? a : null;
+const myAvatarUrl = () => user ? avatarUrlOf(localStorage.getItem('ss_avatar_' + user.email)) : null;
+function initialsOf(name) {
+ const p = String(name || '').trim().split(/\s+/).filter(Boolean);
+ return p.length ? (p[0][0] + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase() : '?';
+}
+function avatarHTML(url, name, size = 32, ring = '') {
+ const u = avatarUrlOf(url);
+ return `<span class="av${ring ? ' ring-' + ring : ''}" style="--av:${size}px"><b aria-hidden="true">${escapeHTML(initialsOf(name))}</b>${u ? `<img src="${escapeHTML(u)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ''}</span>`;
+}
+const myRing = () => ringForLevel(learnLevel(getLearn().xp).n);
+const myAvatarHTML = size => user ? avatarHTML(myAvatarUrl(), user.name, size, myRing()) : '';
+const CAMERA_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+function refreshMyAvatar() {
+ if (!user) return;
+ const h = document.getElementById('hdrAvatar');
+ if (h) h.innerHTML = myAvatarHTML(30);
+ const p = document.getElementById('profAv');
+ if (p) p.innerHTML = myAvatarHTML(52) + `<span class="av-cam" aria-hidden="true">${CAMERA_ICO}</span>`;
+ const big = document.getElementById('photoPreview');
+ if (big) big.innerHTML = myAvatarHTML(64);
+ const rm = document.getElementById('photoRemoveBtn');
+ if (rm) rm.hidden = !myAvatarUrl();
+}
+
+let _photo = null;
+function openPhotoPicker() {
+ if (!requireAuth('Profile photos')) return;
+ const inp = document.createElement('input');
+ inp.type = 'file';
+ inp.accept = 'image/*';
+ inp.onchange = () => { const f = inp.files && inp.files[0]; if (f) loadPhoto(f); };
+ inp.click();
+}
+function loadPhoto(file) {
+ if (file.size > 25e6) { toast('That photo is too large. Try one under 25 MB.', 'error'); return; }
+ const url = URL.createObjectURL(file);
+ const img = new Image();
+ img.onload = () => openPhotoCrop(img, url);
+ img.onerror = () => { URL.revokeObjectURL(url); toast("That file couldn't be opened as a photo. Try a JPG or PNG.", 'error'); };
+ img.src = url;
+}
+function openPhotoCrop(img, url) {
+ _photo = { img, url, zoom: 1, cx: img.naturalWidth / 2, cy: img.naturalHeight / 2 };
+ lessonOverlay('photoTitle', `
+  <h2 id="photoTitle" class="lesson-title" style="margin:0 0 4px">Your profile photo</h2>
+  <p class="ph-hint">Drag to position it and use the slider to zoom. Friends see it in your leagues.</p>
+  <div class="ph-crop"><canvas id="photoCanvas" width="560" height="560" aria-label="Photo preview"></canvas></div>
+  <label class="lc-sl ph-zoom"><span>Zoom</span><b></b><input type="range" min="1" max="4" step="0.01" value="1" oninput="photoZoom(this.value)" style="--fill:0%"></label>
+  <p class="lg-err" id="photoErr" role="alert"></p>
+  <div class="lesson-nav"><button type="button" class="dash-btn" onclick="photoCancel()">Cancel</button><button type="button" class="lesson-cta" id="photoSave" onclick="photoSave()">Save photo</button></div>`, 'ph-box');
+ const c = document.getElementById('photoCanvas');
+ let drag = null;
+ c.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, cx: _photo.cx, cy: _photo.cy }; c.setPointerCapture(e.pointerId); });
+ c.addEventListener('pointermove', e => {
+  if (!drag || !_photo) return;
+  const side = photoSide(), k = side / c.getBoundingClientRect().width;
+  _photo.cx = drag.cx - (e.clientX - drag.x) * k;
+  _photo.cy = drag.cy - (e.clientY - drag.y) * k;
+  drawPhoto(c);
+ });
+ c.addEventListener('pointerup', () => { drag = null; });
+ c.addEventListener('pointercancel', () => { drag = null; });
+ drawPhoto(c);
+}
+const photoSide = () => Math.min(_photo.img.naturalWidth, _photo.img.naturalHeight) / _photo.zoom;
+function drawPhoto(canvas) {
+ if (!_photo || !canvas) return;
+ const { img } = _photo, side = photoSide(), W = img.naturalWidth, H = img.naturalHeight;
+ _photo.cx = Math.max(side / 2, Math.min(W - side / 2, _photo.cx));
+ _photo.cy = Math.max(side / 2, Math.min(H - side / 2, _photo.cy));
+ const ctx = canvas.getContext('2d');
+ ctx.imageSmoothingQuality = 'high';
+ ctx.clearRect(0, 0, canvas.width, canvas.height);
+ ctx.drawImage(img, _photo.cx - side / 2, _photo.cy - side / 2, side, side, 0, 0, canvas.width, canvas.height);
+}
+function photoZoom(v) {
+ if (!_photo) return;
+ _photo.zoom = +v;
+ const inp = document.querySelector('.ph-zoom input');
+ if (inp) inp.style.setProperty('--fill', `${((v - 1) / 3 * 100).toFixed(1)}%`);
+ drawPhoto(document.getElementById('photoCanvas'));
+}
+function photoCancel() { if (_photo?.url) URL.revokeObjectURL(_photo.url); _photo = null; closeLesson(); }
+async function photoSave() {
+ if (!_photo) return;
+ const btn = document.getElementById('photoSave'), err = document.getElementById('photoErr');
+ const out = document.createElement('canvas');
+ out.width = out.height = 256;
+ drawPhoto(out);
+ const data = out.toDataURL('image/jpeg', 0.86);
+ btn.disabled = true; btn.textContent = 'Saving...'; err.textContent = '';
+ const { data: d, error } = await accountApi('POST', { avatar: data });
+ if (error || !d?.avatar) { btn.disabled = false; btn.textContent = 'Save photo'; err.textContent = error?.message || "Your photo couldn't be saved. Please try again."; return; }
+ try { localStorage.setItem('ss_avatar_' + user.email, d.avatar); } catch {}
+ photoCancel();
+ refreshMyAvatar();
+ track('profile_photo', { action: 'set' });
+ toast('Profile photo updated', 'success', 2200);
+}
+async function removePhoto() {
+ if (!user) return;
+ const { error } = await accountApi('POST', { avatar: null });
+ if (error) { toast(error.message || "Your photo couldn't be removed. Please try again.", 'error'); return; }
+ try { localStorage.removeItem('ss_avatar_' + user.email); } catch {}
+ refreshMyAvatar();
+ toast('Profile photo removed', 'info', 2000);
+}
+
+/* ════════════════════════════════
+ LEVEL REWARDS: every level unlocks something you can see or use
+ Rings show around your photo everywhere, including your friends' leagues. Streak freezes keep a
+ daily-challenge streak alive through a missed day. Teal and Ruby are extra app colors.
+════════════════════════════════ */
+const LEVEL_REWARDS = [
+ { n: 2, kind: 'ring', title: 'Bronze profile ring', desc: 'A bronze ring around your photo, in your leagues and everywhere else.' },
+ { n: 3, kind: 'freeze', title: 'Streak freeze', desc: 'Miss a day and your daily-challenge streak survives. You can hold up to 3.' },
+ { n: 4, kind: 'color', title: 'Teal and Ruby app colors', desc: 'Two new colors for the whole app, in Settings, Preferences.' },
+ { n: 5, kind: 'ring', title: 'Silver ring and a streak freeze', desc: 'Your ring turns silver, plus one more streak freeze.' },
+ { n: 6, kind: 'ring', title: 'Gold profile ring', desc: 'A gold ring your friends will notice.' },
+ { n: 7, kind: 'freeze', title: 'Another streak freeze', desc: 'One more freeze to protect your streak.' },
+ { n: 8, kind: 'legend', title: 'Legend ring', desc: 'An animated ring only Legends have. From here, every level adds a streak freeze.' },
+];
+const ringForLevel = n => n >= 8 ? 'legend' : n >= 6 ? 'gold' : n >= 5 ? 'silver' : n >= 2 ? 'bronze' : '';   // same as ringOf in api/_leagues.js
+const freezesForLevel = n => (n >= 3) + (n >= 5) + (n >= 7) + Math.max(0, n - 8);
+const MAX_FREEZES = 3;
+const rewardsAt = n => n > 8 ? [{ n, kind: 'freeze', title: 'Streak freeze', desc: 'Every level from here adds a streak freeze.' }] : LEVEL_REWARDS.filter(r => r.n === n);
+const nextRewardAfter = n => LEVEL_REWARDS.find(r => r.n > n) || { n: n + 1, kind: 'freeze', title: 'Streak freeze', desc: 'Every level from here adds a streak freeze.' };
+const REWARD_ICONS = {
+ ring: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/>',
+ freeze: '<line x1="12" y1="2" x2="12" y2="22"/><line x1="4.9" y1="6.5" x2="19.1" y2="17.5"/><line x1="19.1" y1="6.5" x2="4.9" y2="17.5"/>',
+ color: '<circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.75 1.5-1.5 0-.4-.15-.75-.4-1-.25-.3-.4-.65-.4-1.05 0-.85.65-1.45 1.5-1.45H16c3.3 0 6-2.7 6-6 0-4.95-4.5-9-10-9z"/>',
+ legend: '<path d="M2 18l2-11 5 5 3-7 3 7 5-5 2 11z"/><line x1="4" y1="21" x2="20" y2="21"/>',
+};
+const rewardIcon = k => DASH_ICON(REWARD_ICONS[k] || REWARD_ICONS.ring);
+// Hand out the streak freezes for levels reached since last time (older progress gets its share once)
+function grantFreezes(s) {
+ const n = learnLevel(s.xp).n;
+ if (s.freezeLevel == null) { s.freezeLevel = n; s.freezes = Math.min(MAX_FREEZES, freezesForLevel(n)); return; }
+ if (n > s.freezeLevel) { s.freezes = Math.min(MAX_FREEZES, (s.freezes || 0) + freezesForLevel(n) - freezesForLevel(s.freezeLevel)); s.freezeLevel = n; }
+}
+const daysFrom = (a, b) => Math.round((Date.parse(b + 'T12:00:00') - Date.parse(a + 'T12:00:00')) / 864e5);
+// A streak is alive if you played today or yesterday, or your freezes cover the days you missed
+function streakAlive(s, today = learnToday()) {
+ if (!s.dstreak || !s.dlast) return false;
+ const gap = daysFrom(s.dlast, today);
+ return gap <= 1 || gap - 1 <= (s.freezes || 0);
+}
+const ACCENT_LOCKS = { teal: 4, ruby: 4 };
+const accentUnlocked = c => !ACCENT_LOCKS[c] || learnLevel(getLearn().xp).n >= ACCENT_LOCKS[c];
+function rewardsHubHTML(s, lv) {
+ const nx = nextRewardAfter(lv.n);
+ return `
+ <div class="hub-reward">
+  <span class="hr-ico">${rewardIcon(nx.kind)}</span>
+  <div class="hr-txt"><span>Next reward at Level ${nx.n}</span><b>${escapeHTML(nx.title)}</b></div>
+  <span class="hr-xp">${Math.max(0, (nx.n <= LEARN_LEVELS.length ? LEARN_LEVELS[nx.n - 1].min : lv.next) - s.xp)} XP to go</span>
+ </div>
+ <details class="hub-rewards"><summary>All level rewards${s.freezes ? ` · ${s.freezes} streak freeze${s.freezes > 1 ? 's' : ''} saved` : ''}</summary>
+  <ul>${LEVEL_REWARDS.map(r => `<li class="${lv.n >= r.n ? 'got' : ''}"><span class="hr-ico">${lv.n >= r.n ? learnIcon('check') : rewardIcon(r.kind)}</span><div><b>Level ${r.n}: ${escapeHTML(r.title)}</b><span>${escapeHTML(r.desc)}</span></div></li>`).join('')}</ul>
+ </details>`;
+}
+
+/* ════════════════════════════════
+ LEAGUES: private leaderboards with friends (server: api/_leagues.js via /api/community)
+ The score is XP earned this week. It resets every Monday; last week's winner is shown here and emailed.
+════════════════════════════════ */
+let _lg = null, _lgAt = 0, _lgReq = null;
+const LG_ICON = '<path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>';
+async function lgApi(q, body) {
+ try {
+  const r = await fetch('/api/community' + (q ? '?' + q : ''), {
+   method: body ? 'POST' : 'GET',
+   headers: { ...(getTok() ? { Authorization: 'Bearer ' + getTok() } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+   body: body ? JSON.stringify(body) : undefined,
+  });
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401 && user && getTok()) { await sessionExpired(); return { error: 'Please sign in again.', status: 401 }; }
+  return r.ok ? d : { error: d.error || 'Something went wrong. Please try again.', status: r.status };
+ } catch { return { error: 'Could not reach StockSight. Check your connection and try again.', status: 0 }; }
+}
+function loadLeagues(force) {
+ if (!user) return Promise.resolve(null);
+ if (!force && _lg && Date.now() - _lgAt < 60000) return Promise.resolve(_lg);
+ if (!_lgReq) {
+  _lgReq = lgApi('leagues=1').then(d => {
+   _lgReq = null;
+   if (d.error) return _lg;
+   _lg = d; _lgAt = Date.now();
+   try { localStorage.setItem('ss_lg_' + user.email, JSON.stringify({ n: d.leagues.length, wins: d.wins || 0 })); } catch {}
+   return d;
+  });
+ }
+ return _lgReq;
+}
+function timeLeft(ms) {
+ const h = Math.max(0, Math.floor((ms - Date.now()) / 36e5)), d = Math.floor(h / 24);
+ return d >= 1 ? `${d} day${d > 1 ? 's' : ''} ${h % 24} hr` : `${Math.max(1, h)} hr`;
+}
+// What changed since you last looked: someone passed you, or you won last week
+function lgNotices(d) {
+ if (!user || !d?.leagues?.length) return;
+ const key = 'ss_lg_seen_' + user.email, seen = safeParse(key, {}), notes = [];
+ let party = false;
+ d.leagues.forEach(l => {
+  const prev = seen[l.code];
+  if (l.lastWinner?.me && prev?.won !== d.week) { notes.unshift(`You won ${l.name} last week with ${l.lastWinner.weekXp} XP.`); party = true; }
+  else if (prev && prev.week === d.week && l.rank && prev.rank && l.rank > prev.rank) {
+   const above = l.top.find(r => r.rank === l.rank - 1);
+   notes.push(above && !above.me ? `${above.name} passed you in ${l.name}. You're #${l.rank} now.` : `You slipped to #${l.rank} in ${l.name}.`);
+  }
+  seen[l.code] = { week: d.week, rank: l.rank, won: l.lastWinner?.me ? d.week : prev?.won };
+ });
+ try { localStorage.setItem(key, JSON.stringify(seen)); } catch {}
+ if (notes.length) setTimeout(() => { toast(notes[0], party ? 'success' : 'info', 5000); if (party) { try { launchConfetti(); } catch {} } }, 1800);
+}
+
+function lgCardHTML(l) {
+ return `<button type="button" class="lg-card" onclick="openLeague('${l.code}')">
+  <div class="lg-card-h"><b>${escapeHTML(l.name)}</b><span>${l.members} ${l.members === 1 ? 'member' : 'members'}</span></div>
+  <div class="lg-card-m"><span class="lg-rank">#${l.rank || '-'}</span><span>${l.weekXp} XP this week</span><span class="lg-faces">${l.top.map(r => avatarHTML(r.avatar, r.name, 26, r.ring)).join('')}</span></div>
+  ${l.lastWinner ? `<div class="lg-last">${learnIcon('check')}Last week: ${l.lastWinner.me ? 'you won' : `${escapeHTML(l.lastWinner.name)} won`} with ${l.lastWinner.weekXp} XP</div>` : ''}
+ </button>`;
+}
+function lgEmptyHTML() {
+ return `<div class="lg-empty">
+  <span class="lg-empty-ico">${DASH_ICON(LG_ICON)}</span>
+  <h2>Compete with your friends</h2>
+  <p>Start a private league and send your friends the link. Everyone earns XP from lessons and the daily challenge, and the board resets every Monday.</p>
+ </div>`;
+}
+async function renderLeaguesView() {
+ const mc = document.getElementById('mainContent');
+ if (!mc) return;
+ const seq = _viewSeq;
+ try { history.replaceState(history.state, '', '/leagues'); } catch {}
+ mc.innerHTML = '<div class="lg-page"><div class="lc-load lc-load-lg"><i></i><i></i><i></i></div></div>';
+ const d = await loadLeagues(true);
+ if (seq !== _viewSeq || tab !== 'leagues') return;
+ if (!d) { mc.innerHTML = `<div class="lg-page">${lgEmptyHTML()}<p class="lg-err">Leagues aren't loading right now. Try again in a minute.</p></div>`; return; }
+ mc.innerHTML = `<div class="lg-page">
+  <div class="lg-week"><span>This week ends in <b>${timeLeft(d.endsAt)}</b></span><span>Score: XP earned this week</span></div>
+  ${d.leagues.length ? `<div class="lg-list">${d.leagues.map(lgCardHTML).join('')}</div>` : lgEmptyHTML()}
+  <div class="lg-actions"><button type="button" class="lesson-cta" onclick="openLeagueCreate()">Start a league</button><button type="button" class="dash-btn" onclick="openLeagueJoin()">Join with a code</button></div>
+  <div class="lg-how"><b>How to earn XP</b><span>Lessons, today's challenge, practice rounds and real-stock lessons in Learn. Today's challenge alone is worth up to 70 XP.</span><button type="button" class="dash-btn" onclick="switchTab('learn')">Go to Learn</button></div>
+ </div>`;
+ refreshViewHeadSub();
+}
+async function openLeague(code) {
+ if (tab !== 'leagues') { switchTab('leagues', true); await new Promise(r => setTimeout(r, 160)); }
+ const mc = document.getElementById('mainContent');
+ if (!mc) return;
+ const seq = _viewSeq;
+ mc.innerHTML = '<div class="lg-page"><div class="lc-load lc-load-lg"><i></i><i></i><i></i></div></div>';
+ const d = await lgApi('league=' + encodeURIComponent(code));
+ if (seq !== _viewSeq) return;
+ if (d.error) { mc.innerHTML = `<div class="lg-page"><button type="button" class="lg-back" onclick="renderLeaguesView()">${DASH_ICON('<polyline points="15 18 9 12 15 6"/>')}All leagues</button><p class="lg-err">${escapeHTML(d.error)}</p></div>`; return; }
+ const me = d.members.find(m => m.me), above = me && me.rank > 1 ? d.members[me.rank - 2] : null, next = me && d.members[me.rank];
+ const dot = t => /[.!?]$/.test(t) ? t : t + '.';   // names like "Tess R." already end in one
+ const status = !me ? '' : d.members.length < 2 ? 'Invite friends to start competing.'
+  : me.rank === 1 ? (me.weekXp > next.weekXp ? dot(`You're in first, ${me.weekXp - next.weekXp} XP ahead of ${escapeHTML(next.name)}`) : dot(`You're tied for first with ${escapeHTML(next.name)}`))
+  : dot(`You're #${me.rank}. Earn ${above.weekXp - me.weekXp + 1} XP to pass ${escapeHTML(above.name)}`);
+ const dailyDone = getLearn().daily?.date === learnToday() && getLearn().daily.done;
+ mc.innerHTML = `<div class="lg-page">
+  <button type="button" class="lg-back" onclick="renderLeaguesView()">${DASH_ICON('<polyline points="15 18 9 12 15 6"/>')}All leagues</button>
+  <div class="lg-head"><div><h2>${escapeHTML(d.name)}</h2><span>${d.members.length} of ${d.max} members · resets in ${timeLeft(d.endsAt)}</span></div>
+   <button type="button" class="lesson-cta lg-invite-btn" onclick="lgInvite('${d.code}')">${DASH_ICON('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>')}Invite</button></div>
+  ${status ? `<div class="lg-status"><span>${status}</span><button type="button" class="dash-btn" onclick="${dailyDone ? 'startPractice()' : 'startDaily()'}">${dailyDone ? 'Practice for XP' : "Today's challenge"}</button></div>` : ''}
+  <ol class="lg-board">${d.members.map(m => `<li class="lg-row${m.me ? ' me' : ''}">
+   <span class="lg-pos${m.rank <= 3 ? ' p' + m.rank : ''}">${m.rank}</span>
+   ${avatarHTML(m.avatar, m.name, 38, m.ring)}
+   <span class="lg-who"><b>${escapeHTML(m.name)}${m.me ? ' <em>you</em>' : ''}${m.owner ? ' <em>runs it</em>' : ''}</b><span>Level ${m.level} · ${escapeHTML(m.title)}${m.streak ? ` · ${m.streak}-day streak` : ''}</span></span>
+   <span class="lg-xp">${m.weekXp}<small>XP</small></span>
+   ${d.owner && !m.me ? `<button type="button" class="lg-kick" aria-label="Remove ${escapeHTML(m.name)}" onclick="lgConfirm('remove','${d.code}','${m.id}','${jsq(m.name)}')">${DASH_ICON('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button>` : ''}
+  </li>`).join('')}</ol>
+  ${d.lastWeek.length ? `<div class="lg-podium"><b>Last week</b>${d.lastWeek.map((r, i) => `<span><i>${i + 1}</i>${escapeHTML(r.name)}${r.me ? ' (you)' : ''} · ${r.weekXp} XP</span>`).join('')}</div>` : ''}
+  <div class="lg-code"><div><span>Invite code</span><b>${d.code}</b></div><button type="button" class="dash-btn" onclick="lgInvite('${d.code}')">Share link</button></div>
+  <div class="lg-foot">
+   ${d.owner ? `<button type="button" class="dash-btn" onclick="lgRename('${d.code}','${jsq(d.name)}')">Rename</button>` : ''}
+   <button type="button" class="dash-btn" onclick="lgConfirm('leave','${d.code}','','${jsq(d.name)}')">Leave league</button>
+   ${d.owner ? `<button type="button" class="dash-btn lg-danger" onclick="lgConfirm('delete','${d.code}','','${jsq(d.name)}')">Delete league</button>` : ''}
+  </div>
+ </div>`;
+}
+
+function lgFormModal(title, sub, inputHTML, action, label) {
+ lessonOverlay('lgmTitle', `<div class="lg-modal">
+  <h2 id="lgmTitle" class="lesson-title">${title}</h2><p class="ph-hint">${sub}</p>
+  ${inputHTML}
+  <p class="lg-err" id="lgErr" role="alert"></p>
+  <div class="lesson-nav"><button type="button" class="dash-btn" onclick="closeLesson()">Cancel</button><button type="button" class="lesson-cta" id="lgGo" onclick="${action}">${label}</button></div>
+ </div>`, 'lg-box');
+ setTimeout(() => document.querySelector('.lg-modal input')?.focus(), 60);
+}
+function openLeagueCreate() {
+ if (!requireAuth('Leagues')) return;
+ lgFormModal('Start a league', "Name it, then send your friends the link. Everyone's score is the XP they earn each week.",
+  '<input class="lg-input" id="lgName" maxlength="30" autocomplete="off" placeholder="Roommates, Econ class, Family" onkeydown="if(event.key===\'Enter\')lgCreate()" oninput="document.getElementById(\'lgErr\').textContent=\'\'">',
+  'lgCreate()', 'Create league');
+}
+function openLeagueJoin() {
+ if (!requireAuth('Leagues')) return;
+ lgFormModal('Join a league', 'Enter the 6-character code from your invite.',
+  '<input class="lg-input lg-code-in" id="lgCode" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC123" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,\'\');document.getElementById(\'lgErr\').textContent=\'\'" onkeydown="if(event.key===\'Enter\')lgJoin(this.value)">',
+  "lgJoin(document.getElementById('lgCode').value)", 'Join');
+}
+async function lgCreate() {
+ const name = document.getElementById('lgName')?.value.trim() || '', err = document.getElementById('lgErr'), btn = document.getElementById('lgGo');
+ if (name.length < 2) { err.textContent = 'Give your league a name (2 to 30 characters).'; return; }
+ btn.disabled = true;
+ const d = await lgApi(null, { action: 'league-create', name });
+ btn.disabled = false;
+ if (d.error) { err.textContent = d.error; return; }
+ closeLesson();
+ track('league_create');
+ _lg = null;
+ toast(`${d.name} is ready. Send your friends the link.`, 'success', 3500);
+ await openLeague(d.code);
+ lgInvite(d.code, true);
+}
+async function lgJoin(code) {
+ code = String(code || '').toUpperCase().trim();
+ const err = document.getElementById('lgErr');
+ if (!/^[A-Z2-9]{6}$/.test(code)) { if (err) err.textContent = 'Codes are 6 letters and numbers, like ABC123.'; return; }
+ const d = await lgApi(null, { action: 'league-join', code });
+ if (d.error) { if (err) err.textContent = d.error; else toast(d.error, 'error', 4000); return; }
+ closeLesson();
+ _lg = null;
+ track('league_join');
+ toast(d.already ? `You're already in ${d.name}.` : `You joined ${d.name}. Earn XP to climb the board.`, 'success', 3500);
+ const ob = document.getElementById('onboardingOverlay');
+ if (!ob || getComputedStyle(ob).display === 'none') openLeague(d.code);
+ loadLeagues(true).then(() => { checkAndAwardBadges?.(); renderDashLeague(); });
+}
+async function lgInvite(code, auto) {
+ const name = _lg?.leagues?.find(l => l.code === code)?.name || document.querySelector('.lg-head h2')?.textContent || 'my league';
+ const url = `${location.origin}/join/${code}`;
+ const text = `Join my StockSight league "${name}". We earn XP from investing lessons and see who tops the board each week. Code: ${code}`;
+ track('league_invite', { method: navigator.share ? 'share_sheet' : 'copy' });
+ if (navigator.share) { try { await navigator.share({ title: `Join ${name} on StockSight`, text, url }); return; } catch (e) { if (e?.name === 'AbortError') return; } }
+ try { await navigator.clipboard.writeText(`${text}\n${url}`); toast('Invite link copied. Paste it in a group chat.', 'success', 3000); }
+ catch { if (!auto) prompt('Copy this invite link:', url); }
+}
+function lgRename(code, name) {
+ lgFormModal('Rename league', 'Everyone in the league sees the new name.',
+  `<input class="lg-input" id="lgName" maxlength="30" autocomplete="off" value="${escapeHTML(name)}" onkeydown="if(event.key==='Enter')lgDoRename('${code}')">`,
+  `lgDoRename('${code}')`, 'Save');
+}
+async function lgDoRename(code) {
+ const name = document.getElementById('lgName')?.value.trim() || '';
+ const d = await lgApi(null, { action: 'league-rename', code, name });
+ if (d.error) { document.getElementById('lgErr').textContent = d.error; return; }
+ closeLesson(); _lg = null; openLeague(code);
+}
+function lgConfirm(kind, code, member, name) {
+ const t = {
+  leave: ['Leave this league?', `You'll leave ${escapeHTML(name)}. You can rejoin later with the code.`, 'Leave'],
+  delete: ['Delete this league?', `${escapeHTML(name)} and its board are deleted for everyone. This can't be undone.`, 'Delete league'],
+  remove: [`Remove ${escapeHTML(name)}?`, 'They can rejoin only with a new invite.', 'Remove'],
+ }[kind];
+ lessonOverlay('lgmTitle', `<div class="lg-modal"><h2 id="lgmTitle" class="lesson-title">${t[0]}</h2><p class="ph-hint">${t[1]}</p>
+  <div class="lesson-nav"><button type="button" class="dash-btn" onclick="closeLesson()">Cancel</button><button type="button" class="lesson-cta lg-danger-btn" onclick="lgDo('${kind}','${code}','${member}')">${t[2]}</button></div></div>`, 'lg-box');
+}
+async function lgDo(kind, code, member) {
+ const d = await lgApi(null, kind === 'remove' ? { action: 'league-remove', code, member } : { action: kind === 'delete' ? 'league-delete' : 'league-leave', code });
+ closeLesson();
+ if (d.error) { toast(d.error, 'error', 4000); return; }
+ _lg = null;
+ if (kind === 'remove') openLeague(code); else { toast(kind === 'delete' ? 'League deleted' : 'You left the league', 'info', 2500); renderLeaguesView(); }
+}
+
+// Invite links: stocksightai.com/join/ABC123 (or ?league=ABC123); /leagues opens the leagues page
+function leagueDeepLink() {
+ const m = location.pathname.match(/^\/join\/([A-Za-z0-9]{6})\/?$/);
+ const code = (m?.[1] || new URLSearchParams(location.search).get('league') || '').toUpperCase();
+ if (/^[A-Z2-9]{6}$/.test(code)) return { join: code };
+ if (/^\/leagues\/?$/.test(location.pathname)) return { view: true };
+ return null;
+}
+function openLeagueDeepLink() {
+ const dl = leagueDeepLink();
+ if (!dl) return false;
+ try { history.replaceState(null, '', dl.view ? '/leagues' : '/'); } catch {}
+ if (dl.view) { if (user) setTimeout(() => switchTab('leagues'), 450); else setTimeout(() => requireAuth('Leagues'), 600); return true; }
+ setTimeout(() => openJoinInvite(dl.join), 700);
+ return true;
+}
+async function openJoinInvite(code) {
+ const p = await lgApi('invite=' + encodeURIComponent(code));
+ if (p.error) { toast(p.error, 'error', 4000); return; }
+ lessonOverlay('lgmTitle', `<div class="lg-modal lg-join">
+  <span class="lg-empty-ico">${DASH_ICON(LG_ICON)}</span>
+  <h2 id="lgmTitle" class="lesson-title">Join ${escapeHTML(p.name)}?</h2>
+  <p class="ph-hint">${p.by ? `${escapeHTML(p.by)} invited you. ` : ''}${p.members} ${p.members === 1 ? 'person competes' : 'people compete'} on XP from investing lessons. The board resets every Monday.</p>
+  ${p.full ? '<p class="lg-err">This league is full.</p>' : ''}
+  <p class="lg-err" id="lgErr" role="alert"></p>
+  <div class="lesson-nav"><button type="button" class="dash-btn" onclick="closeLesson()">Not now</button>
+   <button type="button" class="lesson-cta" ${p.full ? 'disabled' : ''} onclick="${user ? `lgJoin('${p.code}')` : `lgJoinAfterSignup('${p.code}')`}">${user ? 'Join league' : 'Sign up free to join'}</button></div>
+ </div>`, 'lg-box');
+}
+function lgJoinAfterSignup(code) {
+ try { sessionStorage.setItem('ss_pending_league', code); } catch {}
+ closeLesson();
+ openModal('signup');
+}
+// After signing in or up from an invite: finish joining
+function lgAfterLogin() {
+ let code = null;
+ try { code = sessionStorage.getItem('ss_pending_league'); sessionStorage.removeItem('ss_pending_league'); } catch {}
+ if (code && /^[A-Z2-9]{6}$/.test(code)) setTimeout(() => lgJoin(code), 900);
+}
+
+// The league card on the home screen
+async function renderDashLeague() {
+ const el = document.getElementById('dashLeague');
+ if (!el) return;
+ if (!user) {
+  el.innerHTML = `<button type="button" class="lg-dash promo" onclick="requireAuth('Leagues')"><span class="lg-dash-ico">${DASH_ICON(LG_ICON)}</span><span class="lg-dash-txt"><b>Compete with friends</b><span>Sign up free to start a league</span></span></button>`;
+  return;
+ }
+ const d = await loadLeagues();
+ if (!d || !document.getElementById('dashLeague')) return;
+ if (!d.leagues.length) {
+  el.innerHTML = `<button type="button" class="lg-dash promo" onclick="openLeagueCreate()"><span class="lg-dash-ico">${DASH_ICON(LG_ICON)}</span><span class="lg-dash-txt"><b>Compete with friends</b><span>Start a league and see who learns the most each week</span></span></button>`;
+  return;
+ }
+ const l = [...d.leagues].sort((a, b) => (a.rank || 99) - (b.rank || 99))[0];
+ const above = l.rank > 1 ? l.top.find(r => r.rank === l.rank - 1) : null;
+ el.innerHTML = `<button type="button" class="lg-dash" onclick="openLeague('${l.code}')">
+  <span class="lg-dash-ico">${DASH_ICON(LG_ICON)}</span>
+  <span class="lg-dash-txt"><b>${escapeHTML(l.name)}: you're #${l.rank} of ${l.members}</b><span>${above ? `${above.weekXp - l.weekXp + 1} XP to pass ${escapeHTML(above.name)}` : l.members > 1 ? 'You lead this week. Keep it up.' : 'Invite friends to compete'} · resets in ${timeLeft(d.endsAt)}</span></span>
+  <span class="lg-faces">${l.top.map(r => avatarHTML(r.avatar, r.name, 26, r.ring)).join('')}</span>
+ </button>`;
+}
+
+// League results email (on unless turned off here or from an email's link)
+const leagueMailOn = () => !!user?.email && localStorage.getItem('ss_lgmail_' + user.email) !== '0';
+function syncLeagueMailUI() {
+ const tog = document.getElementById('league-mail-tog'), lbl = document.getElementById('league-mail-lbl'), on = leagueMailOn();
+ if (tog) { tog.className = 'notif-tog' + (on ? ' on' : ''); tog.setAttribute('aria-checked', String(on)); }
+ if (lbl) lbl.textContent = on ? 'On' : 'Off';
+}
+async function toggleLeagueEmails() {
+ if (!requireAuth('League emails')) return;
+ const on = !leagueMailOn();
+ const { error } = await usersTable().update({ league_emails: on });
+ if (error) { toast('Could not save that. Please try again.', 'error'); return; }
+ try { localStorage.setItem('ss_lgmail_' + user.email, on ? '1' : '0'); } catch {}
+ syncLeagueMailUI();
+ toast(on ? "We'll email your league results each Monday." : 'League emails turned off.', on ? 'success' : 'info', 3000);
+}
+
+/* ════════════════════════════════
+ LEARN PAGE (Learn tab): the same hub as the pop-up, as a full page
+════════════════════════════════ */
+function renderLearnView() {
+ const mc = document.getElementById('mainContent');
+ if (!mc) return;
+ mc.innerHTML = `<div class="learn-page"><div id="learnHubBody">${learnHubHTML()}</div></div>`;
+ if (!LEARN_LIB.full) loadLessonLibrary();
+}
+Object.assign(TG_ICONS, {
+ learn: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LEARN_ICONS.book}</svg>`,
+ leagues: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LG_ICON}</svg>`,
+});
+Object.assign(TAB_GUIDES, {
+ learn: {
+  title: 'Learn',
+  sub: () => { const lv = learnLevel(getLearn().xp); return `Level ${lv.n}: ${lv.name} · ${getLearn().xp} XP`; },
+  lead: 'Short lessons with hands-on cards, a new 5-question challenge every day, and endless practice built from real market data. Everything earns XP, and XP unlocks rewards and climbs your leagues.',
+  uses: [['Learn the basics', 'Six starter lessons cover how the market works.'], ['Build a habit', "Today's challenge takes two minutes and keeps your streak going."], ['Never run out', 'Practice rounds and real-stock lessons are always fresh.']],
+  steps: [['Start a lesson', 'Pick any lesson. Read the cards, try the hands-on ones, then take the quiz.', null], ["Do today's challenge", 'Five questions from today\'s market. Missed questions come back later for review.', null], ['Collect rewards', 'Each level unlocks something: profile rings, streak freezes and new app colors.', null]],
+  terms: [['XP', 'Points for learning. Lessons, challenges and practice all earn it.'], ['Streak', "Days in a row you've finished today's challenge."], ['Streak freeze', 'Saves your streak through a missed day. Earned by leveling up.']],
+  tip: "Today's challenge is the fastest way to earn XP for your leagues.",
+ },
+ leagues: {
+  title: 'Leagues',
+  sub: () => _lg?.leagues?.length ? `${_lg.leagues.length} league${_lg.leagues.length > 1 ? 's' : ''} · resets Monday` : 'Compete with friends every week',
+  lead: 'Private leaderboards with your friends. Everyone earns XP from lessons and the daily challenge, the board resets every Monday, and the winner is announced in the app and by email.',
+  uses: [['Stay motivated', 'A little friendly competition keeps you coming back.'], ['Learn together', 'Start one for your class, club or group chat.'], ['Win the week', 'Top the board by Sunday night to win.']],
+  steps: [['Start a league', 'Tap Start a league and give it a name.', null], ['Invite friends', 'Share the link or the 6-character code.', null], ['Earn XP', 'Lessons, today\'s challenge and practice all count toward this week.', null]],
+  terms: [['Weekly XP', 'XP earned since Monday (UTC). It resets each week.'], ['Invite code', 'Six letters and numbers that let someone join.'], ['Ring', 'The ring around a photo shows the person\'s level.']],
+  tip: 'Leagues of 3 to 10 friends are the most fun. Anyone can join with the link.',
+ },
+});
+
+/* ════════════════════════════════
+ PHONE LAYOUT ("clean native"): big titles, simple lists, a 5-tab bar with a More sheet
+════════════════════════════════ */
+const isPhone = () => matchMedia('(max-width: 768px)').matches;
+const PHONE_TITLES = { s: 'Markets', i: 'Markets', c: 'Markets', w: 'Watchlist', learn: 'Learn', leagues: 'Leagues', pt: 'Practice', port: 'Portfolio', screen: 'Screener', cmp: 'Compare', day: 'Day Trade' };
+function setPhoneTitle(t) {
+ const el = document.getElementById('mTitle');
+ if (el) el.textContent = PHONE_TITLES[t] || 'StockSight';
+}
+const MORE_ITEMS = [
+ ['leagues', 'Leagues', LG_ICON],
+ ['port', 'Portfolio', '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'],
+ ['screen', 'Screener', '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>'],
+ ['cmp', 'Compare', '<path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/>'],
+ ['day', 'Day Trade', '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'],
+];
+function openMoreSheet() {
+ closeMoreSheet();
+ const ov = document.createElement('div');
+ ov.className = 'more-ov';
+ ov.id = 'moreSheet';
+ const light = document.documentElement.getAttribute('data-theme') === 'light';
+ ov.innerHTML = `<div class="more-box" role="dialog" aria-modal="true" aria-label="More">
+  <div class="more-grab" aria-hidden="true"></div>
+  <div class="more-grid">${MORE_ITEMS.map(([t, label, ico]) => `<button type="button" class="more-item${tab === t ? ' on' : ''}" onclick="closeMoreSheet();switchTab('${t}')"><span>${DASH_ICON(ico)}</span>${label}</button>`).join('')}</div>
+  <div class="more-list">
+   <button type="button" onclick="closeMoreSheet();${user ? "show('profile')" : "openModal('login')"}">${user ? myAvatarHTML(26) : DASH_ICON('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>')}<span>${user ? 'Profile and settings' : 'Log in or sign up'}</span></button>
+   <button type="button" onclick="closeMoreSheet();toggleTheme()">${DASH_ICON(light ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>' : '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>')}<span>${light ? 'Dark mode' : 'Light mode'}</span></button>
+   <button type="button" onclick="closeMoreSheet();openHelp()">${DASH_ICON('<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>')}<span>Help and FAQ</span></button>
+  </div>
+ </div>`;
+ ov.addEventListener('click', e => { if (e.target === ov) closeMoreSheet(); });
+ document.body.appendChild(ov);
+ requestAnimationFrame(() => ov.classList.add('in'));
+}
+function closeMoreSheet() { document.getElementById('moreSheet')?.remove(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMoreSheet(); });
+
+// Today's prices with a small intraday line, for the phone lists
+const SPARK_Q = {};
+async function fetchSparks(items) {
+ const fresh = Date.now() - 60000, need = items.filter(([t]) => !SPARK_Q[t] || SPARK_Q[t].at < fresh);
+ if (need.length) {
+  const map = {};
+  need.forEach(([t, k]) => { map[ySym(t, k)] = t; });
+  try {
+   const r = await fetch('/api/quotes?spark=1&symbols=' + encodeURIComponent(Object.keys(map).join(',')));
+   if (r.ok) {
+    const { quotes } = await r.json();
+    for (const [s, q] of Object.entries(quotes || {})) if (map[s]) { SPARK_Q[map[s]] = { ...q, at: Date.now() }; LIVE_Q[map[s]] = { ...q, at: Date.now() }; }
+   }
+  } catch {}
+ }
+ return Object.fromEntries(items.map(([t]) => [t, SPARK_Q[t] || null]));
+}
+function miniSpark(c, up) {
+ if (!c || c.length < 2) return '<svg class="ph-spark" viewBox="0 0 64 26" aria-hidden="true"></svg>';
+ const lo = Math.min(...c), hi = Math.max(...c), n = c.length;
+ const pts = c.map((v, i) => `${(i / (n - 1) * 64).toFixed(1)},${(23 - (v - lo) / (hi - lo || 1) * 20).toFixed(1)}`).join(' ');
+ return `<svg class="ph-spark ${up ? 'up' : 'dn'}" viewBox="0 0 64 26" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`;
+}
+const phName = t => TICKERS.find(e => e.t === t)?.n || t;
+const phPrice = v => v == null ? '—' : v >= 1000 ? v.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 }) : v >= 1 ? v.toFixed(2) : v.toPrecision(3);
+function phRowHTML([t, k], q) {
+ const ch = q?.changePct, up = ch == null ? true : ch >= 0;
+ return `<button type="button" class="ph-row" onclick="goAsset('${jsq(t)}','${k}')">
+  <span class="ph-tk"><b>${escapeHTML(t)}</b><small>${escapeHTML(phName(t))}</small></span>
+  ${miniSpark(q?.spark, up)}
+  <span class="ph-px"><b>${phPrice(q?.price)}</b><i class="${ch == null ? '' : up ? 'up' : 'dn'}">${ch == null ? '—' : `${up ? '+' : ''}${ch.toFixed(2)}%`}</i></span>
+ </button>`;
+}
+const PH_MOVER_POOL = { s: ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'TSLA', 'NFLX', 'AMD', 'INTC', 'JPM', 'V', 'WMT', 'DIS', 'PLTR', 'COIN', 'UBER', 'SMCI'], c: ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'ADA', 'AVAX', 'BNB', 'LINK', 'LTC'] };
+function renderPhoneHome(t) {
+ const mc = document.getElementById('mainContent');
+ if (!mc) return;
+ const seq = _viewSeq;
+ mc.dataset.view = 'home';
+ const wl = user && watchlist.length ? watchlist.slice(0, 10).map(w => [w.ticker, w.type || tickerKind(w.ticker)]) : null;
+ const idx = [['SPX', 'i'], ['IXIC', 'i'], ['DJI', 'i'], ['VIX', 'i']];
+ const L = {
+  s: [[wl ? 'Your watchlist' : 'Popular stocks', wl || ['AAPL', 'NVDA', 'TSLA', 'MSFT', 'AMZN', 'GOOGL', 'META'].map(x => [x, 's']), wl ? "switchTab('w')" : ''], ['Market indexes', idx]],
+  i: [['US indexes', [...idx.slice(0, 3), ['RUT', 'i'], ['VIX', 'i']]], ['World markets', [['FTSE', 'i'], ['NI225', 'i'], ['DAX', 'i'], ['HSI', 'i']]]],
+  c: [['Crypto', ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'ADA'].map(x => [x, 'c'])]],
+ }[t] || [];
+ const skeleton = n => Array.from({ length: n }, () => '<div class="ph-row ph-skel"><span></span><span></span><span></span></div>').join('');
+ mc.innerHTML = `<div class="ph-home">
+  ${L.map(([title, items, edit], i) => `<section class="ph-sec"><div class="ph-sec-h"><h2>${title}</h2>${edit ? `<button type="button" onclick="${edit}">See all</button>` : ''}</div><div class="ph-list" id="phList${i}">${skeleton(items.length)}</div></section>`).join('')}
+  ${PH_MOVER_POOL[t] ? '<section class="ph-sec" id="phMoversSec"><div class="ph-sec-h"><h2>Biggest moves today</h2></div><div class="ph-movers" id="phMovers"></div></section>' : ''}
+  <section class="dash-learn">${learnRowHTML()}</section>
+  <section class="dash-league" id="dashLeague"></section>
+ </div>`;
+ renderDashLeague();
+ const all = L.flatMap(([, items]) => items);
+ fetchSparks(all).then(Q => {
+  if (seq !== _viewSeq) return;
+  L.forEach(([, items], i) => { const el = document.getElementById('phList' + i); if (el) el.innerHTML = items.map(it => phRowHTML(it, Q[it[0]])).join(''); });
+ });
+ if (PH_MOVER_POOL[t]) {
+  const pool = PH_MOVER_POOL[t].map(x => [x, t]);
+  fetchQuotes(pool).then(Q => {
+   if (seq !== _viewSeq) return;
+   const el = document.getElementById('phMovers');
+   if (!el) return;
+   const top = pool.filter(([x]) => Q[x]?.changePct != null).sort((a, b) => Math.abs(Q[b[0]].changePct) - Math.abs(Q[a[0]].changePct)).slice(0, 4);
+   if (!top.length) { document.getElementById('phMoversSec')?.remove(); return; }
+   el.innerHTML = top.map(([x, k]) => { const c = Q[x].changePct; return `<button type="button" class="ph-mover" onclick="goAsset('${x}','${k}')"><b>${x}</b><i class="${c >= 0 ? 'up' : 'dn'}">${c >= 0 ? '+' : ''}${c.toFixed(1)}%</i></button>`; }).join('');
+  });
+ }
+}
+
+// The Leagues line inside the Learn hub
+function hubLeagueHTML() {
+ if (!user) return '';
+ const l = _lg?.leagues?.length ? [..._lg.leagues].sort((a, b) => (a.rank || 99) - (b.rank || 99))[0] : null;
+ if (!_lg) loadLeagues().then(d => { if (d && document.getElementById('learnHubBody')) refreshLearnRow(); });
+ return `<button type="button" class="hub-league" onclick="closeLesson();switchTab('leagues')">
+  <span class="hm-ico">${DASH_ICON(LG_ICON)}</span>
+  <span class="hl-txt"><b>${l ? `${escapeHTML(l.name)}: you're #${l.rank} this week` : 'Leagues'}</b><span>${l ? `${l.weekXp} XP so far · resets Monday` : 'Start one with friends and race for XP each week'}</span></span>
+  ${DASH_ICON('<polyline points="9 18 15 12 9 6"/>')}
+ </button>`;
 }

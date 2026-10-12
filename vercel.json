@@ -52,6 +52,14 @@
     {
       "source": "/stock/:ticker",
       "destination": "/api/page?t=:ticker"
+    },
+    {
+      "source": "/join/:code",
+      "destination": "/api/page?league=:code"
+    },
+    {
+      "source": "/leagues",
+      "destination": "/"
     }
   ]
 }

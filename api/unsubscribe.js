@@ -4,7 +4,7 @@
 import { readUnsubscribe, patchUser, fail, UNSUB_LISTS } from './_auth.js';
 
 // ?l=alerts for price-alert emails; no l means the weekly digest
-const WHAT = { digest: ['the weekly digest', 'the Monday market digest'], alerts: ['price-alert emails', 'emails when your price alerts are hit'] };
+const WHAT = { digest: ['the weekly digest', 'the Monday market digest'], alerts: ['price-alert emails', 'emails when your price alerts are hit'], leagues: ['league emails', 'your weekly league results'] };
 
 const page = (title, body, form = '') => `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} · StockSight</title>

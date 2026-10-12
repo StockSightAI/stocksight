@@ -18,13 +18,30 @@ const SESSION_DAYS = 60;
 const SECRET_COLUMNS = ['phash', 'ph', 'reset_token', 'reset_token_expiry', 'reset_attempts', 'token_version', 'google_id'];
 // Columns a signed-in user may change on their own row
 export const WRITABLE_COLUMNS = new Set([
-  'name', 'mode', 'watchlist', 'portfolio', 'alerts', 'notes', 'streak_count', 'streak_last_date', 'settings', 'avatar',
+  'name', 'mode', 'watchlist', 'portfolio', 'alerts', 'notes', 'streak_count', 'streak_last_date', 'settings',
   'broker', 'tutorial_done', 'onboarding_done', 'pending_orders', 'investor_profile', 'risk_tolerance', 'invest_style',
-  'investment_goals', 'preferred_sectors', 'digest', 'alert_emails', 'learn',
+  'investment_goals', 'preferred_sectors', 'digest', 'alert_emails', 'learn', 'league_emails',
 ]);
+// Not writable directly: avatar (only /api/user's photo upload sets it, to a file in our own storage)
 
 export function configured() { return !!SERVICE_KEY(); }
 export function fail(res, status, error) { return res.status(status).json({ error }); }
+
+/* ── File storage (Supabase Storage, public "avatars" bucket; uploads need the service key) ── */
+export const avatarPath = email => `avatars/${crypto.createHash('sha256').update('avatar:' + String(email).toLowerCase()).digest('hex').slice(0, 24)}.jpg`;
+export const storagePublicUrl = path => `${SUPABASE_URL}/storage/v1/object/public/${path}`;
+export async function storageUpload(path, buf, type) {
+  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${path}`, {
+    method: 'POST',
+    headers: { apikey: SERVICE_KEY(), Authorization: `Bearer ${SERVICE_KEY()}`, 'Content-Type': type, 'x-upsert': 'true', 'Cache-Control': 'max-age=31536000' },
+    body: buf,
+  });
+  if (!r.ok) throw Object.assign(new Error(`Storage error ${r.status}`), { status: r.status, detail: await r.text().catch(() => '') });
+}
+export async function storageDelete(path) {
+  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${path}`, { method: 'DELETE', headers: { apikey: SERVICE_KEY(), Authorization: `Bearer ${SERVICE_KEY()}` } });
+  if (!r.ok && r.status !== 404 && r.status !== 400) throw new Error(`Storage error ${r.status}`);
+}
 
 /* ── Database (service role, server only) ── */
 export async function db(path, { method = 'GET', body, prefer } = {}) {
@@ -57,6 +74,8 @@ export async function insertUser(row) {
 }
 export async function deleteUserRow(email) {
   await db(`pt_leaderboard?${eqEmail(email)}`, { method: 'DELETE' }).catch(() => {});
+  await db(`xp_weeks?${eqEmail(email)}`, { method: 'DELETE' }).catch(() => {});
+  await storageDelete(avatarPath(email)).catch(() => {});
   await db(`users?${eqEmail(email)}`, { method: 'DELETE' });
 }
 export function safeRow(row) {
@@ -128,8 +147,9 @@ export function readSession(req) {
   } catch { return null; }
 }
 /* ── Unsubscribe links in emails: the email plus a signature only the server can make ──
- list 'digest' (the weekly email) or 'alerts' (price-alert emails); each link only works for its own list */
-export const UNSUB_LISTS = { digest: 'digest', alerts: 'alert_emails' };
+ list 'digest' (the weekly email), 'alerts' (price-alert emails) or 'leagues' (weekly league results);
+ each link only works for its own list */
+export const UNSUB_LISTS = { digest: 'digest', alerts: 'alert_emails', leagues: 'league_emails' };
 const unsubSig = (email, list) => b64u(crypto.createHmac('sha256', SESSION_SECRET()).update(list === 'digest' ? 'unsub:' + email : `unsub:${list}:${email}`).digest()).slice(0, 32);
 export function unsubscribeUrl(email, base = 'https://stocksightai.com', list = 'digest') {
   return `${base}/api/unsubscribe?e=${b64u(email)}&s=${unsubSig(email, list)}${list === 'digest' ? '' : `&l=${list}`}`;

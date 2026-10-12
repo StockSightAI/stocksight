@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const node = process.execPath;
-const SUITES = ['auth.test.mjs', 'votes.test.mjs', 'search-digest.test.mjs', 'daily.test.mjs'];
+const SUITES = ['auth.test.mjs', 'votes.test.mjs', 'search-digest.test.mjs', 'daily.test.mjs', 'leagues.test.mjs'];
 
 // Node warns that api/*.js are ES modules in a package without "type"; harmless, so keep the output clean
 const quiet = { NODE_NO_WARNINGS: '1' };
