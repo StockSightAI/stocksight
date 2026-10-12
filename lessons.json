@@ -1,0 +1,539 @@
+{
+ "version": 1,
+ "tracks": [
+  { "id": "wealth", "title": "Grow your money", "desc": "Compounding, fees, inflation and where to start", "icon": "growth",
+    "lessons": ["compounding", "dca", "fees", "inflation", "before-investing", "retirement-accounts"] },
+  { "id": "company", "title": "Read a company", "desc": "The numbers that tell you if a business is healthy", "icon": "doc",
+    "lessons": ["pe-ratio", "market-cap", "margins", "revenue-growth", "dividends", "analyst-targets", "debt-cash", "free-cash-flow"] },
+  { "id": "markets", "title": "How markets move", "desc": "Cycles, rates, sectors, risk and the news", "icon": "chart",
+    "lessons": ["bull-bear", "interest-rates", "sectors", "volatility-beta", "news-hype", "market-hours", "splits-buybacks"] },
+  { "id": "mindset", "title": "Think like an investor", "desc": "The habits that matter more than stock picks", "icon": "brain",
+    "lessons": ["time-in-market", "losses-math", "emotions", "asset-allocation", "rebalancing", "scams"] },
+  { "id": "beyond", "title": "Beyond stocks", "desc": "Bonds, crypto, options, shorts, IPOs and REITs", "icon": "layers",
+    "lessons": ["bonds", "crypto", "options", "short-selling", "ipos", "reits"] }
+ ],
+ "lessons": [
+  {
+   "id": "compounding", "title": "Compounding: money that grows itself", "mins": 3, "icon": "growth",
+   "cards": [
+    "Compounding means earning returns on your past returns. Your money grows, then that growth grows too. Over long stretches, this snowball does most of the work.",
+    { "t": "predict", "q": "You invest $1,000 once and it grows 8% a year. Roughly what is it worth after 30 years?", "a": ["About $10,000", "About $3,400", "About $2,400"], "why": "Compounded at 8% for 30 years, $1,000 becomes about $10,063. Without compounding (8% of the original $1,000 each year) you'd only reach $3,400." },
+    { "t": "calc", "calc": "compound", "text": "Try it: move the sliders. Notice how adding years changes the result far more than adding a few dollars a month." },
+    "A handy shortcut is the rule of 72: divide 72 by the yearly return to estimate how many years it takes to double. At 8%, money doubles about every 9 years.",
+    "Compounding needs two things you control: starting early and not interrupting it. Pulling money out or stopping for years resets the snowball."
+   ],
+   "quiz": [
+    { "q": "What is compounding?", "a": ["Earning returns on your past returns", "A fee your broker charges", "Buying the same stock twice"], "why": "Growth on top of growth is what makes long-term investing so powerful." },
+    { "q": "Using the rule of 72, about how long does money take to double at 6% a year?", "a": ["About 12 years", "About 6 years", "About 72 years"], "why": "72 divided by 6 is 12." },
+    { "q": "Which usually matters most for compounding?", "a": ["How many years the money grows", "Checking the price every day", "Picking a stock with a low share price"], "why": "Time is the engine. Each extra year grows on everything before it." }
+   ],
+   "cta": { "label": "Practice with paper money", "tab": "pt" }
+  },
+  {
+   "id": "dca", "title": "Dollar-cost averaging", "mins": 3, "icon": "calendar",
+   "cards": [
+    "Dollar-cost averaging means investing the same amount on a regular schedule, like $100 every month, whatever the price is doing.",
+    "Because the amount stays fixed, you automatically buy more shares when prices are low and fewer when they are high. It also takes the guesswork out of picking the perfect day.",
+    { "t": "calc", "calc": "dca", "text": "Try it: make the dip in month 3 deeper and watch your average cost per share." },
+    { "t": "predict", "q": "Prices drop 30% right after you start investing $100 a month. What happens to your next purchases?", "a": ["You get more shares for the same $100", "You get fewer shares", "You get the same number of shares"], "why": "Lower prices mean each $100 buys more shares, which lowers your average cost." },
+    "Historically, investing a lump sum right away has beaten spreading it out about two times out of three, because markets rise more often than they fall. Dollar-cost averaging shines when you invest from each paycheck anyway, and it makes drops feel less scary."
+   ],
+   "quiz": [
+    { "q": "What does dollar-cost averaging mean?", "a": ["Investing a fixed amount on a regular schedule", "Only buying when prices hit a new low", "Selling a little every month"], "why": "Same amount, same schedule, whatever the price." },
+    { "q": "When prices fall, a fixed $100 monthly investment buys...", "a": ["More shares", "Fewer shares", "The same number of shares"], "why": "Cheaper shares mean your $100 goes further." },
+    { "q": "Why do many people like dollar-cost averaging?", "a": ["It removes the pressure of timing the market", "It guarantees a profit", "It avoids all fees"], "why": "Nothing guarantees a profit, but a schedule takes emotion and timing out of it." }
+   ],
+   "cta": { "label": "Open Paper Trade", "tab": "pt" }
+  },
+  {
+   "id": "fees", "title": "Why small fees add up", "mins": 3, "icon": "percent",
+   "cards": [
+    "Funds charge a yearly fee called the expense ratio. It's a percent of what you invest, taken out a little at a time, so you never see a bill.",
+    { "t": "predict", "q": "You invest $10,000 for 30 years at 7% a year. About how much does a 1% yearly fee cost you compared with a 0.05% fee?", "a": ["About $18,700", "About $300", "About $3,000"], "why": "With a 0.05% fee you'd end with about $75,000. With a 1% fee, about $56,300. The fee is charged every year on a growing balance, so it compounds against you." },
+    { "t": "calc", "calc": "fees", "text": "Try it: slide the fee and watch the gap grow." },
+    "Index funds that track the S&P 500 often charge 0.10% a year or less. Actively managed funds usually charge more, and most of them trail their index over long periods.",
+    "Other costs to watch: trading commissions (most big US brokers now charge $0 for stocks and ETFs), account fees and advisory fees. Check the fee before you buy any fund."
+   ],
+   "quiz": [
+    { "q": "What is an expense ratio?", "a": ["A fund's yearly fee as a percent of your money", "The price of one share of a fund", "How much the fund grew last year"], "why": "An expense ratio of 0.10% costs $1 a year for every $1,000 invested." },
+    { "q": "Fund A charges 0.05% and fund B charges 1%. They hold the same stocks. Which likely leaves you with more after 30 years?", "a": ["Fund A", "Fund B", "They end up the same"], "why": "Same holdings, lower fee: more of the growth stays with you." },
+    { "q": "Why do small fees matter so much over decades?", "a": ["They're taken every year, so they compound against you", "They only apply in the first year", "They're refunded when you sell"], "why": "A fee shrinks your balance every year, and the missing money can't grow." }
+   ],
+   "cta": { "label": "Look up VOO", "go": "VOO" }
+  },
+  {
+   "id": "inflation", "title": "Inflation: why cash slowly shrinks", "mins": 2, "icon": "fire",
+   "cards": [
+    "Inflation is prices rising over time. When a coffee goes from $3 to $3.30, each dollar buys a little less.",
+    { "t": "predict", "q": "Prices rise 3% a year. About how much buying power does $1,000 of cash under the mattress lose in 20 years?", "a": ["About 45%", "About 3%", "Nothing, it's still $1,000"], "why": "After 20 years of 3% inflation, $1,000 buys what about $554 buys today. It's still $1,000, but it buys less." },
+    { "t": "calc", "calc": "inflation", "text": "Try it: see what cash is really worth after years of inflation." },
+    "That's why long-term money is usually invested rather than kept as cash. Over long periods, US stocks have grown faster than inflation, even though some years they lose value.",
+    "Cash still has a job. Money you might need soon, like an emergency fund, belongs somewhere safe even if inflation nibbles at it. High-yield savings accounts and Treasury bills can help it keep up."
+   ],
+   "quiz": [
+    { "q": "What is inflation?", "a": ["Prices rising over time", "Stock prices falling", "A bank raising your balance"], "why": "When prices rise, each dollar buys less." },
+    { "q": "Prices rise 3% a year. What happens to cash that earns nothing?", "a": ["It buys a little less each year", "It grows 3% a year", "Nothing changes"], "why": "The number stays the same, but its buying power shrinks." },
+    { "q": "Which money is fine to keep in cash despite inflation?", "a": ["An emergency fund you might need soon", "Retirement money for 30 years from now", "None, never keep any cash"], "why": "Money you may need soon should be safe and easy to reach." }
+   ],
+   "cta": { "label": "See the S&P 500", "go": "SPX" }
+  },
+  {
+   "id": "before-investing", "title": "Before you invest: the money checklist", "mins": 3, "icon": "checklist",
+   "cards": [
+    "Investing works best on a solid base. Before buying stocks, many people make sure a few things are in place first.",
+    { "t": "sort", "text": "Put these steps in the order many personal finance guides suggest:", "items": ["Save a small emergency fund", "Get your full employer 401(k) match", "Pay off high-interest debt like credit cards", "Invest more for the long term"], "why": "A small cushion keeps surprises off your credit card, an employer match is free money, credit card interest often tops 20%, and then long-term investing can do its work." },
+    "An emergency fund is cash for surprises: a car repair, a medical bill, a lost job. A common target is three to six months of essential expenses, kept somewhere safe and easy to reach.",
+    { "t": "predict", "q": "Your credit card charges 24% interest. Stocks have averaged roughly 10% a year over the long run. What's the better use of an extra $500?", "a": ["Pay down the card", "Buy stocks", "Split it, it doesn't matter"], "why": "Paying off a 24% card is like earning a guaranteed 24%. Stocks average far less, and nothing about them is guaranteed." },
+    "Then think about time. Money you need within a few years usually shouldn't be in stocks, because a drop could hit right when you need it."
+   ],
+   "quiz": [
+    { "q": "What is an emergency fund for?", "a": ["Unexpected costs like repairs or losing a job", "Buying stocks when they drop", "Vacations"], "why": "It keeps a surprise from becoming debt or a forced sale." },
+    { "q": "Why pay off a 24% credit card before investing?", "a": ["It's like a guaranteed 24% return", "Stocks always lose money", "Card interest stops after a year"], "why": "Few investments beat a sure 24%." },
+    { "q": "Money you need in the next year should usually be...", "a": ["Kept somewhere safe, like savings", "Put in a single growth stock", "Invested in crypto"], "why": "Short-term money can't wait for a market recovery." }
+   ],
+   "cta": { "label": "Try paper trading first", "tab": "pt" }
+  },
+  {
+   "id": "retirement-accounts", "title": "Retirement accounts: 401(k) and IRA", "mins": 3, "icon": "piggy",
+   "cards": [
+    "In the US, retirement accounts give you tax breaks for investing. The two most common are the 401(k), offered through a job, and the IRA, which you open yourself.",
+    "Traditional accounts let you put money in before tax and pay tax when you withdraw in retirement. Roth accounts work the other way: you pay tax now, and qualified withdrawals in retirement are tax-free.",
+    { "t": "match", "text": "Match each term to what it means:", "pairs": [["401(k)", "A retirement plan offered by your employer"], ["IRA", "A retirement account you open yourself"], ["Roth", "Pay tax now, withdraw tax-free later"], ["Employer match", "Extra money your job adds when you save"]] },
+    { "t": "predict", "q": "Your job matches 100% of what you put in, up to 4% of your salary. You earn $50,000 and contribute $2,000 a year. How much does your employer add?", "a": ["$2,000", "$500", "$0"], "why": "4% of $50,000 is $2,000, and a 100% match doubles it: an instant 100% return before any market growth." },
+    "Each account has a yearly contribution limit set by the IRS, and taking money out early can mean taxes and penalties. Check the current rules, or ask a tax professional about your situation."
+   ],
+   "quiz": [
+    { "q": "Which account is usually offered through your job?", "a": ["401(k)", "IRA", "A regular brokerage account"], "why": "Employers sponsor 401(k) plans. IRAs you open on your own." },
+    { "q": "With a Roth account, when do you pay tax?", "a": ["When you put money in", "When you withdraw in retirement", "Never, on anything"], "why": "You pay tax up front, and qualified withdrawals later are tax-free." },
+    { "q": "Why is an employer match valuable?", "a": ["It's extra money added to what you save", "It lowers your salary", "It lets you skip taxes forever"], "why": "It's part of your pay you only get if you contribute." }
+   ],
+   "cta": { "label": "Look up VOO", "go": "VOO" }
+  },
+  {
+   "id": "pe-ratio", "title": "The P/E ratio: cheap or pricey?", "mins": 3, "icon": "scale",
+   "cards": [
+    "The price-to-earnings ratio (P/E) compares a stock's price with the company's yearly profit per share. A P/E of 20 means investors pay $20 for every $1 of yearly profit.",
+    { "t": "calc", "calc": "pe", "text": "Try it: change the share price and the profit per share." },
+    { "t": "live", "live": "compare", "metric": "pe", "tickers": ["KO", "AAPL", "NVDA", "JPM"], "text": "Real numbers. Which of these do you think has the highest P/E right now? Tap your guess." },
+    "A high P/E usually means investors expect fast growth. A low P/E can mean a bargain, or a business people expect to shrink. Compare companies in the same industry, not a bank with a chip maker.",
+    "P/E doesn't work when a company has no profit, so it's blank for many young companies. Forward P/E uses analysts' estimates of next year's profit instead."
+   ],
+   "quiz": [
+    { "q": "A stock costs $50 and earns $2.50 per share a year. What's its P/E?", "a": ["20", "125", "2.5"], "why": "$50 divided by $2.50 is 20." },
+    { "q": "A high P/E usually signals that investors...", "a": ["Expect strong growth", "Expect the company to shrink", "Haven't looked at the stock"], "why": "People pay more per dollar of profit when they expect profit to grow." },
+    { "q": "Why might a company show no P/E at all?", "a": ["It has no profit yet", "Its stock is too cheap", "It pays a dividend"], "why": "You can't divide by earnings that don't exist." }
+   ],
+   "cta": { "label": "Compare P/E in the screener", "tab": "screen" }
+  },
+  {
+   "id": "market-cap", "title": "Market cap: how big is a company?", "mins": 2, "icon": "building",
+   "cards": [
+    "Market capitalization (market cap) is the total value of all of a company's shares: the share price times the number of shares.",
+    { "t": "predict", "q": "Company A's stock costs $500. Company B's costs $50. Which company is bigger?", "a": ["You can't tell from the share price alone", "Company A", "Company B"], "why": "Size is price times shares. A $50 stock with 10 billion shares ($500B) is far bigger than a $500 stock with 100 million shares ($50B)." },
+    { "t": "live", "live": "compare", "metric": "marketCap", "tickers": ["AAPL", "KO", "F", "NVDA"], "text": "Guess which company is worth the most, then see the real values." },
+    "Companies are often grouped by size: large caps (over about $10 billion), mid caps (about $2 to $10 billion) and small caps (under about $2 billion). Smaller companies can grow faster but usually swing more.",
+    { "t": "sort", "text": "Order these companies from smallest to largest:", "items": ["$800 million: a small cap", "$5 billion: a mid cap", "$60 billion: a large cap", "$3 trillion: a mega cap"], "why": "Market cap is how size is measured, from small caps up to the trillion-dollar giants." }
+   ],
+   "quiz": [
+    { "q": "How is market cap calculated?", "a": ["Share price times number of shares", "Yearly revenue times 10", "Share price times yearly profit"], "why": "It's the value of every share added together." },
+    { "q": "A $20 stock with 5 billion shares has a market cap of...", "a": ["$100 billion", "$25 billion", "$4 billion"], "why": "$20 times 5 billion is $100 billion." },
+    { "q": "Compared with large caps, small-cap stocks usually...", "a": ["Swing more", "Never move", "Always pay dividends"], "why": "Smaller businesses are less established, so their prices move more." }
+   ],
+   "cta": { "label": "Open the screener", "tab": "screen" }
+  },
+  {
+   "id": "margins", "title": "Profit margins: what a company keeps", "mins": 2, "icon": "pie",
+   "cards": [
+    "Revenue is the money coming in from sales. Profit margin tells you how much of each dollar is left after every cost.",
+    "A 25% profit margin means the company keeps 25 cents of every dollar of sales. A grocery chain might keep 2 or 3 cents. A big software company can keep 30 cents or more.",
+    { "t": "live", "live": "compare", "metric": "profitMargin", "tickers": ["WMT", "MSFT", "KO", "AMZN"], "text": "Guess which one keeps the most of each sales dollar." },
+    { "t": "predict", "q": "Two companies each sell $10 billion a year. One has a 5% margin, the other 25%. How much more profit does the second make?", "a": ["$2 billion more", "$200 million more", "The same profit"], "why": "5% of $10B is $0.5B and 25% is $2.5B, a $2B difference." },
+    "Watch the trend. Rising margins usually mean pricing power or better efficiency. Shrinking margins can mean rising costs or tougher competition."
+   ],
+   "quiz": [
+    { "q": "A 10% profit margin means the company keeps...", "a": ["10 cents of every sales dollar as profit", "10% of its shares", "$10 per share"], "why": "Margin is profit divided by revenue." },
+    { "q": "Which business usually has thin margins?", "a": ["A grocery store chain", "A large software company", "A drug maker with a patented medicine"], "why": "Grocers sell huge volumes at small markups." },
+    { "q": "Margins shrinking year after year can be a sign of...", "a": ["Rising costs or more competition", "A stock split", "More analysts covering the stock"], "why": "Something is squeezing what's left of each sale." }
+   ],
+   "cta": { "label": "Check Walmart", "go": "WMT" }
+  },
+  {
+   "id": "revenue-growth", "title": "Growth: is the business getting bigger?", "mins": 2, "icon": "trend",
+   "cards": [
+    "Revenue growth shows how fast a company's sales are rising compared with a year earlier. Investors pay up for companies that keep growing quickly for a long time.",
+    { "t": "live", "live": "compare", "metric": "revenueGrowth", "tickers": ["NVDA", "KO", "AAPL", "TSLA"], "text": "Guess which grew sales fastest in its latest quarter compared with a year earlier." },
+    "Growth isn't everything. A company growing sales 40% a year while losing more money every year is riskier than one growing 10% with steady profit.",
+    { "t": "predict", "q": "A company's revenue grows 15% a year for 5 years. Roughly how much bigger are sales by the end?", "a": ["About double", "About 15% bigger", "About 75% bigger"], "why": "Growth compounds: 1.15 multiplied by itself 5 times is about 2.0, not 1.75." },
+    "Look at several years, not one quarter. Earnings reports show revenue, and StockSight's stock pages show recent growth in plain English."
+   ],
+   "quiz": [
+    { "q": "What does revenue growth measure?", "a": ["How fast sales are rising", "How fast the stock price is rising", "How many employees joined"], "why": "It compares sales now with sales a year earlier." },
+    { "q": "Which is usually the steadier business?", "a": ["10% growth with steady profits", "40% growth with growing losses", "No growth and growing losses"], "why": "Profitable growth doesn't depend on raising more money to survive." },
+    { "q": "Sales grow 15% a year for 5 years. They roughly...", "a": ["Double", "Grow 15% in total", "Triple"], "why": "Compounding turns 15% a year into about 100% over five years." }
+   ],
+   "cta": { "label": "See NVIDIA's numbers", "go": "NVDA" }
+  },
+  {
+   "id": "dividends", "title": "Dividends: getting paid to own a stock", "mins": 3, "icon": "coins",
+   "cards": [
+    "Some companies share part of their profit with shareholders as cash payments called dividends, usually every three months.",
+    "The dividend yield is the yearly dividend divided by the share price. A $100 stock paying $3 a year yields 3%.",
+    { "t": "calc", "calc": "dividend", "text": "Try it: how much yearly income would an investment produce?" },
+    { "t": "live", "live": "compare", "metric": "dividendYield", "tickers": ["T", "KO", "AAPL", "NVDA"], "text": "Guess which pays the highest dividend yield right now." },
+    "A very high yield can be a warning sign. Sometimes it means the price fell because investors expect the dividend to be cut. Fast-growing companies often pay little or nothing and reinvest instead."
+   ],
+   "quiz": [
+    { "q": "A $50 stock pays $2 a year in dividends. What's its yield?", "a": ["4%", "2%", "25%"], "why": "$2 divided by $50 is 4%." },
+    { "q": "Why might a fast-growing company pay no dividend?", "a": ["It reinvests profit to grow", "It's not allowed to", "It has no shareholders"], "why": "Reinvesting can create more value than paying cash out." },
+    { "q": "An unusually high yield can be a sign that...", "a": ["Investors expect a dividend cut", "The company is guaranteed safe", "The stock can't fall"], "why": "A falling price pushes the yield up, often for a reason." }
+   ],
+   "cta": { "label": "Look up Coca-Cola", "go": "KO" }
+  },
+  {
+   "id": "analyst-targets", "title": "Analyst ratings and price targets", "mins": 2, "icon": "target",
+   "cards": [
+    "Analysts at banks and research firms study companies and publish ratings (buy, hold or sell) and a price target: where they think the stock could trade in about a year.",
+    { "t": "live", "live": "compare", "metric": "upside", "tickers": ["AAPL", "TSLA", "MSFT", "NVDA"], "text": "Average analyst target compared with today's price. Guess which one analysts see the most upside in." },
+    "Targets are educated guesses, not promises. They often change after the price has already moved, and analysts can all be wrong together.",
+    { "t": "predict", "q": "A stock trades at $100. Analyst targets range from $70 to $160, averaging $120. What does the wide range tell you?", "a": ["Experts disagree a lot about this stock", "The stock will definitely hit $120", "The stock is risk-free"], "why": "A wide spread of targets means a lot of uncertainty about the future." },
+    "Use ratings as one input among many: how many analysts cover the stock, how wide their targets are, and whether the business numbers back them up."
+   ],
+   "quiz": [
+    { "q": "What is a price target?", "a": ["An analyst's estimate of where a stock could trade in a year", "The price the company sets", "The lowest price allowed"], "why": "It's a forecast, and forecasts can be wrong." },
+    { "q": "Targets from $70 to $160 suggest...", "a": ["A lot of uncertainty", "Everyone agrees", "The stock can't move"], "why": "The wider the range, the less sure the experts are." },
+    { "q": "How should you treat analyst ratings?", "a": ["As one opinion among several inputs", "As guarantees", "As orders you must follow"], "why": "Check them against the business numbers." }
+   ],
+   "cta": { "label": "See analyst views on Apple", "go": "AAPL" }
+  },
+  {
+   "id": "debt-cash", "title": "Debt and cash: can it weather a storm?", "mins": 3, "icon": "shield",
+   "cards": [
+    "A company's balance sheet lists what it owns, like cash, and what it owes, like debt. Too much debt can turn a bad year into a crisis.",
+    "Borrowing isn't always bad. Debt can fund growth, and steady businesses like utilities carry a lot of it safely. Trouble starts when profits can't easily cover the interest.",
+    { "t": "predict", "q": "Two companies each make $1 billion a year in profit. One owes $500 million, the other $20 billion. Which is in a tougher spot if sales drop?", "a": ["The one owing $20 billion", "The one owing $500 million", "Neither, debt doesn't matter"], "why": "The heavily indebted company still owes its payments when profit shrinks." },
+    { "t": "match", "text": "Match each term to what it means:", "pairs": [["Cash", "Money the company has on hand"], ["Debt", "Money it borrowed and must repay"], ["Debt-to-equity", "Debt compared with what shareholders own"], ["Interest", "The cost of borrowing"]] },
+    "Quick checks: Is cash bigger than debt? Is debt shrinking or growing? Could a few years of profit or cash flow pay it off?"
+   ],
+   "quiz": [
+    { "q": "When does debt become dangerous?", "a": ["When profits can't easily cover the payments", "Whenever a company borrows anything", "Only when the stock price rises"], "why": "Debt is fine until the payments outgrow what the business earns." },
+    { "q": "A company with more cash than debt is usually...", "a": ["Better able to handle a bad year", "About to go bankrupt", "Not allowed to borrow"], "why": "Cash is a cushion when times get hard." },
+    { "q": "What does debt-to-equity compare?", "a": ["Debt with what shareholders own", "Revenue with profit", "Price with earnings"], "why": "It shows how much of the business is funded by borrowing." }
+   ],
+   "cta": { "label": "Open the screener", "tab": "screen" }
+  },
+  {
+   "id": "free-cash-flow", "title": "Free cash flow: the cash that's left", "mins": 2, "icon": "coins",
+   "cards": [
+    "Profit on paper isn't the same as cash in the bank. Free cash flow is the cash a business generates after running its operations and paying for things like buildings and equipment.",
+    "Companies use free cash flow to pay dividends, buy back shares, pay down debt or invest in growth. Steady, rising free cash flow is one of the best signs of a healthy business.",
+    { "t": "predict", "q": "A company reports a profit, but its free cash flow has been negative for years. What could that mean?", "a": ["It's spending more cash than it brings in", "It's guaranteed to grow", "It has no costs"], "why": "Accounting profit can hide heavy spending. Cash going out faster than it comes in has to be funded somehow." },
+    "Mature companies usually produce steady free cash flow. Young ones often burn cash while they grow, which is fine only if the growth eventually pays off."
+   ],
+   "quiz": [
+    { "q": "What is free cash flow?", "a": ["Cash left after running and investing in the business", "The company's total sales", "Money raised by selling new shares"], "why": "It's the cash the business truly produces." },
+    { "q": "What can a company do with free cash flow?", "a": ["Pay dividends or buy back shares", "Only pay taxes", "Nothing, it must keep it"], "why": "It's the money available to reward owners or reinvest." },
+    { "q": "Negative free cash flow for years means...", "a": ["The company is burning more cash than it makes", "It's very profitable", "Its stock will rise"], "why": "It has to borrow, sell shares or use savings to keep going." }
+   ],
+   "cta": { "label": "See Microsoft's numbers", "go": "MSFT" }
+  },
+  {
+   "id": "bull-bear", "title": "Bull markets, bear markets and corrections", "mins": 3, "icon": "chart",
+   "cards": [
+    "A bull market is a long stretch of rising prices. A bear market is a fall of 20% or more from a recent high. A correction is a smaller drop of 10% to 20%.",
+    { "t": "match", "text": "Match each name to what it means:", "pairs": [["Dip", "A small drop of a few percent"], ["Correction", "A 10% to 20% fall from a high"], ["Bear market", "A fall of 20% or more"], ["Bull market", "A long run of rising prices"]] },
+    { "t": "live", "live": "drawdown", "ticker": "SPY", "text": "Real data: the S&P 500's biggest fall from a high in the last five years, and how long it took to recover." },
+    "Since 1950, the S&P 500 has had a correction about every two years and a bear market roughly every six years. So far the broad US market has always gone on to new highs, though some recoveries took years. That isn't true of every single stock.",
+    { "t": "predict", "q": "The market just fell 15% from its high. What's that called?", "a": ["A correction", "A bear market", "A crash to zero"], "why": "10% to 20% is a correction. A bear market starts at 20%." }
+   ],
+   "quiz": [
+    { "q": "A bear market is a fall of at least...", "a": ["20% from a recent high", "5% in a day", "50% in a year"], "why": "20% from the high is the common definition." },
+    { "q": "A 12% drop from a high is a...", "a": ["Correction", "Bear market", "Bull market"], "why": "Between 10% and 20% is a correction." },
+    { "q": "Has the broad US stock market recovered from past bear markets?", "a": ["Yes, though some recoveries took years", "No, never", "Yes, always within a week"], "why": "It has always recovered so far, but patience was sometimes measured in years." }
+   ],
+   "cta": { "label": "See the S&P 500", "go": "SPX" }
+  },
+  {
+   "id": "interest-rates", "title": "Interest rates and the Fed", "mins": 3, "icon": "bank",
+   "cards": [
+    "The Federal Reserve (the Fed) sets a key short-term interest rate in the US. It raises rates to cool inflation and cuts them to support a slowing economy.",
+    "Higher rates make borrowing more expensive for people and companies, which can slow spending and profits. They also make safer options like savings accounts and bonds more attractive compared with stocks.",
+    { "t": "predict", "q": "The Fed unexpectedly raises rates. Which stocks are often hit hardest?", "a": ["Fast-growing companies whose profits are far in the future", "Companies with lots of cash and steady profits", "None, rates never affect stocks"], "why": "Higher rates shrink what far-off profits are worth today, so stocks priced on future growth tend to react the most." },
+    { "t": "match", "text": "Match each term to what it means:", "pairs": [["Rate hike", "The Fed raises interest rates"], ["Rate cut", "The Fed lowers interest rates"], ["Inflation", "Prices rising over time"], ["Bond yield", "The interest a bond pays as a percent of its price"]] },
+    "Markets often move more on what the Fed is expected to do than on the decision itself. When a change is widely expected, it may already be in prices."
+   ],
+   "quiz": [
+    { "q": "Why does the Fed raise interest rates?", "a": ["To cool inflation", "To make stocks go up", "To lower savings account rates"], "why": "Pricier borrowing slows spending, which eases price rises." },
+    { "q": "Higher rates make borrowing...", "a": ["More expensive", "Free", "Illegal"], "why": "Loans, mortgages and credit cards all cost more." },
+    { "q": "If a rate cut is widely expected, the stock market...", "a": ["May have already priced it in", "Always jumps 10% that day", "Closes for a week"], "why": "Prices react to surprises more than to expected news." }
+   ],
+   "cta": { "label": "See the market today", "tab": "s" }
+  },
+  {
+   "id": "sectors", "title": "Sectors: the market's neighborhoods", "mins": 2, "icon": "globe",
+   "cards": [
+    "Stocks are grouped into 11 sectors, like Technology, Health Care, Financials and Energy. Companies in the same sector often move together because the same news affects them.",
+    { "t": "match", "text": "Match each company to its sector:", "pairs": [["Apple", "Technology"], ["JPMorgan Chase", "Financials"], ["ExxonMobil", "Energy"], ["Johnson & Johnson", "Health Care"]] },
+    "Some sectors are called defensive, like Consumer Staples (food and household goods) and Utilities, because people keep buying their products in a downturn. Cyclical sectors, like travel and cars, swing more with the economy.",
+    { "t": "live", "live": "compare", "metric": "vol", "tickers": ["KO", "PG", "TSLA", "F"], "text": "Defensive versus cyclical in real numbers. Guess which one swings the most." },
+    { "t": "predict", "q": "The economy slows into a recession. Which sector tends to hold up better?", "a": ["Consumer Staples", "Airlines", "Luxury goods"], "why": "People still buy groceries and toothpaste when money is tight." }
+   ],
+   "quiz": [
+    { "q": "How many sectors does the standard system use?", "a": ["11", "3", "50"], "why": "The widely used GICS system has 11 sectors." },
+    { "q": "Which sector is usually considered defensive?", "a": ["Consumer Staples", "Airlines", "Semiconductors"], "why": "Demand for everyday essentials stays steady." },
+    { "q": "Why do stocks in the same sector often move together?", "a": ["The same news affects them", "They share one CEO", "The law requires it"], "why": "Oil prices move energy stocks, interest rates move banks, and so on." }
+   ],
+   "cta": { "label": "Filter by sector in the screener", "tab": "screen" }
+  },
+  {
+   "id": "volatility-beta", "title": "Volatility and beta", "mins": 3, "icon": "pulse",
+   "cards": [
+    "Volatility measures how much a price swings. A stock with 50% yearly volatility moves much further, up and down, than one with 15%.",
+    "Beta compares a stock's moves with the whole market. A beta of 1 moves about like the S&P 500, 1.5 about 50% more, and 0.5 about half as much.",
+    { "t": "live", "live": "compare", "metric": "beta", "tickers": ["KO", "AAPL", "NVDA", "TSLA"], "text": "Guess which has the highest beta, then see the real ones." },
+    { "t": "predict", "q": "The market falls 10%. A stock with a beta of 2 would typically fall about...", "a": ["20%", "10%", "2%"], "why": "Beta of 2 means roughly twice the market's move, in either direction." },
+    "Higher volatility isn't automatically bad: big swings can mean big gains too. But it means a wider range of outcomes, so many investors keep those positions smaller."
+   ],
+   "quiz": [
+    { "q": "What does volatility measure?", "a": ["How much a price swings", "How profitable a company is", "How many shares exist"], "why": "It's the size of typical ups and downs." },
+    { "q": "A beta of 0.5 means the stock usually moves...", "a": ["About half as much as the market", "Twice as much as the market", "Opposite to the market"], "why": "Below 1 means calmer than the market." },
+    { "q": "Why keep volatile positions smaller?", "a": ["Their outcomes vary much more", "They can't go up", "They charge higher fees"], "why": "A smaller position limits the damage of a big swing." }
+   ],
+   "cta": { "label": "Compare risk in the screener", "tab": "screen" }
+  },
+  {
+   "id": "news-hype", "title": "News, hype and the herd", "mins": 2, "icon": "bulb",
+   "cards": [
+    "Prices react to news within seconds. By the time a headline reaches you, it's usually already in the price.",
+    "Hype spreads fast on social media. A stock that jumps 50% in a week on buzz alone can fall just as fast when attention moves on.",
+    { "t": "predict", "q": "A company beats earnings estimates, but the stock falls 8%. How is that possible?", "a": ["Investors expected even more, or the outlook disappointed", "The report was fake", "Stocks always fall after earnings"], "why": "Prices reflect expectations. Good news that's less good than hoped can still push a stock down." },
+    { "t": "sort", "text": "Rank these from most to least reliable for company facts:", "items": ["The company's official filings with the SEC", "Established financial news outlets", "An anonymous post saying it will 10x"], "why": "Official filings are legally required to be accurate. Anonymous hype has no accountability at all." },
+    "A good habit: when a stock is in the news, open its page and check whether the business numbers changed, or only the mood."
+   ],
+   "quiz": [
+    { "q": "When you read a big headline, the price has usually...", "a": ["Already reacted", "Not moved yet", "Frozen for the day"], "why": "Professional traders react in seconds." },
+    { "q": "A stock beats estimates and still falls. Why?", "a": ["Expectations were even higher", "Earnings don't matter", "The market was closed"], "why": "It's about results compared with what people expected." },
+    { "q": "Which source is most reliable for company facts?", "a": ["Official company filings", "Anonymous social posts", "A friend's group chat"], "why": "Filings are checked and legally binding." }
+   ],
+   "cta": { "label": "See the market today", "tab": "s" }
+  },
+  {
+   "id": "market-hours", "title": "Market hours and order types", "mins": 2, "icon": "clock",
+   "cards": [
+    "The main US stock exchanges are open 9:30 a.m. to 4 p.m. Eastern time, Monday to Friday, except market holidays.",
+    "Many brokers also offer pre-market and after-hours trading. Fewer people trade then, so prices can jump around more and the gap between buy and sell prices (the spread) is wider.",
+    { "t": "match", "text": "Match each order type to what it does:", "pairs": [["Market order", "Trade right away at the best available price"], ["Limit order", "Only trade at your price or better"], ["Stop-loss order", "Sell automatically if the price falls to a set level"], ["Bid-ask spread", "The gap between the best buy and sell prices"]] },
+    { "t": "predict", "q": "You place a market order at 8 p.m. on a Friday. With most brokers, when does it fill?", "a": ["When the market opens on Monday", "Instantly, at Friday's closing price", "Never"], "why": "It waits for the next open and fills at whatever the price is then. A limit order protects you from a surprise opening price." },
+    "Crypto is different: it trades 24 hours a day, every day, including weekends."
+   ],
+   "quiz": [
+    { "q": "When are the main US stock markets open?", "a": ["9:30 a.m. to 4 p.m. Eastern, on weekdays", "24 hours a day", "Noon to midnight"], "why": "Regular hours are 9:30 to 4 Eastern, Monday to Friday." },
+    { "q": "Why can after-hours trading be riskier?", "a": ["Fewer traders, so prices swing more", "It's illegal", "Prices are fixed"], "why": "Thin trading means bigger jumps and wider spreads." },
+    { "q": "Which order protects you from paying more than you planned?", "a": ["A limit order", "A market order", "No order can"], "why": "A limit order never fills above your price." }
+   ],
+   "cta": { "label": "Try an order in Paper Trade", "tab": "pt" }
+  },
+  {
+   "id": "splits-buybacks", "title": "Stock splits and buybacks", "mins": 2, "icon": "split",
+   "cards": [
+    "In a stock split, a company gives shareholders more shares at a lower price. In a 4-for-1 split, one $400 share becomes four $100 shares. Your total stays $400.",
+    { "t": "predict", "q": "You own 10 shares at $300 and the company does a 3-for-1 split. What do you have?", "a": ["30 shares at $100", "10 shares at $100", "30 shares at $300"], "why": "Three times the shares at a third of the price: still $3,000." },
+    "Splits don't change what the company is worth. They just make each share cheaper, which some investors like.",
+    "A buyback is when a company uses cash to buy its own shares. With fewer shares, each remaining share owns a bigger slice of the profit.",
+    { "t": "predict", "q": "A company earns $1 billion and has 1 billion shares, so it earns $1 per share. It buys back 10% of its shares and profit stays the same. What happens to earnings per share?", "a": ["It rises to about $1.11", "It stays at $1", "It falls to $0.90"], "why": "$1 billion split across 900 million shares is about $1.11 each." }
+   ],
+   "quiz": [
+    { "q": "Does a 2-for-1 split change the total value of your shares?", "a": ["No, you get twice the shares at half the price", "Yes, it doubles", "Yes, it halves"], "why": "The pie is cut into more slices. It doesn't get bigger." },
+    { "q": "What is a buyback?", "a": ["A company buying its own shares", "A refund for a bad stock", "A broker buying your shares back"], "why": "The company retires shares using its cash." },
+    { "q": "Why can buybacks lift earnings per share?", "a": ["The same profit is split across fewer shares", "They raise revenue", "They cancel taxes"], "why": "Fewer shares means more profit per share." }
+   ],
+   "cta": { "label": "Look up NVIDIA", "go": "NVDA" }
+  },
+  {
+   "id": "time-in-market", "title": "Time in the market beats timing it", "mins": 3, "icon": "clock",
+   "cards": [
+    "Jumping out before drops and back in before rises sounds smart, but almost nobody does it consistently, professionals included.",
+    { "t": "live", "live": "bestdays", "text": "Real S&P 500 data: what if you'd missed just the best days of the last five years?" },
+    "Many of the best days happen right after the worst ones, often in the middle of scary markets. People who sell in a panic often miss the rebound.",
+    { "t": "predict", "q": "The market drops 25%. Historically, what has usually worked out better for long-term investors?", "a": ["Staying invested", "Selling everything and waiting", "Moving everything into last year's top stock"], "why": "Recoveries often start suddenly, and sellers usually miss the first and biggest days." },
+    "A plan you can stick to, like investing a set amount every month and leaving it alone, beats a brilliant plan you abandon in a panic."
+   ],
+   "quiz": [
+    { "q": "Why is timing the market so hard?", "a": ["You have to be right twice: when to sell and when to buy back", "Markets only move on weekends", "It's illegal"], "why": "Getting out is only half the decision." },
+    { "q": "Many of the market's best days happen...", "a": ["Close to the worst days", "Only in calm years", "On holidays"], "why": "Big rebounds tend to cluster in volatile periods." },
+    { "q": "Which habit helps most investors?", "a": ["Investing regularly and staying the course", "Checking prices every hour", "Selling after every drop"], "why": "Consistency lets compounding work." }
+   ],
+   "cta": { "label": "See the S&P 500", "go": "SPX" }
+  },
+  {
+   "id": "losses-math", "title": "The math of losses", "mins": 2, "icon": "down",
+   "cards": [
+    "Losses and gains aren't symmetric. If you lose 50%, you need a 100% gain just to get back to where you started.",
+    { "t": "calc", "calc": "drawdown", "text": "Try it: slide the loss and see the gain you'd need to recover." },
+    { "t": "predict", "q": "Your $1,000 drops 20% one year and rises 20% the next. Where are you?", "a": ["$960", "$1,000", "$1,040"], "why": "$1,000 falls to $800, and 20% of $800 is only $160." },
+    "That's why limiting big losses matters: diversify, avoid putting too much in one stock, and be careful with borrowed money (margin), which magnifies losses."
+   ],
+   "quiz": [
+    { "q": "After a 50% loss, what gain gets you back to even?", "a": ["100%", "50%", "25%"], "why": "Half your money has to double to recover." },
+    { "q": "Down 20%, then up 20%, leaves you...", "a": ["Slightly behind", "Exactly even", "Ahead"], "why": "The gain is on a smaller amount." },
+    { "q": "Which helps limit big losses?", "a": ["Diversifying", "Putting everything in one stock", "Borrowing to buy more"], "why": "Spreading out keeps one disaster from sinking you." }
+   ],
+   "cta": { "label": "Open your portfolio", "tab": "port" }
+  },
+  {
+   "id": "emotions", "title": "Your brain on money", "mins": 2, "icon": "brain",
+   "cards": [
+    "Investing is as much about behavior as numbers. Fear and greed push people to buy high and sell low, the opposite of what they want.",
+    { "t": "match", "text": "Match each bias to what it looks like:", "pairs": [["FOMO", "Buying because everyone else is"], ["Panic selling", "Selling during a scary drop"], ["Loss aversion", "Losses hurt about twice as much as gains feel good"], ["Confirmation bias", "Only reading news that agrees with you"]] },
+    { "t": "predict", "q": "A stock you own is down 30% and you feel sick about it. What's a good first step?", "a": ["Re-check whether the business story has changed", "Sell immediately to stop the pain", "Buy more without looking"], "why": "Decide based on the business, not the feeling. A falling price alone doesn't tell you what to do." },
+    "Simple guardrails help: write down why you bought a stock, decide in advance what would make you sell, and avoid checking prices constantly."
+   ],
+   "quiz": [
+    { "q": "What is FOMO?", "a": ["Fear of missing out", "A type of fund", "A trading fee"], "why": "It pushes people to buy after big run-ups." },
+    { "q": "Loss aversion means...", "a": ["Losses feel worse than equal gains feel good", "You never lose money", "You avoid all investing"], "why": "Researchers found losses sting about twice as much." },
+    { "q": "Which guardrail helps against emotional decisions?", "a": ["Writing down why you bought", "Checking prices every few minutes", "Following hot tips"], "why": "A written reason is something to check against later." }
+   ],
+   "cta": { "label": "Practice calmly in Paper Trade", "tab": "pt" }
+  },
+  {
+   "id": "asset-allocation", "title": "Asset allocation: your mix", "mins": 3, "icon": "pie",
+   "cards": [
+    "Asset allocation is how you split money between types of investments, like stocks, bonds and cash. It drives most of a portfolio's ups and downs.",
+    "Stocks have grown the most over long periods but swing hard. Bonds usually grow more slowly and steadily. Cash is the steadiest but loses ground to inflation.",
+    { "t": "sort", "text": "Order these from usually least to most volatile:", "items": ["Cash in a savings account", "Bonds", "A broad stock index fund", "A single small company's stock"], "why": "Each step trades more stability for more potential growth." },
+    { "t": "predict", "q": "Someone needs their money in 2 years for a house down payment. Which mix fits better?", "a": ["Mostly cash and bonds", "100% stocks", "All in one hot stock"], "why": "Two years isn't enough time to reliably recover from a stock market drop." },
+    "A common rule of thumb: the further away your goal, the more stock you can hold, because you have time to recover from drops. As the goal gets closer, many people shift toward bonds and cash."
+   ],
+   "quiz": [
+    { "q": "What is asset allocation?", "a": ["How you split money across types of investments", "Picking one stock", "The fee a fund charges"], "why": "Your mix of stocks, bonds and cash." },
+    { "q": "Which usually swings the most?", "a": ["Stocks", "Bonds", "Cash"], "why": "Stocks carry the most risk and the most growth." },
+    { "q": "As a goal gets closer, many investors...", "a": ["Shift toward steadier investments", "Buy riskier assets", "Stop tracking it"], "why": "Less time to recover means less room for big swings." }
+   ],
+   "cta": { "label": "Check your portfolio mix", "tab": "port" }
+  },
+  {
+   "id": "rebalancing", "title": "Rebalancing", "mins": 2, "icon": "refresh",
+   "cards": [
+    "Over time, winners grow and your mix drifts. A 60% stocks and 40% bonds portfolio can turn into 75/25 after a strong run, which is riskier than you planned.",
+    { "t": "predict", "q": "You aim for 60% stocks and 40% bonds. After a great year you have 70% stocks. What does rebalancing do?", "a": ["Sell some stocks and buy bonds to get back to 60/40", "Buy more stocks", "Sell everything"], "why": "It moves you back to the risk level you chose." },
+    "Rebalancing makes you trim what has risen and add to what has lagged: a built-in way to buy low and sell high.",
+    "Two common approaches: rebalance on a schedule, like once a year, or whenever your mix drifts more than about 5 percentage points. Adding new money to whatever is underweight avoids selling at all.",
+    "In taxable accounts, selling can trigger taxes, so many people rebalance with new contributions or inside retirement accounts."
+   ],
+   "quiz": [
+    { "q": "Why rebalance?", "a": ["To keep your risk where you planned it", "To chase the hottest stock", "To avoid diversification"], "why": "Drift quietly changes how much risk you're taking." },
+    { "q": "Rebalancing usually means...", "a": ["Trimming winners and adding to laggards", "Buying more of whatever went up", "Selling everything once a year"], "why": "It nudges you back to your target mix." },
+    { "q": "A way to rebalance without selling:", "a": ["Put new money into what's underweight", "Close the account", "Switch brokers"], "why": "New contributions can fix the mix with no sale and no tax." }
+   ],
+   "cta": { "label": "Open your portfolio", "tab": "port" }
+  },
+  {
+   "id": "scams", "title": "Spotting scams and red flags", "mins": 2, "icon": "alert",
+   "cards": [
+    "If someone promises guaranteed high returns with no risk, it's a scam. Real investments always carry risk.",
+    { "t": "match", "text": "Match each scam to how it works:", "pairs": [["Pump and dump", "Hyping a cheap stock, then selling to the buyers"], ["Ponzi scheme", "Paying old investors with new investors' money"], ["Phishing", "Fake messages trying to steal your login"], ["Rug pull", "Crypto creators vanishing with investors' money"]] },
+    { "t": "predict", "q": "A stranger messages you about a coin that \"can't lose\" and will \"10x by Friday\". What should you do?", "a": ["Ignore it, it's a classic scam", "Invest a little to test it", "Forward it to friends"], "why": "Unsolicited messages, guarantees and deadlines are three red flags at once." },
+    "Red flags: pressure to act fast, guaranteed returns, secret strategies, requests to pay in crypto or gift cards, and anyone asking for your password or wallet recovery phrase.",
+    "Check before you trust. In the US you can look up brokers and advisors on FINRA BrokerCheck, and report fraud to the SEC or the FTC."
+   ],
+   "quiz": [
+    { "q": "Which is a red flag?", "a": ["Guaranteed high returns", "A fund listing its fees", "A company filing reports with the SEC"], "why": "No real investment can guarantee high returns." },
+    { "q": "What is a pump and dump?", "a": ["Hyping a stock in order to sell it to new buyers", "A dividend payment", "A stock split"], "why": "The promoters profit, and the late buyers are left holding the drop." },
+    { "q": "Someone asks for your crypto wallet recovery phrase. You should...", "a": ["Never share it", "Share it if they seem friendly", "Post it to verify your account"], "why": "Anyone with the phrase controls the wallet." }
+   ],
+   "cta": { "label": "Explore safely in Paper Trade", "tab": "pt" }
+  },
+  {
+   "id": "bonds", "title": "Bonds: lending for interest", "mins": 3, "icon": "bank",
+   "cards": [
+    "A bond is a loan. You lend money to a government or company, and they pay you interest and return the money on a set date, called maturity.",
+    "US Treasury bonds are considered among the safest because they're backed by the US government. Corporate bonds pay more interest because companies are riskier borrowers.",
+    { "t": "predict", "q": "Interest rates rise. What usually happens to the price of bonds you already own?", "a": ["It falls", "It rises", "It stays exactly the same"], "why": "New bonds now pay more, so older bonds paying less are worth less if you sell before maturity." },
+    { "t": "live", "live": "compare", "metric": "vol", "tickers": ["AGG", "SPY", "QQQ"], "text": "A bond fund (AGG) versus two stock funds, in real numbers. Guess which swings the least." },
+    "Many investors hold bonds to steady a portfolio. Bond funds and ETFs let you own hundreds of bonds in one purchase."
+   ],
+   "quiz": [
+    { "q": "What is a bond?", "a": ["A loan that pays you interest", "A share of a company", "A type of savings account"], "why": "You're the lender." },
+    { "q": "When rates rise, existing bond prices usually...", "a": ["Fall", "Rise", "Double"], "why": "Older, lower-paying bonds become less attractive." },
+    { "q": "Why do corporate bonds pay more than Treasuries?", "a": ["Companies are riskier borrowers", "Companies are required to", "Treasuries charge fees"], "why": "More risk means lenders demand more interest." }
+   ],
+   "cta": { "label": "Look up a bond fund", "go": "AGG" }
+  },
+  {
+   "id": "crypto", "title": "Crypto basics", "mins": 3, "icon": "bitcoin",
+   "cards": [
+    "Cryptocurrencies like Bitcoin are digital assets recorded on a public ledger called a blockchain. No company or government controls Bitcoin, and its supply is capped at 21 million coins.",
+    "Crypto prices are driven mostly by demand and sentiment. Coins don't earn profits like companies do, which makes them very hard to value.",
+    { "t": "live", "live": "compare", "metric": "vol", "tickers": ["BTC", "ETH", "SPY"], "text": "Guess which swings the least, then see the real yearly volatility." },
+    { "t": "predict", "q": "Bitcoin has fallen more than 70% from a high several times. If a drop like that would be too much for you, what makes sense?", "a": ["Keep crypto a small slice, or skip it", "Put everything in crypto", "Borrow money to buy more"], "why": "Only invest what you could watch fall a long way without being forced to sell." },
+    "Keep it safe: use reputable exchanges, turn on two-factor authentication, and never share your recovery phrase."
+   ],
+   "quiz": [
+    { "q": "What is a blockchain?", "a": ["A public ledger that records transactions", "A bank account", "A stock exchange"], "why": "Everyone can see the record, and no single party controls it." },
+    { "q": "Why is crypto hard to value?", "a": ["Coins don't produce profits", "It has too much profit", "Its price is fixed"], "why": "There are no earnings to measure the price against." },
+    { "q": "Compared with the S&P 500, Bitcoin's price usually swings...", "a": ["Much more", "Much less", "Exactly the same"], "why": "Its yearly volatility is typically several times the market's." }
+   ],
+   "cta": { "label": "Look up Bitcoin", "go": "BTC" }
+  },
+  {
+   "id": "options", "title": "Options in plain English", "mins": 3, "icon": "ticket",
+   "cards": [
+    "An option is a contract that gives you the right, but not the obligation, to buy or sell a stock at a set price (the strike) before a set date (expiration).",
+    { "t": "match", "text": "Match each term to what it means:", "pairs": [["Call option", "The right to buy at the strike price"], ["Put option", "The right to sell at the strike price"], ["Strike price", "The price set in the contract"], ["Premium", "What you pay to buy the option"]] },
+    { "t": "predict", "q": "You buy a call option with a $100 strike for $3 a share. The stock is at $95 when the option expires. What happens?", "a": ["It expires worthless and you lose the $3", "You make $5", "You must buy the stock at $100"], "why": "Nobody would use the right to buy at $100 when the stock costs $95, so the option is worth nothing." },
+    "Options can magnify gains and losses, and many expire worthless. Most beginners are better off understanding stocks well first."
+   ],
+   "quiz": [
+    { "q": "A call option gives you the right to...", "a": ["Buy at the strike price", "Sell at the strike price", "Receive a dividend"], "why": "Calls are for buying, puts are for selling." },
+    { "q": "If an option expires worthless, the buyer loses...", "a": ["The premium they paid", "Nothing", "Their whole account"], "why": "The premium is the most an option buyer can lose." },
+    { "q": "What is the strike price?", "a": ["The price set in the option contract", "Today's stock price", "The broker's fee"], "why": "It's the price you have the right to buy or sell at." }
+   ],
+   "cta": { "label": "Practice in Paper Trade", "tab": "pt" }
+  },
+  {
+   "id": "short-selling", "title": "Short selling", "mins": 2, "icon": "down",
+   "cards": [
+    "Short selling is betting a stock will fall. You borrow shares, sell them now, and hope to buy them back cheaper later to return them.",
+    { "t": "predict", "q": "You short a stock at $50 and it rises to $80. What's your loss per share?", "a": ["$30", "$50", "$0, shorts can't lose"], "why": "You sold at $50 and must buy back at $80." },
+    "The risk is lopsided. A stock can only fall to $0, so a short's gain is capped, but a stock can keep rising, so the possible loss has no limit.",
+    "A short squeeze happens when a heavily shorted stock rises and short sellers rush to buy back, pushing it even higher. GameStop in early 2021 is a famous example."
+   ],
+   "quiz": [
+    { "q": "Short sellers profit when a stock...", "a": ["Falls", "Rises", "Pays a dividend"], "why": "They sell first and buy back cheaper." },
+    { "q": "Why is shorting risky?", "a": ["Losses have no upper limit", "Gains are unlimited", "It's free"], "why": "There's no ceiling on how high a price can go." },
+    { "q": "What is a short squeeze?", "a": ["Short sellers buying back fast, pushing the price up", "A stock split", "A dividend cut"], "why": "Their buying adds fuel to the rise." }
+   ],
+   "cta": { "label": "Practice in Paper Trade", "tab": "pt" }
+  },
+  {
+   "id": "ipos", "title": "IPOs: when companies go public", "mins": 2, "icon": "rocket",
+   "cards": [
+    "An initial public offering (IPO) is when a private company first sells shares to the public and starts trading on an exchange.",
+    "Companies go public to raise money and to let early investors and employees sell. Banks help set the starting price.",
+    { "t": "predict", "q": "A hyped IPO jumps 60% on its first day. What tends to happen afterwards?", "a": ["It varies a lot, and many lag the market in later years", "It always keeps rising", "It always falls back to the IPO price"], "why": "Studies of IPOs find that, on average, they trail the broader market over the following few years." },
+    "New public companies have short track records and often sell more shares later. Insiders are usually locked up for about six months after the IPO, and prices can drop when that lockup ends."
+   ],
+   "quiz": [
+    { "q": "What is an IPO?", "a": ["A company's first sale of shares to the public", "A dividend", "A type of bond"], "why": "It's the moment a private company becomes public." },
+    { "q": "Why do companies go public?", "a": ["To raise money and let early owners sell", "To avoid reporting results", "To stop trading"], "why": "Public companies must report results every quarter, too." },
+    { "q": "What is a lockup period?", "a": ["A time when insiders can't sell", "When the market closes", "A bond's maturity"], "why": "It usually lasts about six months after the IPO." }
+   ],
+   "cta": { "label": "Explore the screener", "tab": "screen" }
+  },
+  {
+   "id": "reits", "title": "REITs: real estate on the stock market", "mins": 2, "icon": "building",
+   "cards": [
+    "A REIT (real estate investment trust) owns income-producing property, like apartments, warehouses, cell towers or data centers, and trades like a stock.",
+    "To qualify, US REITs must pay out at least 90% of their taxable income as dividends, which is why many have high yields.",
+    { "t": "live", "live": "compare", "metric": "dividendYield", "tickers": ["O", "PLD", "SPY"], "text": "Two REITs and the S&P 500. Guess which pays the highest yield." },
+    { "t": "predict", "q": "Interest rates rise sharply. What often happens to REIT prices?", "a": ["They often fall", "They always rise", "They're unaffected"], "why": "REITs borrow a lot and compete with bonds for income investors, so rising rates tend to weigh on them." },
+    "REITs let you own a slice of real estate without being a landlord, but they still swing with the stock market."
+   ],
+   "quiz": [
+    { "q": "What does a REIT own?", "a": ["Income-producing real estate", "Only gold", "Government bonds"], "why": "Property that earns rent." },
+    { "q": "Why do REITs often have high yields?", "a": ["They must pay out most of their taxable income", "They have no expenses", "The government pays them"], "why": "The 90% payout rule." },
+    { "q": "Rising interest rates often...", "a": ["Pressure REIT prices", "Double REIT prices", "Shut REITs down"], "why": "Borrowing costs more and bonds become competition." }
+   ],
+   "cta": { "label": "Look up Realty Income", "go": "O" }
+  }
+ ]
+}

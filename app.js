@@ -728,6 +728,16 @@ async function loadUserData(){
  if (data.onboarding_done){ try { localStorage.setItem('ss_onboarding_'+e, '1'); } catch {} }
  if (data.avatar) { try { localStorage.setItem('ss_avatar_'+e, data.avatar); } catch {} }
  if (typeof data.digest === 'boolean') { try { data.digest ? localStorage.setItem('ss_digest_'+e, '1') : localStorage.removeItem('ss_digest_'+e); } catch {} }
+ // Learning progress: this browser's copy and the account's, combined; the account gets the result if it was missing anything
+ try {
+  const local = safeParse('ss_learn_'+e, null);
+  const merged = data.learn && typeof data.learn === 'object' ? mergeLearn(local || {}, data.learn) : local;
+  if (merged) {
+   localStorage.setItem('ss_learn_'+e, JSON.stringify(merged));
+   const same = o => JSON.stringify({ ...learnShape(o), at: 0 });
+   if (!data.learn || same(merged) !== same(data.learn)) setTimeout(() => { if (user?.email === e) saveLearn(getLearn()); }, 4000);
+  }
+ } catch {}
  // Restore settings/prefs
  const p = data.settings || data.portfolio?.prefs || {};
  if(p.themeChoice === 'light' || p.themeChoice === 'dark') { theme = themeChoice = p.themeChoice; try { localStorage.setItem('ss_theme', theme); } catch {} }
@@ -867,7 +877,7 @@ function bootApp() {
  // Carry lesson XP earned as a guest over to the account
  try {
   const g = localStorage.getItem('ss_learn_guest');
-  if (g && !localStorage.getItem('ss_learn_' + user.email)) { localStorage.setItem('ss_learn_' + user.email, g); localStorage.removeItem('ss_learn_guest'); }
+  if (g && !localStorage.getItem('ss_learn_' + user.email)) { localStorage.setItem('ss_learn_' + user.email, g); localStorage.removeItem('ss_learn_guest'); saveLearn(getLearn()); }
  } catch {}
  // Clear the gate-page preview animation interval (fires when user logs in)
  if (window._gatePreviewInterval) { clearInterval(window._gatePreviewInterval); window._gatePreviewInterval = null; }
@@ -2810,30 +2820,76 @@ const DASH_POPULAR = {
  c: [['BINANCE:BNBUSDT','BNB','BNB','c'], ['BINANCE:DOGEUSDT','Dogecoin','DOGE','c'], ['BINANCE:ADAUSDT','Cardano','ADA','c'], ['BINANCE:AVAXUSDT','Avalanche','AVAX','c']],
 };
 const DASH_ICON = d => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
-const DASH_LESSONS = [
+/* ════════════════════════════════
+ LEARNING: lesson tracks with hands-on cards, a daily challenge, endless practice and real-stock lessons
+ "Start here" lives in this file so the home row works instantly; the other tracks load from /lessons.json.
+ A card is plain text, or interactive: predict (guess first, then see why), calc (sliders), live (real
+ market numbers), sort (tap in order) or match (pair them up). In every question the right answer is listed
+ first and shuffled on screen. Progress is kept in the browser and on the account (users.learn).
+════════════════════════════════ */
+const LEARN_ICONS = {
+ book: '<path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/>',
+ trend: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+ down: '<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/>',
+ chart: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+ shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+ layers: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+ doc: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/>',
+ growth: '<path d="M3 20h18"/><rect x="5" y="12" width="3" height="6"/><rect x="10.5" y="8" width="3" height="10"/><rect x="16" y="4" width="3" height="14"/>',
+ calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+ percent: '<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+ fire: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+ checklist: '<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+ piggy: '<circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.7 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5"/><line x1="12" y1="6.5" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="17.5"/>',
+ scale: '<path d="M12 3v18"/><path d="M5 7h14"/><path d="M5 7l-3 7a4 4 0 0 0 6 0z"/><path d="M19 7l-3 7a4 4 0 0 0 6 0z"/>',
+ building: '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 6h.01M15 6h.01M9 10h.01M15 10h.01M9 14h.01M15 14h.01"/><path d="M10 22v-4h4v4"/>',
+ pie: '<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
+ coins: '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/>',
+ target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+ bank: '<path d="M3 21h18"/><path d="M5 21V10M9 21V10M15 21V10M19 21V10"/><path d="M2 10l10-7 10 7z"/>',
+ globe: '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+ pulse: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+ bulb: '<path d="M9 18h6M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>',
+ clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+ split: '<path d="M16 3h5v5M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/>',
+ brain: '<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>',
+ refresh: '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+ alert: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+ bitcoin: '<path d="M11.767 19.089c4.924.868 6.14-6.025 1.216-6.894m-1.216 6.894L5.86 18.047m5.908 1.042-.347 1.97m1.563-8.864c4.924.869 6.14-6.025 1.215-6.893m-1.215 6.893-3.94-.694m5.155-6.2L8.29 4.26m5.908 1.042.348-1.97M7.48 20.364l3.126-17.727"/>',
+ ticket: '<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><path d="M13 5v2M13 17v2M13 11v2"/>',
+ rocket: '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>',
+ bolt: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+ loop: '<path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/>',
+ search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+ check: '<polyline points="20 6 9 17 4 12"/>',
+};
+const learnIcon = n => DASH_ICON(LEARN_ICONS[n] || LEARN_ICONS.book);
+
+const CORE_TRACK = { id: 'start', title: 'Start here', desc: 'The basics, in about 15 minutes', icon: 'book', lessons: ['stock-market', 'first-trade', 'read-chart', 'risk', 'etfs', 'earnings'] };
+const CORE_LESSONS = [
  {
-  title: 'What is the stock market?', mins: 2,
-  icon: DASH_ICON('<path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/>'),
-  body: [
+  id: 'stock-market', title: 'What is the stock market?', mins: 2, icon: 'book',
+  cards: [
    'A stock is a small piece of ownership in a company. Buy one share of Apple and you own a tiny slice of Apple, including a claim on its future profits.',
    'The stock market is where those shares change hands, mostly on exchanges like the New York Stock Exchange and the Nasdaq. Prices move all day because buyers and sellers keep agreeing on new prices.',
-   'When a company earns more, more people usually want to own it and the price tends to rise. Bad news, like weak sales or a lawsuit, can push it down.',
+   { t: 'predict', q: 'A company reports much bigger profits than expected. What usually happens to its stock price?', a: ['It tends to rise', 'It tends to fall', 'Nothing, profits don\'t matter'], why: 'More profit makes each share more valuable, so more people want to own it and the price tends to rise.' },
    'Indexes such as the S&P 500 group hundreds of stocks together so you can see how the whole market is doing at a glance. When someone says "the market is up today", they usually mean the S&P 500.',
+   { t: 'live', live: 'zoom', ticker: 'SPY', text: 'Real data: the S&P 500 (through SPY, a fund that tracks it). Tap the ranges to see how it has moved.' },
   ],
   quiz: [
    { q: 'What do you own when you buy one share of a company?', a: ['A small piece of the company', 'A loan you gave the company', 'A coupon for its products'], why: 'A share is a slice of ownership, including a claim on future profits.' },
    { q: 'What does the S&P 500 track?', a: ['About 500 large US companies', 'The 500 most traded cryptocurrencies', 'Interest rates set by the Fed'], why: 'It bundles roughly 500 big US companies to show how the market is doing.' },
    { q: 'Why do stock prices change during the day?', a: ['Buyers and sellers keep agreeing on new prices', 'The government sets them every hour', 'Companies update them on their websites'], why: 'Every trade is a new agreement between a buyer and a seller.' },
   ],
-  cta: ['See the S&P 500', "closeLesson();switchTab('s');setTimeout(()=>document.querySelector('.dash-tile .dash-hit')?.click(),400)"],
+  cta: { label: 'See the S&P 500', go: 'SPX' },
  },
  {
-  title: 'How to place your first trade', mins: 3,
-  icon: DASH_ICON('<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>'),
-  body: [
+  id: 'first-trade', title: 'How to place your first trade', mins: 3, icon: 'trend',
+  cards: [
    'Start with a company you understand. Search for it in StockSight and read the plain-English verdict and the chart before you decide anything.',
-   'Decide how much to put in. A common rule for beginners is to only invest money you will not need for the next few years, because prices can drop for a while before they recover.',
-   'Pick an order type. A market order buys right away at the current price. A limit order only buys if the price reaches a number you choose, so you never pay more than you planned.',
+   'Decide how much to put in. A common rule for beginners is to only invest money you won\'t need for the next few years, because prices can drop for a while before they recover.',
+   { t: 'match', text: 'Match each order type to what it does:', pairs: [['Market order', 'Buys right away at the current price'], ['Limit order', 'Only buys at your price or better'], ['Stop-loss order', 'Sells if the price falls to a level you set']] },
+   { t: 'predict', q: 'A stock trades at $152 and you never want to pay more than $150. What should you use?', a: ['A limit order at $150', 'A market order', 'Buy now and hope'], why: 'A limit order only fills at $150 or less. A market order would buy right away at about $152.' },
    'Practice before you use real money. The Paper Trade tab gives you $10,000 of pretend cash and the same steps as a real broker, so mistakes cost nothing. StockSight never places real orders.',
   ],
   quiz: [
@@ -2841,15 +2897,15 @@ const DASH_LESSONS = [
    { q: 'You never want to pay more than $150 a share. What should you use?', a: ['A limit order at $150', 'A market order', 'Buy as many shares as you can'], why: 'A limit order only fills at your price or better.' },
    { q: 'Which money is best to invest?', a: ['Money you won\'t need for a few years', 'Next month\'s rent', 'Money borrowed on a credit card'], why: 'Prices can drop for a while, so give your money time to recover.' },
   ],
-  cta: ['Open Paper Trade', "closeLesson();switchTab('pt')"],
+  cta: { label: 'Open Paper Trade', tab: 'pt' },
  },
  {
-  title: 'How to read a stock chart', mins: 3,
-  icon: DASH_ICON('<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>'),
-  body: [
+  id: 'read-chart', title: 'How to read a stock chart', mins: 3, icon: 'chart',
+  cards: [
    'The line shows the price over time. The left side is older and the right side is now, so a line that climbs from left to right means the price went up over that period.',
-   'Use the time ranges (1D, 1M, 1Y and so on) to zoom out. A stock can look scary over a single day and perfectly fine over a whole year.',
+   { t: 'live', live: 'zoom', ticker: 'AAPL', text: 'Try it with Apple\'s real price. Switch between ranges and notice how the same stock can look scary over a month and fine over five years, or the other way around.' },
    'Many charts color a period green when the price ended higher than it started and red when it ended lower.',
+   { t: 'predict', q: 'A stock fell 4% today but is up 30% this year. What\'s the better way to see the bigger picture?', a: ['Switch the chart to 1Y', 'Only look at today', 'Ignore the chart completely'], why: 'Zooming out shows the trend behind a single bad day.' },
    'Candlestick charts pack more detail into each bar: where the price opened, the highest and lowest it reached, and where it closed. Big moves on heavy trading volume usually matter more.',
   ],
   quiz: [
@@ -2857,15 +2913,15 @@ const DASH_LESSONS = [
    { q: 'A stock fell today but is up 30% this year. How would you see that?', a: ['Switch the range to 1Y', 'Only look at the 1D view', 'Ignore the chart'], why: 'Zooming out shows the bigger trend behind a single bad day.' },
    { q: 'What does one candlestick show?', a: ['The open, high, low and close', 'Only the closing price', 'How many people own the stock'], why: 'Each candle packs four prices for its time period.' },
   ],
-  cta: ['Try the chart', "closeLesson();switchTab('s')"],
+  cta: { label: 'Try the chart', tab: 's' },
  },
  {
-  title: 'Risk and diversification', mins: 3,
-  icon: DASH_ICON('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'),
-  body: [
+  id: 'risk', title: 'Risk and diversification', mins: 3, icon: 'shield',
+  cards: [
    'Every investment carries risk: the chance it is worth less when you need the money. Even great companies can drop 20% or more in a bad year.',
    'Volatility measures how much a price swings. A stock with 60% yearly volatility can move much further, up and down, than one with 15%.',
-   'Diversification means spreading your money across many companies and industries, so one bad pick can\'t sink everything. Index funds do this for you by holding hundreds of stocks at once.',
+   { t: 'calc', calc: 'diversify', text: 'Diversification means spreading your money across many companies. Slide from 1 stock to 50 and watch the range of yearly results narrow. It never shrinks to zero, because the whole market still moves.' },
+   'Index funds diversify for you by holding hundreds of stocks at once, so one bad pick can\'t sink everything.',
    'Time helps too. Broad stock markets have historically trended up over long periods, but short-term drops are normal. Money you won\'t need for years can ride them out.',
   ],
   quiz: [
@@ -2873,14 +2929,14 @@ const DASH_LESSONS = [
    { q: 'Stock A swings about 15% a year and stock B about 60%. Which is more volatile?', a: ['Stock B', 'Stock A', 'They are the same'], why: 'Bigger swings mean higher volatility.' },
    { q: 'Why do many beginners like index funds?', a: ['They hold many stocks at once', 'They can never lose money', 'They pay a fixed interest rate'], why: 'One purchase gives you a slice of hundreds of companies.' },
   ],
-  cta: ['Open the screener', "closeLesson();switchTab('screen')"],
+  cta: { label: 'Open the screener', tab: 'screen' },
  },
  {
-  title: 'ETFs and index funds', mins: 2,
-  icon: DASH_ICON('<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>'),
-  body: [
+  id: 'etfs', title: 'ETFs and index funds', mins: 2, icon: 'layers',
+  cards: [
    'An ETF (exchange-traded fund) is a basket of investments you can buy in one go, just like a single stock. One share of an S&P 500 ETF gives you a small piece of all 500 companies.',
    'Index funds follow a market index instead of trying to pick winners. Because nobody is paid to choose stocks, their fees are usually very low.',
+   { t: 'live', live: 'compare', metric: 'vol', tickers: ['SPY', 'AAPL', 'TSLA'], text: 'One fund holding 500 companies versus two single stocks, in real numbers. Guess which one swings the least.' },
    'Fees matter more than they look. A fund charging 1% a year takes far more of your money over decades than one charging 0.05%. You\'ll find the fee listed as the expense ratio.',
    'Popular funds track the S&P 500 (like SPY or VOO) or the Nasdaq 100 (like QQQ). Search any of them on StockSight to see how the whole basket is doing.',
   ],
@@ -2889,14 +2945,14 @@ const DASH_LESSONS = [
    { q: 'Why are index funds usually cheap?', a: ['They follow an index instead of paying stock pickers', 'The government pays their fees', 'They only hold one company'], why: 'Tracking an index needs far less work than picking stocks.' },
    { q: 'Where do you find a fund\'s yearly fee?', a: ['Its expense ratio', 'Its ticker symbol', 'Its share price'], why: 'The expense ratio is the percentage charged each year.' },
   ],
-  cta: ['Look up SPY', "closeLesson();goAsset('SPY','s')"],
+  cta: { label: 'Look up SPY', go: 'SPY' },
  },
  {
-  title: 'Reading a company\'s earnings', mins: 3,
-  icon: DASH_ICON('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/>'),
-  body: [
+  id: 'earnings', title: 'Reading a company\'s earnings', mins: 3, icon: 'doc',
+  cards: [
    'Public companies report their results every three months. This is called earnings season, and prices often jump or drop on the news.',
    'Revenue is all the money a company brings in from sales. Profit, also called net income, is what\'s left after paying every cost.',
+   { t: 'predict', q: 'A company\'s revenue rose 20%, but its profit fell. How is that possible?', a: ['Its costs rose faster than its sales', 'Revenue and profit are the same thing', 'It isn\'t possible'], why: 'Profit is what\'s left after costs. If costs grow faster than sales, profit can shrink even while revenue grows.' },
    'Earnings per share (EPS) splits that profit across each share. Analysts publish estimates beforehand, and beating or missing them can move the stock a lot.',
    'Look at the trend, not one report. Revenue and profit growing over several years usually tells you more than a single good or bad quarter.',
   ],
@@ -2905,30 +2961,96 @@ const DASH_LESSONS = [
    { q: 'What is revenue?', a: ['All the money brought in from sales', 'Profit after every cost', 'The stock\'s price'], why: 'Revenue is the top line, before any costs.' },
    { q: 'What does EPS stand for?', a: ['Earnings per share', 'Equity price spread', 'Estimated profit score'], why: 'It is profit divided across every share.' },
   ],
-  cta: ['Check Apple\'s earnings', "closeLesson();goAsset('AAPL','s')"],
+  cta: { label: 'Check Apple\'s earnings', go: 'AAPL' },
  },
 ];
 
-/* ════════════════════════════════
- LEARNING XP: lessons, quizzes and the tour all earn XP and levels
-════════════════════════════════ */
+// The library: "Start here" now, every track once /lessons.json arrives
+const LEARN_LIB = { tracks: [CORE_TRACK], byId: Object.fromEntries(CORE_LESSONS.map(l => [l.id, l])), full: false };
+let _libReq = null;
+function loadLessonLibrary() {
+ if (LEARN_LIB.full) return Promise.resolve(LEARN_LIB);
+ if (!_libReq) {
+  _libReq = fetch('/lessons.json').then(r => { if (!r.ok) throw new Error('lessons'); return r.json(); }).then(j => {
+   (j.lessons || []).forEach(l => { if (l?.id && !LEARN_LIB.byId[l.id]) LEARN_LIB.byId[l.id] = l; });
+   LEARN_LIB.tracks = [CORE_TRACK, ...(j.tracks || []).map(t => ({ ...t, lessons: (t.lessons || []).filter(id => LEARN_LIB.byId[id]) })).filter(t => t.lessons.length)];
+   LEARN_LIB.full = true;
+   refreshLearnRow();
+   return LEARN_LIB;
+  }).catch(() => { _libReq = null; return LEARN_LIB; });
+ }
+ return _libReq;
+}
+const allLessonIds = () => LEARN_LIB.tracks.flatMap(t => t.lessons);
+const lessonById = id => LEARN_LIB.byId[id] || null;
+const trackOf = id => LEARN_LIB.tracks.find(t => t.lessons.includes(id)) || null;
+
+/* ── Progress, XP and levels ── */
 const LEARN_LEVELS = [
  { min: 0, name: 'Rookie' }, { min: 100, name: 'Learner' }, { min: 220, name: 'Analyst' },
- { min: 360, name: 'Strategist' }, { min: 520, name: 'Market Pro' },
+ { min: 360, name: 'Strategist' }, { min: 520, name: 'Market Pro' }, { min: 750, name: 'Expert' },
+ { min: 1050, name: 'Master' }, { min: 1400, name: 'Legend' },
 ];
 const learnKey = () => 'ss_learn_' + (user?.email || 'guest');
-function getLearn() {
- const s = safeParse(learnKey(), {});
- return { xp: s.xp || 0, lessons: s.lessons || {}, tour: s.tour || [], tourDone: !!s.tourDone, guides: s.guides || {} };
+// Older saves keyed the six starter lessons by position (0 to 5)
+function learnShape(s) {
+ s = s && typeof s === 'object' ? s : {};
+ const lessons = { ...(s.lessons || {}) };
+ Object.keys(lessons).forEach(k => {
+  const id = /^\d+$/.test(k) ? CORE_TRACK.lessons[+k] : null;
+  if (id) { const a = lessons[id] || {}, b = lessons[k] || {}; lessons[id] = { read: !!(a.read || b.read), best: Math.max(a.best ?? -1, b.best ?? -1) < 0 ? undefined : Math.max(a.best ?? -1, b.best ?? -1) }; delete lessons[k]; }
+ });
+ return {
+  xp: s.xp || 0, lessons, tour: Array.isArray(s.tour) ? s.tour : [], tourDone: !!s.tourDone, guides: s.guides || {},
+  review: s.review || {}, daily: s.daily || null, dstreak: s.dstreak || 0, dlast: s.dlast || null,
+  stocks: s.stocks || {}, practice: s.practice || { n: 0, right: 0 }, at: s.at || 0,
+ };
 }
-function saveLearn(s) { try { localStorage.setItem(learnKey(), JSON.stringify(s)); } catch {} }
+function getLearn() { return learnShape(safeParse(learnKey(), {})); }
+let _learnSyncT = null;
+function saveLearn(s) {
+ s.at = Date.now();
+ try { localStorage.setItem(learnKey(), JSON.stringify(s)); } catch {}
+ if (user?.email) {
+  clearTimeout(_learnSyncT);
+  _learnSyncT = setTimeout(() => {
+   if (!user?.email) return;
+   usersTable().update({ learn: getLearn() }).eq('email', user.email).then(({ error }) => { if (error) console.warn('learn sync failed'); });
+  }, 2500);
+ }
+}
+// Two copies of progress (this browser and the account) combined, keeping the best of each
+function mergeLearn(a, b) {
+ a = learnShape(a); b = learnShape(b);
+ const newer = a.at >= b.at ? a : b;
+ const lessons = { ...a.lessons };
+ Object.entries(b.lessons).forEach(([id, l]) => {
+  const x = lessons[id] || {};
+  const best = Math.max(x.best ?? -1, l.best ?? -1);
+  lessons[id] = { read: !!(x.read || l.read), ...(best >= 0 ? { best } : {}) };
+ });
+ const stocks = { ...a.stocks };
+ Object.entries(b.stocks).forEach(([t, v]) => { const x = stocks[t] || {}; stocks[t] = { read: !!(x.read || v.read), best: Math.max(x.best ?? 0, v.best ?? 0), at: Math.max(x.at || 0, v.at || 0) }; });
+ const streakFrom = (a.dlast || '') > (b.dlast || '') ? a : (b.dlast || '') > (a.dlast || '') ? b : (a.dstreak >= b.dstreak ? a : b);
+ return {
+  xp: Math.max(a.xp, b.xp), lessons, tour: [...new Set([...a.tour, ...b.tour])], tourDone: a.tourDone || b.tourDone,
+  guides: { ...a.guides, ...b.guides }, review: newer.review, stocks, practice: newer.practice,
+  daily: (a.daily?.date || '') >= (b.daily?.date || '') ? a.daily : b.daily,
+  dstreak: streakFrom.dstreak, dlast: streakFrom.dlast, at: Math.max(a.at, b.at),
+ };
+}
 function learnLevel(xp) {
  let i = 0;
  LEARN_LEVELS.forEach((l, j) => { if (xp >= l.min) i = j; });
  const cur = LEARN_LEVELS[i], next = LEARN_LEVELS[i + 1];
- return { n: i + 1, name: cur.name, min: cur.min, next: next ? next.min : null, pct: next ? (xp - cur.min) / (next.min - cur.min) * 100 : 100 };
+ if (!next) {
+  // Past the named levels there's a new one every 400 XP, forever
+  const extra = Math.floor((xp - cur.min) / 400), min = cur.min + extra * 400;
+  return { n: i + 1 + extra, name: extra ? `${cur.name} ${extra + 1}` : cur.name, min, next: min + 400, pct: (xp - min) / 4 };
+ }
+ return { n: i + 1, name: cur.name, min: cur.min, next: next.min, pct: (xp - cur.min) / (next.min - cur.min) * 100 };
 }
-function lessonDone(i) { const l = getLearn().lessons[i]; return !!(l && l.read && l.best != null); }
+function lessonDone(id) { const l = getLearn().lessons[id]; return !!(l && l.read && l.best != null); }
 
 function showXpPop(n) {
  const el = document.createElement('div');
@@ -2953,180 +3075,508 @@ function learnAddXP(n) {
  if (user) checkAndAwardBadges();
 }
 
+/* ── Days, shuffles and the question bank ── */
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const learnToday = () => ymd(new Date());
+const dayShift = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return ymd(d); };
+function seededRand(seed) {
+ let h = 1779033703 ^ seed.length;
+ for (let i = 0; i < seed.length; i++) { h = Math.imul(h ^ seed.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+ let a = h >>> 0;
+ return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+function shuffled(arr, rnd = Math.random) {
+ const a = arr.slice();
+ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+ return a;
+}
+const shuffleIdx = n => shuffled([...Array(n).keys()]);
+function bankQ(qid) {
+ const [id, k] = String(qid).split('#');
+ const l = lessonById(id), q = l?.quiz?.[+k];
+ return q ? { ...q, qid, lesson: id } : null;
+}
+const bankQuestions = () => allLessonIds().flatMap(id => (lessonById(id)?.quiz || []).map((_, k) => bankQ(`${id}#${k}`)));
+const reviewDue = (s, today) => Object.entries(s.review).filter(([, r]) => r.due <= today).map(([qid]) => bankQ(qid)).filter(Boolean);
+// Missed questions come back tomorrow; get one right and it waits 3 days, then 7, then it's learned
+function applyReview(s, results) {
+ const today = learnToday();
+ results.forEach(({ qid, right }) => {
+  if (!qid) return;
+  const r = s.review[qid];
+  if (!right) s.review[qid] = { due: dayShift(today, 1), n: 0 };
+  else if (r) { const n = (r.n || 0) + 1; if (n >= 3) delete s.review[qid]; else s.review[qid] = { due: dayShift(today, n === 1 ? 3 : 7), n }; }
+ });
+}
+
+/* ── Questions written from today's real market data ── */
+const QUIZ_POOL = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'TSLA', 'NFLX', 'JPM', 'V', 'MA', 'WMT', 'KO', 'PEP', 'MCD', 'DIS', 'NKE', 'COST', 'JNJ', 'PFE', 'XOM', 'CVX', 'BAC', 'INTC', 'AMD', 'ORCL', 'CRM', 'ADBE', 'HD', 'PG', 'ABBV', 'UNH', 'CAT', 'BA', 'T', 'VZ', 'SBUX', 'UBER', 'F'];
+const SECTOR_NAMES = ['Technology', 'Healthcare', 'Financial Services', 'Consumer Cyclical', 'Consumer Defensive', 'Energy', 'Industrials', 'Communication Services', 'Utilities', 'Real Estate', 'Basic Materials'];
+const tName = t => TICKERS.find(e => e.t === t)?.n || t;
+const quizPool = () => QUIZ_POOL.filter(t => TICKERS.some(e => e.t === t));
+const pctTxt = (v, d = 0) => `${(v * 100).toFixed(d)}%`;
+// Two tickers where val(hi) is clearly bigger than val(lo)
+function pickPair(rnd, T, ok, val, far) {
+ const c = shuffled(T.filter(t => { try { return ok(t); } catch { return false; } }), rnd);
+ for (let i = 0; i < c.length; i++) for (let j = i + 1; j < c.length; j++) {
+  const [hi, lo] = val(c[i]) >= val(c[j]) ? [c[i], c[j]] : [c[j], c[i]];
+  if (far(val(hi), val(lo))) return [hi, lo];
+ }
+ return null;
+}
+function pickTrio(rnd, T, ok, val, far) {
+ const c = shuffled(T.filter(t => { try { return ok(t); } catch { return false; } }), rnd);
+ for (let i = 0; i + 2 < c.length; i++) {
+  const three = c.slice(i, i + 3).sort((x, y) => val(y) - val(x));
+  if (far(val(three[0]), val(three[1]))) return three;
+ }
+ return null;
+}
+const LIVE_QS = [
+ // P/E
+ (r, T, F) => {
+  const p = pickPair(r, T, t => F(t)?.trailingPE > 0 && F(t).trailingPE < 400, t => F(t).trailingPE, (h, l) => h >= l * 1.3);
+  if (!p) return null; const [hi, lo] = p, pe = t => F(t).trailingPE.toFixed(1);
+  return { q: 'Investors are paying more for each $1 of yearly profit at which company right now?', a: [tName(hi), tName(lo), 'They cost about the same'], why: `${tName(hi)}'s P/E is ${pe(hi)} and ${tName(lo)}'s is ${pe(lo)}. A P/E of ${pe(hi)} means paying about $${pe(hi)} for every $1 of yearly profit.`, lesson: 'pe-ratio' };
+ },
+ // Market cap
+ (r, T, F) => {
+  const c = pickTrio(r, T, t => F(t)?.marketCap > 0, t => F(t).marketCap, (a, b) => a >= b * 1.3);
+  if (!c) return null;
+  return { q: 'Which of these companies is worth the most in total right now?', a: c.map(tName), why: `Market caps today: ${c.map(t => `${tName(t)} ${fmtBig(F(t).marketCap)}`).join(', ')}. Market cap is the share price times the number of shares.`, lesson: 'market-cap' };
+ },
+ // Profit margin
+ (r, T, F) => {
+  const p = pickPair(r, T, t => F(t)?.profitMargin != null, t => F(t).profitMargin, (h, l) => h - l >= 0.06);
+  if (!p) return null; const [hi, lo] = p;
+  const cents = t => { const m = F(t).profitMargin; return m >= 0 ? `keeps about ${Math.round(m * 100)} cents` : `loses about ${Math.round(-m * 100)} cents`; };
+  return { q: 'Which company keeps more of each $1 of sales as profit?', a: [tName(hi), tName(lo), 'They keep the same amount'], why: `Out of every sales dollar, ${tName(hi)} ${cents(hi)} and ${tName(lo)} ${cents(lo)}.`, lesson: 'margins' };
+ },
+ // Volatility
+ (r, T, F, S) => {
+  const p = pickPair(r, T, t => S(t)?.vol > 0, t => S(t).vol, (h, l) => h >= l * 1.4);
+  if (!p) return null; const [hi, lo] = p;
+  return { q: 'Whose stock price swings more?', a: [tName(hi), tName(lo), 'They swing about the same'], why: `${tName(hi)}'s yearly volatility is about ${pctTxt(S(hi).vol)}, ${tName(lo)}'s about ${pctTxt(S(lo).vol)}. Bigger swings mean a wider range of outcomes, up and down.`, lesson: 'volatility-beta' };
+ },
+ // Past year
+ (r, T, F, S) => {
+  const t = shuffled(T.filter(t => S(t)?.ret1y != null && Math.abs(S(t).ret1y) > 0.02 && Math.abs(S(t).ret1y - 0.2) > 0.02), r)[0];
+  if (!t) return null; const v = S(t).ret1y;
+  const opts = ['Up more than 20%', 'Up between 0% and 20%', 'Down'], right = v > 0.2 ? 0 : v > 0 ? 1 : 2;
+  return { q: `Over the past year, how did ${tName(t)}'s stock price do?`, a: [opts[right], ...opts.filter((_, k) => k !== right)], why: `${tName(t)} is ${fmtSigned(v, 0)} over the past year. One year is a short window, so it says little about the next one.`, lesson: 'read-chart' };
+ },
+ // Sector
+ (r, T, F) => {
+  const t = shuffled(T.filter(t => F(t)?.sector), r)[0];
+  if (!t) return null; const sec = F(t).sector;
+  const others = shuffled(SECTOR_NAMES.filter(x => x !== sec), r).slice(0, 2);
+  return { q: `${tName(t)} belongs to which sector?`, a: [sec, ...others], why: `${tName(t)} is in ${sec}${F(t).industry ? `, in the ${F(t).industry} industry` : ''}. Stocks in the same sector often move together.`, lesson: 'sectors' };
+ },
+ // Dividend yield
+ (r, T, F) => {
+  const c = pickTrio(r, T, t => F(t)?.price > 0, t => F(t).dividendYield || 0, (a, b) => a >= 0.01 && a >= b * 1.4);
+  if (!c) return null; const y = t => F(t).dividendYield ? pctTxt(F(t).dividendYield, 1) : 'no dividend';
+  return { q: 'Which of these pays the highest dividend yield right now?', a: c.map(tName), why: `Yields today: ${c.map(t => `${tName(t)} ${y(t)}`).join(', ')}. A 3% yield pays $3 a year for every $100 invested.`, lesson: 'dividends' };
+ },
+ // Analyst target
+ (r, T, F) => {
+  const t = shuffled(T.filter(t => F(t)?.analysts >= 5 && F(t).targetMean > 0 && F(t).price > 0 && Math.abs(F(t).targetMean / F(t).price - 1) >= 0.04), r)[0];
+  if (!t) return null; const f = F(t), up = f.targetMean / f.price - 1;
+  const opts = ['Above today\'s price', 'Below today\'s price'];
+  return { q: `Is the analysts' average price target for ${tName(t)} above or below today's price?`, a: [up > 0 ? opts[0] : opts[1], up > 0 ? opts[1] : opts[0], 'Exactly at today\'s price'], why: `The average of ${f.analysts} analysts' targets is ${fmtPx(f.targetMean)}, compared with ${fmtPx(f.price)} today (${fmtSigned(up, 0)}). Targets are educated guesses, not promises.`, lesson: 'analyst-targets' };
+ },
+ // Biggest drop this year
+ (r, T, F, S) => {
+  const near = d => Math.abs(d - 0.15) < 0.02 || Math.abs(d - 0.35) < 0.02;
+  const t = shuffled(T.filter(t => S(t)?.maxDD != null && !near(-S(t).maxDD)), r)[0];
+  if (!t) return null; const d = -S(t).maxDD;
+  const opts = ['Less than 15%', 'Between 15% and 35%', 'More than 35%'], right = d < 0.15 ? 0 : d <= 0.35 ? 1 : 2;
+  return { q: `What was ${tName(t)}'s biggest fall from a high during the past year?`, a: [opts[right], ...opts.filter((_, k) => k !== right)], why: `At its worst point, ${tName(t)} was ${pctTxt(d)} below its high. Even great companies have big drops along the way.`, lesson: 'bull-bear' };
+ },
+ // Revenue growth
+ (r, T, F) => {
+  const p = pickPair(r, T, t => F(t)?.revenueGrowth != null, t => F(t).revenueGrowth, (h, l) => h - l >= 0.08);
+  if (!p) return null; const [hi, lo] = p;
+  return { q: 'Whose sales grew faster in the latest quarter, compared with a year earlier?', a: [tName(hi), tName(lo), 'They grew at the same pace'], why: `${tName(hi)}'s revenue grew ${fmtSigned(F(hi).revenueGrowth, 0)} and ${tName(lo)}'s ${fmtSigned(F(lo).revenueGrowth, 0)}.`, lesson: 'revenue-growth' };
+ },
+ // Beta
+ (r, T, F, S) => {
+  const p = pickPair(r, T, t => S(t)?.beta != null, t => S(t).beta, (h, l) => h - l >= 0.4);
+  if (!p) return null; const [hi, lo] = p;
+  return { q: 'Which stock tends to move more when the whole market moves?', a: [tName(hi), tName(lo), 'Neither, stocks don\'t follow the market'], why: `${tName(hi)}'s beta is ${S(hi).beta.toFixed(2)} and ${tName(lo)}'s is ${S(lo).beta.toFixed(2)}. A beta above 1 means bigger moves than the market.`, lesson: 'volatility-beta' };
+ },
+];
+async function liveQuestions(n, rnd) {
+ const T = shuffled(quizPool(), rnd).slice(0, 14);
+ const items = T.map(t => [t, 's']);
+ await Promise.all([fetchFacts(items).catch(() => null), fetchStats(items).catch(() => null)]);
+ const out = [];
+ for (const g of shuffled(LIVE_QS, rnd)) {
+  if (out.length >= n) break;
+  try { const q = g(rnd, T, factsFor, liveStats); if (q) out.push({ ...q, live: true }); } catch {}
+ }
+ return out;
+}
+
+/* ── The home row and the Learn hub ── */
+const stockOfDay = () => { const p = quizPool(); return p[Math.floor(seededRand('stock:' + learnToday())() * p.length)] || 'AAPL'; };
+function learnTiles(s) {
+ const today = learnToday(), tiles = [];
+ const dailyDone = s.daily?.date === today && s.daily.done;
+ const streakOn = s.dstreak && (s.dlast === today || s.dlast === dayShift(today, -1));
+ if (!dailyDone) tiles.push({ icon: 'bolt', title: 'Today\'s challenge', sub: streakOn ? `${s.dstreak}-day streak, keep it going` : '5 real-market questions · +70 XP', go: 'startDaily()' });
+ allLessonIds().filter(id => !lessonDone(id)).slice(0, 3).forEach(id => {
+  const l = lessonById(id), st = s.lessons[id] || {};
+  tiles.push({ icon: l.icon, title: l.title, sub: st.read ? 'Quiz waiting · +30 XP' : `${l.mins} min · +50 XP`, go: `openLesson('${id}')` });
+ });
+ const t = stockOfDay();
+ tiles.push({ icon: 'search', title: `Learn from ${tName(t)}`, sub: 'Its real numbers, explained', go: `openStockLesson('${t}')` });
+ tiles.push({ icon: 'loop', title: 'Endless practice', sub: 'Fresh questions every round', go: 'startPractice()' });
+ return tiles.slice(0, 3);
+}
 function learnRowHTML() {
+ if (!LEARN_LIB.full) setTimeout(loadLessonLibrary, 1500);
  const s = getLearn();
  const lv = learnLevel(s.xp);
- const order = DASH_LESSONS.map((_, i) => i);
- const pending = order.filter(i => !lessonDone(i));
- const show = (pending.length >= 3 ? pending : [...pending, ...order.filter(i => lessonDone(i))]).slice(0, 3);
  return `
  <button type="button" class="dash-learn-intro learn-level" onclick="openLearnHub()" aria-label="Open all lessons">
   <span class="lv-ring" style="--p:${lv.pct.toFixed(0)}"><b>${lv.n}</b></span>
   <span class="lv-txt"><span class="lv-name">Learn &amp; grow</span><span class="lv-sub">${lv.name} · ${s.xp} XP</span></span>
  </button>
- ${show.map(i => {
-  const l = DASH_LESSONS[i];
-  const st = s.lessons[i] || {};
-  const done = lessonDone(i);
-  return `<button type="button" class="dash-lesson dash-lesson-${i % 3}${done ? ' is-done' : ''}" onclick="openLesson(${i})">
-   <span class="dash-lesson-ico">${done ? DASH_ICON('<polyline points="20 6 9 17 4 12"/>') : l.icon}</span>
-   <span class="dash-lesson-txt"><span class="dash-lesson-title">${l.title}</span><span class="dash-lesson-time">${done ? `Quiz ${st.best}/3 · Done` : st.read ? 'Quiz waiting · +30 XP' : `${l.mins} min · +50 XP`}</span></span>
-  </button>`;
- }).join('')}`;
+ ${learnTiles(s).map((x, i) => `<button type="button" class="dash-lesson dash-lesson-${i % 3}" onclick="${x.go}">
+   <span class="dash-lesson-ico">${learnIcon(x.icon)}</span>
+   <span class="dash-lesson-txt"><span class="dash-lesson-title">${escapeHTML(x.title)}</span><span class="dash-lesson-time">${x.sub}</span></span>
+  </button>`).join('')}`;
 }
 
 function refreshLearnRow() {
  const row = document.querySelector('.dash-learn');
  if (row) row.innerHTML = learnRowHTML();
  const hub = document.getElementById('learnHubBody');
- if (hub) hub.innerHTML = learnHubHTML();
+ if (hub) {
+  const open = [...hub.querySelectorAll('details.hub-track[open]')].map(d => d.dataset.track);
+  hub.innerHTML = learnHubHTML(open);
+ }
 }
 
-function learnHubHTML() {
+function learnHubHTML(openTracks) {
  const s = getLearn();
  const lv = learnLevel(s.xp);
- const done = DASH_LESSONS.filter((_, i) => lessonDone(i)).length;
- const aced = Object.values(s.lessons).filter(l => l.best === 3).length;
+ const ids = allLessonIds();
+ const done = ids.filter(id => lessonDone(id)).length;
+ const today = learnToday();
+ const dailyDone = s.daily?.date === today && s.daily.done;
+ const streak = s.dstreak && (s.dlast === today || s.dlast === dayShift(today, -1)) ? s.dstreak : 0;
+ const due = reviewDue(s, today).length;
+ const firstOpen = LEARN_LIB.tracks.find(t => t.lessons.some(id => !lessonDone(id)))?.id;
+ const stockT = stockOfDay();
  return `
  <div class="hub-top">
   <span class="lv-ring lv-ring-lg" style="--p:${lv.pct.toFixed(0)}"><b>${lv.n}</b></span>
   <div class="hub-lv">
    <h2 id="learnHubTitle">Level ${lv.n}: ${lv.name}</h2>
-   <p>${s.xp} XP${lv.next ? `, ${lv.next - s.xp} XP to Level ${lv.n + 1}` : ', top level reached'}</p>
+   <p>${s.xp} XP, ${lv.next - s.xp} XP to Level ${lv.n + 1}</p>
    <div class="hub-bar"><i style="width:${lv.pct.toFixed(0)}%"></i></div>
   </div>
  </div>
  <div class="hub-stats">
-  <div><b>${done}/${DASH_LESSONS.length}</b><span>Lessons done</span></div>
-  <div><b>${aced}</b><span>Perfect quizzes</span></div>
-  <div><b>${s.tourDone ? 'Done' : 'Not yet'}</b><span>App tour</span></div>
+  <div><b>${done}/${ids.length}${LEARN_LIB.full ? '' : '+'}</b><span>Lessons done</span></div>
+  <div><b>${streak}</b><span>Day streak</span></div>
+  <div><b>${Object.values(s.lessons).filter(l => l.best === 3).length}</b><span>Perfect quizzes</span></div>
  </div>
- <div class="hub-list">
-  ${DASH_LESSONS.map((l, i) => {
-   const st = s.lessons[i] || {};
-   const isDone = lessonDone(i);
-   return `<button type="button" class="hub-item dash-lesson-${i % 3}${isDone ? ' is-done' : ''}" onclick="openLesson(${i})">
-    <span class="dash-lesson-ico">${isDone ? DASH_ICON('<polyline points="20 6 9 17 4 12"/>') : l.icon}</span>
-    <span class="hub-item-txt"><b>${l.title}</b><span>${isDone ? `Done, best quiz ${st.best}/3` : st.read ? 'Read, quiz waiting' : `${l.mins} min read`}</span></span>
-    <span class="hub-xp">${isDone && st.best === 3 ? 'Mastered' : '+' + (isDone ? (3 - st.best) * 10 : st.read ? 30 : 50) + ' XP'}</span>
-   </button>`;
+ <div class="hub-modes">
+  <button type="button" class="hub-mode hm-daily${dailyDone ? ' is-done' : ''}" onclick="startDaily()">
+   <span class="hm-ico">${learnIcon(dailyDone ? 'check' : 'bolt')}</span>
+   <b>Today's challenge</b><span>${dailyDone ? `Done, ${s.daily.score}/${s.daily.total}. New one tomorrow` : `5 questions from today's market${due ? `, plus ${Math.min(due, 2)} to review` : ''}`}</span>
+  </button>
+  <button type="button" class="hub-mode" onclick="startPractice()">
+   <span class="hm-ico">${learnIcon('loop')}</span>
+   <b>Endless practice</b><span>New questions every round${s.practice.n ? `, ${s.practice.right} of ${s.practice.n} right so far` : ''}</span>
+  </button>
+  <button type="button" class="hub-mode" onclick="openStockLesson('${stockT}')">
+   <span class="hm-ico">${learnIcon('search')}</span>
+   <b>Learn from ${escapeHTML(tName(stockT))}</b><span>Today's real stock, explained</span>
+  </button>
+ </div>
+ <div class="hub-tracks">
+  ${LEARN_LIB.tracks.map((t, ti) => {
+   const n = t.lessons.filter(id => lessonDone(id)).length;
+   const open = openTracks ? openTracks.includes(t.id) : t.id === firstOpen;
+   return `<details class="hub-track" data-track="${t.id}"${open ? ' open' : ''}>
+    <summary><span class="dash-lesson-ico dash-lesson-${ti % 3}">${learnIcon(t.icon)}</span><span class="ht-txt"><b>${escapeHTML(t.title)}</b><span>${escapeHTML(t.desc || '')}</span></span><span class="ht-n${n === t.lessons.length ? ' all' : ''}">${n}/${t.lessons.length}</span></summary>
+    <div class="hub-list">${t.lessons.map(id => {
+     const l = lessonById(id), st = s.lessons[id] || {}, isDone = lessonDone(id);
+     return `<button type="button" class="hub-item dash-lesson-${ti % 3}${isDone ? ' is-done' : ''}" onclick="openLesson('${id}')">
+      <span class="dash-lesson-ico">${isDone ? learnIcon('check') : learnIcon(l.icon)}</span>
+      <span class="hub-item-txt"><b>${escapeHTML(l.title)}</b><span>${isDone ? `Done, best quiz ${st.best}/3` : st.read ? 'Read, quiz waiting' : `${l.mins} min, ${l.cards.filter(c => typeof c === 'object').length} hands-on`}</span></span>
+      <span class="hub-xp">${isDone && st.best === 3 ? 'Mastered' : '+' + (isDone ? (3 - st.best) * 10 : st.read ? 30 : 50) + ' XP'}</span>
+     </button>`;
+    }).join('')}</div>
+   </details>`;
   }).join('')}
+  ${LEARN_LIB.full ? '' : '<p class="hub-more">Loading more lessons...</p>'}
  </div>
  <button type="button" class="hub-tour" onclick="closeLesson();${user ? 'restartTutorial()' : "openModal('signup')"}">${s.tourDone ? 'Replay the app tour' : 'Take the app tour'}<span>${s.tourDone ? 'Refresh your memory' : 'Up to 150 XP'}</span></button>`;
 }
 
-function openLearnHub() {
+function lessonOverlay(labelId, inner, extraCls = '') {
  closeLesson();
  const ov = document.createElement('div');
  ov.className = 'modal-overlay lesson-overlay';
  ov.id = 'lessonOverlay';
- ov.innerHTML = `<div class="modal-box lesson-box hub-box" role="dialog" aria-modal="true" aria-labelledby="learnHubTitle">
+ ov.innerHTML = `<div class="modal-box lesson-box ${extraCls}" role="dialog" aria-modal="true" aria-labelledby="${labelId}">
   <button type="button" class="modal-close" onclick="closeLesson()" aria-label="Close">${DASH_ICON('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button>
-  <div id="learnHubBody">${learnHubHTML()}</div>
+  ${inner}
  </div>`;
  ov.addEventListener('click', e => { if (e.target === ov) closeLesson(); });
  document.body.appendChild(ov);
+ return ov;
+}
+function openLearnHub() {
+ lessonOverlay('learnHubTitle', `<div id="learnHubBody">${learnHubHTML()}</div>`, 'hub-box');
+ if (!LEARN_LIB.full) loadLessonLibrary();
 }
 
+/* ── Running a lesson, a real-stock lesson, the daily challenge or a practice round ── */
 let _lesson = null;
-function openLesson(i) {
- const l = DASH_LESSONS[i];
- if (!l) return;
- closeLesson();
- _lesson = { i, page: 0, mode: 'read', q: 0, score: 0, picked: null, order: l.quiz.map(qq => qq.a.map((_, k) => k).sort(() => Math.random() - 0.5)) };
- const ov = document.createElement('div');
- ov.className = 'modal-overlay lesson-overlay';
- ov.id = 'lessonOverlay';
- ov.innerHTML = `<div class="modal-box lesson-box" role="dialog" aria-modal="true" aria-labelledby="lessonTitle">
-  <button type="button" class="modal-close" onclick="closeLesson()" aria-label="Close">${DASH_ICON('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button>
-  <div id="lessonBody"></div>
- </div>`;
- ov.addEventListener('click', e => { if (e.target === ov) closeLesson(); });
- document.body.appendChild(ov);
+function startRun(R) {
+ R.seq = Date.now() + Math.random();
+ _lesson = R;
+ lessonOverlay('lessonTitle', '<div id="lessonBody"></div>');
+ _lesson = R;   // lessonOverlay cleared it
  renderLesson();
+}
+function quizOrder(qs) { return qs.map(q => shuffleIdx(q.a.length)); }
+async function openLesson(id) {
+ if (typeof id === 'number') id = CORE_TRACK.lessons[id];
+ let l = lessonById(id);
+ if (!l && !LEARN_LIB.full) { await loadLessonLibrary(); l = lessonById(id); }
+ if (!l) return;
+ startRun({ kind: 'lesson', L: l, page: 0, mode: 'read', q: 0, score: 0, picked: null, order: quizOrder(l.quiz), ix: {}, results: [] });
+}
+function startQuizRun(kind, title, icon) {
+ startRun({ kind, L: { id: kind, title, icon, quiz: [] }, mode: 'loading', q: 0, score: 0, picked: null, order: [], ix: {}, results: [] });
+ return _lesson;
+}
+function fillRun(R, qs) {
+ if (_lesson !== R) return;
+ R.L.quiz = qs; R.order = quizOrder(qs); R.mode = qs.length ? 'quiz' : 'error';
+ renderLesson();
+}
+async function startDaily() {
+ const today = learnToday(), s0 = getLearn();
+ if (s0.daily?.date === today && s0.daily.done) { toast('Today\'s challenge is done. Here\'s a practice round instead.', 'info', 2600); return startPractice(); }
+ const R = startQuizRun('daily', 'Today\'s challenge', 'bolt');
+ await loadLessonLibrary();
+ const rnd = seededRand('daily:' + today);
+ const review = reviewDue(getLearn(), today).slice(0, 2).map(q => ({ ...q, review: true }));
+ const live = await liveQuestions(5 - review.length, rnd);
+ let qs = [...live, ...review];
+ if (qs.length < 5) qs.push(...shuffled(bankQuestions().filter(q => !qs.some(x => x.qid === q.qid)), rnd).slice(0, 5 - qs.length));
+ fillRun(R, qs);
+}
+async function startPractice() {
+ const R = startQuizRun('practice', 'Endless practice', 'loop');
+ await loadLessonLibrary();
+ const live = await liveQuestions(3, Math.random);
+ const review = reviewDue(getLearn(), learnToday()).slice(0, 1).map(q => ({ ...q, review: true }));
+ let qs = [...live, ...review];
+ qs.push(...shuffled(bankQuestions().filter(q => !qs.some(x => x.qid === q.qid))).slice(0, 5 - qs.length));
+ fillRun(R, shuffled(qs));
+}
+
+// A lesson written from one real stock's numbers: what it is, its chart, its valuation, risk and analysts
+async function openStockLesson(t) {
+ t = String(t || stockOfDay()).toUpperCase();
+ const k = tickerKind(t);
+ const R = startQuizRun('stock', `Learn from ${tName(t)}`, 'search');
+ R.ticker = t;
+ const [d] = await Promise.all([getFundamentals(t, k), fetchStats([[t, k]]).catch(() => null)]);
+ if (_lesson !== R) return;
+ const f = d?.facts, S = liveStats(t);
+ if (!f?.price) { R.mode = 'error'; R.err = `We couldn't load ${t}'s numbers right now.`; return renderLesson(); }
+ const name = f.name || tName(t);
+ const cap = f.marketCap, capClass = cap >= 200e9 ? 'mega-cap' : cap >= 10e9 ? 'large-cap' : cap >= 2e9 ? 'mid-cap' : 'small-cap';
+ const pe = f.trailingPE > 0 ? f.trailingPE : null;
+ const cards = [
+  `${escapeHTML(name)} (${t}) ${f.sector ? `is in the ${escapeHTML(f.sector)} sector${f.industry ? `, in ${escapeHTML(f.industry)}` : ''}` : 'is a publicly traded company'}.${cap ? ` All its shares together are worth about ${fmtBig(cap)}, which makes it a ${capClass} company.` : ''} Let's read its numbers like an investor.`,
+  { t: 'live', live: 'zoom', ticker: t, text: `Here's ${escapeHTML(tName(t))}'s real price. Tap through the ranges: what story does each one tell?` },
+ ];
+ if (pe) cards.push({ t: 'predict', q: `${escapeHTML(tName(t))}'s P/E ratio is ${pe.toFixed(1)}. What does that mean?`, a: [`Investors pay about $${pe.toFixed(0)} for each $1 of its yearly profit`, `One share costs $${pe.toFixed(0)}`, `It earns ${pe.toFixed(0)}% a year`], why: `P/E is the share price divided by a year of profit per share. A higher P/E usually means investors expect faster growth.` });
+ else cards.push(`${escapeHTML(tName(t))} has no P/E right now because it hasn't been profitable over the last year (or doesn't report profit like a company). That's common for young companies and funds.`);
+ if (f.profitMargin != null) cards.push(`Out of every $1 of sales, ${escapeHTML(tName(t))} ${f.profitMargin >= 0 ? `keeps about ${Math.round(f.profitMargin * 100)} cents as profit` : `loses about ${Math.round(-f.profitMargin * 100)} cents`}${f.revenueGrowth != null ? `, and its sales ${f.revenueGrowth >= 0 ? 'grew' : 'shrank'} ${pctTxt(Math.abs(f.revenueGrowth))} in the latest quarter compared with a year earlier` : ''}.${f.dividendYield ? ` It also pays a dividend yielding about ${pctTxt(f.dividendYield, 1)} a year.` : ''}`);
+ if (S?.ret1y != null) cards.push(`Over the past year the price moved ${fmtSigned(S.ret1y, 0)}.${S.maxDD != null ? ` At its worst it was ${pctTxt(-S.maxDD)} below its high.` : ''}${S.vol != null ? ` Its yearly volatility is about ${pctTxt(S.vol)}` : ''}${S.beta != null ? `, and its beta of ${S.beta.toFixed(2)} means it tends to move ${S.beta > 1.1 ? 'more than' : S.beta < 0.9 ? 'less than' : 'about as much as'} the market` : ''}${S.vol != null ? '.' : ''}`);
+ const up = f.targetMean && f.analysts >= 3 ? f.targetMean / f.price - 1 : null;
+ if (up != null && Math.abs(up) >= 0.02) cards.push({ t: 'predict', q: `Guess: is the average analyst price target for ${escapeHTML(tName(t))} above or below today's price?`, a: [up > 0 ? 'Above today\'s price' : 'Below today\'s price', up > 0 ? 'Below today\'s price' : 'Above today\'s price', 'Exactly at today\'s price'], why: `${f.analysts} analysts' average target is ${fmtPx(f.targetMean)}, compared with ${fmtPx(f.price)} today (${fmtSigned(up, 0)}). Targets are educated guesses, not promises.` });
+ // Quiz from the same numbers
+ const quiz = [];
+ if (cap) {
+  const near = fmtBig(cap), opts = [near, fmtBig(cap * 10), fmtBig(cap / 10)];
+  if (new Set(opts).size === 3) quiz.push({ q: `About how much is ${escapeHTML(tName(t))} worth in total?`, a: opts, why: `Its market cap is about ${near}: the share price times every share.` });
+ }
+ if (f.sector) quiz.push({ q: `Which sector is ${escapeHTML(tName(t))} in?`, a: [f.sector, ...shuffled(SECTOR_NAMES.filter(x => x !== f.sector)).slice(0, 2)], why: `It's in ${f.sector}${f.industry ? ` (${f.industry})` : ''}.` });
+ if (S?.ret1y != null && Math.abs(S.ret1y) > 0.02) quiz.push({ q: `Over the past year, did ${escapeHTML(tName(t))}'s price go up or down?`, a: [S.ret1y > 0 ? 'Up' : 'Down', S.ret1y > 0 ? 'Down' : 'Up', 'It didn\'t move'], why: `It's ${fmtSigned(S.ret1y, 0)} over the past year.` });
+ if (f.profitMargin != null && f.profitMargin > 0.01) quiz.push({ q: `About how much of each $1 in sales does ${escapeHTML(tName(t))} keep as profit?`, a: [`${Math.round(f.profitMargin * 100)} cents`, `${Math.min(95, Math.round(f.profitMargin * 100) + 30)} cents`, '$1'], why: `Its profit margin is ${pctTxt(f.profitMargin, 1)}.` });
+ if (pe) quiz.push({ q: `With a P/E of ${pe.toFixed(1)}, about how much do investors pay for each $1 of ${escapeHTML(tName(t))}'s yearly profit?`, a: [`About $${pe.toFixed(0)}`, `About $1`, `About $${Math.max(2, Math.round(pe / 4))}`].filter((x, i, a) => a.indexOf(x) === i), why: 'That\'s exactly what P/E measures.' });
+ const qs = quiz.filter(q => q.a.length === 3).slice(0, 3);
+ if (qs.length < 3) { await loadLessonLibrary(); qs.push(...shuffled(bankQuestions()).slice(0, 3 - qs.length)); }
+ if (_lesson !== R) return;
+ R.L = { id: 'stock:' + t, title: `Learn from ${tName(t)}`, icon: 'search', mins: 2, cards, quiz: qs, cta: { label: `Open ${t}'s full page`, go: t } };
+ R.order = quizOrder(qs); R.page = 0; R.mode = 'read';
+ renderLesson();
+}
+
+function learnCta(c) {
+ if (!c) return '';
+ const act = c.go ? `goAsset('${jsq(c.go)}','${tickerKind(c.go)}')` : c.tab ? `switchTab('${jsq(c.tab)}')` : '';
+ return act ? `closeLesson();${act}` : 'closeLesson()';
+}
+function nextLessonId(id) {
+ const ids = allLessonIds(), i = ids.indexOf(id);
+ return ids.slice(i + 1).find(x => !lessonDone(x)) || ids.find(x => !lessonDone(x)) || null;
 }
 
 function renderLesson() {
  const box = document.getElementById('lessonBody');
  if (!box || !_lesson) return;
- const L = _lesson, l = DASH_LESSONS[L.i];
- const head = `<div class="lesson-head"><div class="lesson-ico dash-lesson-${L.i % 3}">${l.icon}</div><div><h2 id="lessonTitle" class="lesson-title">${l.title}</h2><div class="lesson-time">${L.mode === 'read' ? `${l.mins} min read · +20 XP` : L.mode === 'quiz' ? 'Quick check · +10 XP per right answer' : 'Lesson complete'}</div></div></div>`;
- if (L.mode === 'read') {
-  const last = L.page === l.body.length - 1;
+ const R = _lesson, L = R.L;
+ const tr = R.kind === 'lesson' ? trackOf(L.id) : null;
+ const kicker = tr ? `${escapeHTML(tr.title)} · Lesson ${tr.lessons.indexOf(L.id) + 1} of ${tr.lessons.length}` : R.kind === 'stock' ? 'Real stock lesson' : R.kind === 'daily' ? new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) : 'Practice';
+ const sub = R.mode === 'loading' ? 'Getting real market data...'
+  : R.mode === 'read' ? (R.kind === 'stock' ? 'Real numbers, explained · +15 XP' : `${L.mins} min read · +20 XP`)
+  : R.mode === 'quiz' ? (R.kind === 'practice' ? 'Practice · +3 XP per right answer' : 'Quick check · +10 XP per right answer')
+  : R.mode === 'error' ? 'Something went wrong' : 'Complete';
+ const ci = tr ? LEARN_LIB.tracks.indexOf(tr) % 3 : R.kind === 'daily' ? 1 : 2;
+ const head = `<div class="lesson-head"><div class="lesson-ico dash-lesson-${ci}">${learnIcon(L.icon)}</div><div><div class="lesson-kicker">${kicker}</div><h2 id="lessonTitle" class="lesson-title">${escapeHTML(L.title)}</h2><div class="lesson-time">${sub}</div></div></div>`;
+ if (R.mode === 'loading') {
+  box.innerHTML = `${head}<div class="lc-load lc-load-lg"><i></i><i></i><i></i></div>`;
+ } else if (R.mode === 'error') {
+  box.innerHTML = `${head}<p class="lesson-card">${escapeHTML(R.err || 'Live market data isn\'t available right now. Try again in a minute.')}</p>
+  <div class="lesson-nav"><button type="button" class="dash-btn" onclick="openLearnHub()">All lessons</button>${R.kind === 'stock' ? `<button type="button" class="lesson-cta" onclick="openStockLesson('${jsq(shuffled(quizPool().filter(x => x !== R.ticker))[0] || 'AAPL')}')">Try another stock</button>` : `<button type="button" class="lesson-cta" onclick="${R.kind === 'daily' ? 'startDaily()' : 'startPractice()'}">Try again</button>`}</div>`;
+ } else if (R.mode === 'read') {
+  const card = L.cards[R.page], last = R.page === L.cards.length - 1;
+  const need = lcNeedsAnswer(card) && !R.ix[R.page]?.done;
   box.innerHTML = `${head}
-  <div class="lesson-steps">${l.body.map((_, k) => `<i class="${k <= L.page ? 'on' : ''}"></i>`).join('')}</div>
-  <p class="lesson-card" key="${L.page}">${l.body[L.page]}</p>
+  <div class="lesson-steps">${L.cards.map((_, k) => `<i class="${k <= R.page ? 'on' : ''}"></i>`).join('')}</div>
+  <div class="lc-wrap" id="lcWrap">${lcHTML(card, R.page)}</div>
   <div class="lesson-nav">
-   <button type="button" class="dash-btn" onclick="lessonStep(-1)" ${L.page === 0 ? 'disabled' : ''}>Back</button>
-   <button type="button" class="lesson-cta" onclick="lessonStep(1)">${last ? 'Take the quiz' : 'Next'}</button>
+   <button type="button" class="dash-btn" onclick="lessonStep(-1)" ${R.page === 0 ? 'disabled' : ''}>Back</button>
+   ${need && card.t !== 'predict' ? '<button type="button" class="lc-skip" onclick="lcSkip()">Skip</button>' : ''}
+   <button type="button" class="lesson-cta" onclick="lessonStep(1)" ${need ? 'disabled' : ''}>${last ? 'Take the quiz' : 'Next'}</button>
   </div>`;
- } else if (L.mode === 'quiz') {
-  const qq = l.quiz[L.q];
-  const order = L.order[L.q];
-  const answered = L.picked !== null;
+  lcMount(card, R.page);
+ } else if (R.mode === 'quiz') {
+  const qq = L.quiz[R.q];
+  const order = R.order[R.q];
+  const answered = R.picked !== null;
+  const lessonLink = answered && qq.lesson && R.kind !== 'lesson' && lessonById(qq.lesson) ? `<button type="button" class="lc-skip" onclick="openLesson('${qq.lesson}')">Lesson: ${escapeHTML(lessonById(qq.lesson).title)}</button>` : '<span></span>';
   box.innerHTML = `${head}
-  <div class="lesson-steps">${l.quiz.map((_, k) => `<i class="${k < L.q || (k === L.q && answered) ? 'on' : ''}"></i>`).join('')}</div>
-  <div class="quiz-q">Question ${L.q + 1} of ${l.quiz.length}</div>
+  <div class="lesson-steps">${L.quiz.map((_, k) => `<i class="${k < R.q || (k === R.q && answered) ? 'on' : ''}"></i>`).join('')}</div>
+  <div class="quiz-q">Question ${R.q + 1} of ${L.quiz.length}${qq.live ? ' · <span class="lc-tag">Live data</span>' : qq.review ? ' · <span class="lc-tag">Review</span>' : ''}</div>
   <p class="quiz-text">${qq.q}</p>
   <div class="quiz-opts">${order.map(k => {
-   const cls = !answered ? '' : k === 0 ? ' right' : k === L.picked ? ' wrong' : ' dim';
-   return `<button type="button" class="quiz-opt${cls}" onclick="lessonAnswer(${k})" ${answered ? 'disabled' : ''}>${qq.a[k]}</button>`;
+   const cls = !answered ? '' : k === 0 ? ' right' : k === R.picked ? ' wrong' : ' dim';
+   return `<button type="button" class="quiz-opt${cls}" onclick="lessonAnswer(${k})" ${answered ? 'disabled' : ''}>${escapeHTML(qq.a[k])}</button>`;
   }).join('')}</div>
-  ${answered ? `<p class="quiz-why ${L.picked === 0 ? 'ok' : 'no'}"><b>${L.picked === 0 ? 'Correct.' : 'Not quite.'}</b> ${qq.why}</p>
-  <div class="lesson-nav"><span></span><button type="button" class="lesson-cta" onclick="lessonNextQ()">${L.q === l.quiz.length - 1 ? 'See results' : 'Next question'}</button></div>` : ''}`;
+  ${answered ? `<p class="quiz-why ${R.picked === 0 ? 'ok' : 'no'}"><b>${R.picked === 0 ? 'Correct.' : 'Not quite.'}</b> ${qq.why}</p>
+  <div class="lesson-nav">${lessonLink}<button type="button" class="lesson-cta" onclick="lessonNextQ()">${R.q === L.quiz.length - 1 ? 'See results' : 'Next question'}</button></div>` : ''}`;
  } else {
-  const st = getLearn().lessons[L.i] || {};
-  const lv = learnLevel(getLearn().xp);
-  box.innerHTML = `${head}
-  <div class="quiz-result">
-   <div class="quiz-score ${L.score === 3 ? 'perfect' : ''}"><b>${L.score}/3</b><span>${L.score === 3 ? 'Perfect score' : L.score === 2 ? 'Nice work' : 'Keep practicing'}</span></div>
-   <div class="quiz-earned">You earned <b>${L.earned} XP</b> this round${st.best != null && st.best > L.score ? `, your best is still ${st.best}/3` : ''}.</div>
+  box.innerHTML = `${head}${doneHTML(R)}`;
+ }
+ box.querySelector('.lesson-cta:not([disabled]), .quiz-opt:not([disabled]), .lc-chip, .lc-m:not([disabled])')?.focus({ preventScroll: true });
+}
+
+function doneHTML(R) {
+ const L = R.L, n = L.quiz.length, perfect = R.score === n;
+ const lv = learnLevel(getLearn().xp), s = getLearn();
+ const score = `<div class="quiz-result">
+   <div class="quiz-score ${perfect ? 'perfect' : ''}"><b>${R.score}/${n}</b><span>${perfect ? 'Perfect score' : R.score >= n * 0.6 ? 'Nice work' : 'Keep practicing'}</span></div>
+   <div class="quiz-earned">You earned <b>${R.earned} XP</b>${R.note ? `. ${R.note}` : ''}.</div>
    <div class="hub-lvline"><span>Level ${lv.n}: ${lv.name}</span><div class="hub-bar"><i style="width:${lv.pct.toFixed(0)}%"></i></div></div>
-  </div>
-  <div class="lesson-nav">
-   ${L.score < 3 ? `<button type="button" class="dash-btn" onclick="openLesson(${L.i})">Try again</button>` : `<button type="button" class="dash-btn" onclick="${l.cta[1].replace(/"/g, '&quot;')}">${l.cta[0]}</button>`}
-   ${L.i < DASH_LESSONS.length - 1 ? `<button type="button" class="lesson-cta" onclick="openLesson(${L.i + 1})">Next lesson</button>` : `<button type="button" class="lesson-cta" onclick="openLearnHub()">See all lessons</button>`}
+  </div>`;
+ if (R.kind === 'lesson') {
+  const next = nextLessonId(L.id);
+  return `${score}<div class="lesson-nav">
+   ${R.score < n ? `<button type="button" class="dash-btn" onclick="openLesson('${L.id}')">Try again</button>` : L.cta ? `<button type="button" class="dash-btn" onclick="${learnCta(L.cta)}">${escapeHTML(L.cta.label)}</button>` : '<span></span>'}
+   ${next ? `<button type="button" class="lesson-cta" onclick="openLesson('${next}')">Next lesson</button>` : '<button type="button" class="lesson-cta" onclick="startPractice()">Keep practicing</button>'}
   </div>`;
  }
- box.querySelector('.lesson-cta, .quiz-opt:not([disabled])')?.focus();
+ if (R.kind === 'stock') {
+  const other = shuffled(quizPool().filter(x => x !== R.ticker))[0] || 'AAPL';
+  return `${score}<div class="lesson-nav"><button type="button" class="dash-btn" onclick="${learnCta(L.cta)}">${escapeHTML(L.cta.label)}</button><button type="button" class="lesson-cta" onclick="openStockLesson('${other}')">Another stock</button></div>`;
+ }
+ if (R.kind === 'daily') {
+  return `${score}<p class="lc-streak">${learnIcon('fire')}<span><b>${s.dstreak}-day streak.</b> ${s.dstreak > 1 ? 'Come back tomorrow to keep it going.' : 'Come back tomorrow to start a streak.'}</span></p>
+  <div class="lesson-nav"><button type="button" class="dash-btn" onclick="openLearnHub()">All lessons</button><button type="button" class="lesson-cta" onclick="startPractice()">Keep practicing</button></div>`;
+ }
+ return `${score}<div class="lesson-nav"><button type="button" class="dash-btn" onclick="openLearnHub()">All lessons</button><button type="button" class="lesson-cta" onclick="startPractice()">Another round</button></div>`;
 }
 
 function lessonStep(d) {
- const L = _lesson, l = DASH_LESSONS[L.i];
- if (d > 0 && L.page === l.body.length - 1) {
+ const R = _lesson; if (!R) return;
+ const L = R.L;
+ if (d > 0 && R.page === L.cards.length - 1) {
   const s = getLearn();
-  const st = s.lessons[L.i] || {};
-  if (!st.read) { st.read = true; s.lessons[L.i] = st; saveLearn(s); learnAddXP(20); }
-  L.mode = 'quiz'; L.q = 0; L.picked = null; L.score = 0;
+  if (R.kind === 'stock') {
+   const st = s.stocks[R.ticker] || {};
+   if (!st.read) { st.read = true; st.at = Date.now(); s.stocks[R.ticker] = st; saveLearn(s); learnAddXP(15); }
+  } else {
+   const st = s.lessons[L.id] || {};
+   if (!st.read) { st.read = true; s.lessons[L.id] = st; saveLearn(s); learnAddXP(20); }
+  }
+  R.mode = 'quiz'; R.q = 0; R.picked = null; R.score = 0; R.results = [];
  } else {
-  L.page = Math.max(0, Math.min(l.body.length - 1, L.page + d));
+  R.page = Math.max(0, Math.min(L.cards.length - 1, R.page + d));
  }
  renderLesson();
 }
 
 function lessonAnswer(k) {
- const L = _lesson;
- if (L.picked !== null) return;
- L.picked = k;
- if (k === 0) L.score++;
+ const R = _lesson;
+ if (!R || R.picked !== null) return;
+ R.picked = k;
+ if (k === 0) R.score++;
+ const q = R.L.quiz[R.q];
+ const qid = q.qid || (R.kind === 'lesson' ? `${R.L.id}#${R.q}` : null);
+ R.results.push({ qid, right: k === 0 });
  renderLesson();
 }
 
 function lessonNextQ() {
- const L = _lesson, l = DASH_LESSONS[L.i];
- if (L.q < l.quiz.length - 1) { L.q++; L.picked = null; renderLesson(); return; }
- const s = getLearn();
- const st = s.lessons[L.i] || { read: true };
- const prevBest = st.best ?? 0;
- let earned = Math.max(0, L.score - prevBest) * 10;
- if (L.score === 3 && prevBest < 3) earned += 20;
- st.best = Math.max(prevBest, L.score);
- s.lessons[L.i] = st;
+ const R = _lesson; if (!R) return;
+ const L = R.L;
+ if (R.q < L.quiz.length - 1) { R.q++; R.picked = null; renderLesson(); return; }
+ const s = getLearn(), n = L.quiz.length;
+ let earned = 0;
+ if (R.kind === 'lesson' || R.kind === 'stock') {
+  const map = R.kind === 'lesson' ? s.lessons : s.stocks, key = R.kind === 'lesson' ? L.id : R.ticker;
+  const st = map[key] || { read: true };
+  const prevBest = st.best ?? 0;
+  earned = Math.max(0, R.score - prevBest) * 10;
+  if (R.score === n && prevBest < n) earned += R.kind === 'lesson' ? 20 : 10;
+  st.best = Math.max(prevBest, R.score);
+  if (R.kind === 'stock') st.at = Date.now();
+  map[key] = st;
+ } else if (R.kind === 'daily') {
+  const today = learnToday();
+  if (!(s.daily?.date === today && s.daily.done)) {
+   earned = R.score * 10 + (R.score === n ? 20 : 0);
+   s.daily = { date: today, score: R.score, total: n, done: true };
+   s.dstreak = s.dlast === dayShift(today, -1) ? (s.dstreak || 0) + 1 : s.dlast === today ? s.dstreak : 1;
+   s.dlast = today;
+  }
+ } else {
+  earned = R.score * 3;
+  s.practice = { n: (s.practice?.n || 0) + n, right: (s.practice?.right || 0) + R.score };
+ }
+ applyReview(s, R.results);
  saveLearn(s);
- L.earned = earned;
- L.mode = 'done';
+ R.earned = earned;
+ R.note = R.kind === 'daily' && earned === 0 ? 'You already finished today\'s challenge' : '';
+ R.mode = 'done';
  if (earned) learnAddXP(earned);
- if (L.score === 3) { try { launchConfetti(); } catch {} }
+ if (R.score === n) { try { launchConfetti(); } catch {} }
+ track('learn_complete', { kind: R.kind, id: L.id, score: R.score, total: n });
  renderLesson();
  refreshLearnRow();
 }
@@ -3136,6 +3586,283 @@ function closeLesson() {
  _lesson = null;
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLesson(); });
+
+/* ── Hands-on cards ── */
+const lcNeedsAnswer = c => c && typeof c === 'object' && ['predict', 'sort', 'match'].includes(c.t);
+function lcState(i, init) { const R = _lesson; if (!R) return init(); if (!R.ix[i]) R.ix[i] = init(); return R.ix[i]; }
+function lcFinish(i) {
+ const R = _lesson; if (!R) return;
+ lcState(i, () => ({})).done = true;
+ if (R.mode === 'read' && R.page === i) renderLesson();
+}
+function lcSkip() { const R = _lesson; if (R) lcFinish(R.page); }
+const lcCurrent = i => _lesson && _lesson.mode === 'read' && _lesson.page === i;
+
+function lcHTML(card, i) {
+ if (typeof card === 'string') return `<p class="lesson-card">${card}</p>`;
+ if (card.t === 'predict') {
+  const st = lcState(i, () => ({ order: shuffleIdx(card.a.length), picked: null }));
+  const ans = st.picked != null;
+  return `<div class="lc-tag">Guess first</div><p class="quiz-text">${card.q}</p>
+  <div class="quiz-opts">${st.order.map(k => `<button type="button" class="quiz-opt${!ans ? '' : k === 0 ? ' right' : k === st.picked ? ' wrong' : ' dim'}" onclick="lcPredict(${i},${k})" ${ans ? 'disabled' : ''}>${card.a[k]}</button>`).join('')}</div>
+  ${ans ? `<p class="quiz-why ${st.picked === 0 ? 'ok' : 'no'}"><b>${st.picked === 0 ? 'Good guess.' : 'Not quite.'}</b> ${card.why}</p>` : ''}`;
+ }
+ if (card.t === 'sort') {
+  const st = lcState(i, () => { let pool; do { pool = shuffleIdx(card.items.length); } while (pool.every((k, j) => k === j)); return { pool, picked: [], checked: false }; });
+  const right = st.checked && st.picked.every((k, j) => k === j);
+  return `<div class="lc-tag">Put them in order</div><p class="lesson-card lc-text">${card.text}</p>
+  <ol class="lc-sorted">${st.picked.map((k, j) => `<li class="${st.checked ? (k === j ? 'right' : 'wrong') : ''}"><span>${j + 1}</span><em>${card.items[k]}</em>${st.checked ? '' : `<button type="button" aria-label="Take back" onclick="lcSortUndo(${i},${j})">${DASH_ICON('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button>`}</li>`).join('')}
+   ${st.picked.length < card.items.length ? `<li class="lc-slot"><span>${st.picked.length + 1}</span><em>Tap the ${st.picked.length ? 'next' : 'first'} one below</em></li>` : ''}</ol>
+  <div class="lc-chips">${st.pool.filter(k => !st.picked.includes(k)).map(k => `<button type="button" class="lc-chip" onclick="lcSortPick(${i},${k})">${card.items[k]}</button>`).join('')}</div>
+  ${st.checked ? `<p class="quiz-why ${right ? 'ok' : 'no'}"><b>${right ? 'Exactly right.' : 'Not quite. The usual order:'}</b> ${right ? '' : card.items.map((x, j) => `${j + 1}. ${x}`).join(' · ') + '. '}${card.why}</p>
+   ${right ? '' : `<button type="button" class="dash-btn lc-retry" onclick="lcSortReset(${i})">Try again</button>`}` : ''}`;
+ }
+ if (card.t === 'match') {
+  const st = lcState(i, () => ({ right: shuffleIdx(card.pairs.length), sel: null, got: [], miss: 0, bad: null }));
+  const done = st.got.length === card.pairs.length;
+  return `<div class="lc-tag">Match them up</div><p class="lesson-card lc-text">${card.text}</p>
+  <div class="lc-match">
+   <div class="lc-col">${card.pairs.map((p, k) => `<button type="button" class="lc-m${st.got.includes(k) ? ' got' : st.sel === k ? ' sel' : ''}" onclick="lcMatchTerm(${i},${k})" ${st.got.includes(k) ? 'disabled' : ''}>${p[0]}</button>`).join('')}</div>
+   <div class="lc-col">${st.right.map(k => `<button type="button" class="lc-m lc-def${st.got.includes(k) ? ' got' : st.bad === k ? ' bad' : ''}" onclick="lcMatchDef(${i},${k})" ${st.got.includes(k) ? 'disabled' : ''}>${card.pairs[k][1]}</button>`).join('')}</div>
+  </div>
+  <p class="lc-hint">${done ? `All matched${st.miss ? `, with ${st.miss} miss${st.miss > 1 ? 'es' : ''}` : ' on the first try'}.` : st.sel == null ? 'Tap a term on the left, then its meaning on the right.' : `Now tap what <b>${card.pairs[st.sel][0]}</b> means.`}</p>`;
+ }
+ if (card.t === 'calc') return `<div class="lc-tag">Try it</div><p class="lesson-card lc-text">${card.text}</p><div class="lc-calc" data-calc="${card.calc}">${lcCalcHTML(card.calc)}</div>`;
+ if (card.t === 'live') return `<div class="lc-tag">Live data</div><p class="lesson-card lc-text">${card.text}</p><div class="lc-live" id="lcLive-${i}"><div class="lc-load"><i></i><i></i><i></i></div></div>`;
+ return '';
+}
+function lcMount(card, i) {
+ if (!card || typeof card !== 'object') return;
+ if (card.t === 'calc') lcCalcRun();
+ if (card.t === 'live') lcLive(card, i).catch(() => lcLiveFail(i));
+}
+function lcLiveFail(i) { const el = document.getElementById('lcLive-' + i); if (el) el.innerHTML = '<p class="lc-hint">Live numbers aren\'t available right now. The lesson works without them.</p>'; }
+
+function lcPredict(i, k) {
+ const st = lcState(i, () => ({}));
+ if (st.picked != null) return;
+ st.picked = k; st.done = true;
+ renderLesson();
+}
+function lcSortPick(i, k) {
+ const st = lcState(i, () => ({})), card = _lesson.L.cards[i];
+ if (st.checked || st.picked.includes(k)) return;
+ st.picked.push(k);
+ if (st.picked.length === card.items.length) { st.checked = true; st.done = true; }
+ renderLesson();
+}
+function lcSortUndo(i, j) { const st = lcState(i, () => ({})); if (!st.checked) { st.picked.splice(j, 1); renderLesson(); } }
+function lcSortReset(i) { const st = lcState(i, () => ({})); st.picked = []; st.checked = false; renderLesson(); }
+function lcMatchTerm(i, k) { const st = lcState(i, () => ({})); if (!st.got.includes(k)) { st.sel = k; st.bad = null; renderLesson(); } }
+function lcMatchDef(i, k) {
+ const st = lcState(i, () => ({})), card = _lesson.L.cards[i];
+ if (st.sel == null || st.got.includes(k)) return;
+ if (k === st.sel) { st.got.push(k); st.sel = null; st.bad = null; if (st.got.length === card.pairs.length) st.done = true; }
+ else { st.miss++; st.bad = k; setTimeout(() => { if (st.bad === k) { st.bad = null; if (lcCurrent(i)) renderLesson(); } }, 700); }
+ renderLesson();
+}
+
+/* Calculators: sliders in, plain-English answer out */
+const $r = v => '$' + Math.round(v).toLocaleString('en-US');
+const LC_CALCS = {
+ compound: {
+  inputs: [['m', 'Invest each month', 0, 1000, 25, 100, '$'], ['y', 'For this many years', 1, 40, 1, 30, ' yrs'], ['r', 'Yearly return', 0, 12, 0.5, 7, '%']],
+  out: ({ m, y, r }) => {
+   const i = r / 1200, n = y * 12, fv = i ? m * ((1 + i) ** n - 1) / i : m * n, put = m * n, g = Math.max(0, fv - put);
+   return `<div class="lc-big">${$r(fv)}</div><div class="lc-sub">after ${y} years</div>
+   <div class="lc-split"><i class="a" style="flex:${put || 0.0001}"></i><i class="b" style="flex:${g || 0.0001}"></i></div>
+   <div class="lc-legend"><span><i class="a"></i>You put in ${$r(put)}</span><span><i class="b"></i>Growth adds ${$r(g)}</span></div>`;
+  },
+ },
+ fees: {
+  inputs: [['f', 'Your fund\'s yearly fee', 0.05, 2, 0.05, 1, '%'], ['y', 'Years invested', 5, 40, 1, 30, ' yrs']],
+  out: ({ f, y }) => {
+   const base = 10000 * (1.07 * (1 - 0.0005)) ** y, mine = 10000 * (1.07 * (1 - f / 100)) ** y;
+   return `<div class="lc-sub">$10,000 growing 7% a year before fees</div>
+   <div class="lc-bars">
+    <div class="lc-barrow"><span class="lc-bt">0.05% fee</span><span class="lc-bw"><i style="width:100%"></i></span><b>${$r(base)}</b></div>
+    <div class="lc-barrow"><span class="lc-bt">${f.toFixed(2)}% fee</span><span class="lc-bw"><i class="neg" style="width:${(mine / base * 100).toFixed(1)}%"></i></span><b>${$r(mine)}</b></div>
+   </div>
+   <p class="lc-res">${f <= 0.05 ? 'Same fee, same result.' : `That fee costs you about <b>${$r(base - mine)}</b> over ${y} years.`}</p>`;
+  },
+ },
+ inflation: {
+  inputs: [['y', 'Years from now', 1, 40, 1, 20, ' yrs'], ['p', 'Inflation each year', 1, 8, 0.5, 3, '%']],
+  out: ({ y, p }) => {
+   const v = 1000 / (1 + p / 100) ** y;
+   return `<div class="lc-big">${$r(v)}</div><div class="lc-sub">is what $1,000 of cash will really buy, in today's money</div>
+   <div class="lc-split"><i class="a" style="flex:${v}"></i><i class="c" style="flex:${1000 - v}"></i></div>
+   <div class="lc-legend"><span><i class="a"></i>Still buys</span><span><i class="c"></i>Lost to inflation: ${pctTxt(1 - v / 1000)}</span></div>`;
+  },
+ },
+ pe: {
+  inputs: [['p', 'Share price', 5, 500, 5, 100, '$'], ['e', 'Yearly profit per share', 0.5, 20, 0.5, 5, '$']],
+  out: ({ p, e }) => {
+   const pe = p / e;
+   return `<div class="lc-big">P/E ${pe.toFixed(1)}</div>
+   <p class="lc-res">You pay <b>$${pe.toFixed(1)}</b> for each $1 of yearly profit. If profit never grew, it would take about ${Math.round(pe)} years of profit to add up to the price. ${pe > 35 ? 'Investors are betting on fast growth.' : pe < 12 ? 'Cheap, or investors expect trouble.' : 'A middle-of-the-road valuation.'}</p>`;
+  },
+ },
+ dividend: {
+  inputs: [['a', 'You invest', 1000, 100000, 1000, 10000, '$'], ['y', 'Dividend yield', 0.5, 8, 0.25, 3, '%']],
+  out: ({ a, y }) => {
+   const inc = a * y / 100;
+   return `<div class="lc-big">${$r(inc)} a year</div><div class="lc-sub">about ${$r(inc / 12)} a month</div>
+   <p class="lc-res">Reinvest every dividend for 10 years at the same yield and, even if the price never moved, your ${$r(a)} grows to about <b>${$r(a * (1 + y / 100) ** 10)}</b>.</p>`;
+  },
+ },
+ dca: {
+  inputs: [['d', 'How deep the month-3 dip is', 0, 70, 5, 30, '%']],
+  out: ({ d }) => {
+   const px = [50, 50, 50 * (1 - d / 100), 50 * (1 - d / 200), 50, 55], sh = px.map(p => 100 / p), tot = sh.reduce((x, y) => x + y, 0);
+   const hi = Math.max(...px);
+   return `<div class="lc-months">${px.map((p, k) => `<div><span class="lc-mbar" style="height:${(p / hi * 100).toFixed(0)}%"></span><b>$${p.toFixed(0)}</b><small>${sh[k].toFixed(1)} sh</small><em>M${k + 1}</em></div>`).join('')}</div>
+   <p class="lc-res">$100 a month bought <b>${tot.toFixed(1)} shares</b> at an average of <b>$${(600 / tot).toFixed(2)}</b> each, below the $${(px.reduce((x, y) => x + y, 0) / 6).toFixed(2)} average price. At the end they're worth ${$r(tot * 55)}, versus $660 if all $600 went in at month 1.</p>`;
+  },
+ },
+ drawdown: {
+  inputs: [['l', 'Your loss', 5, 90, 5, 50, '%']],
+  out: ({ l }) => {
+   const need = 1 / (1 - l / 100) - 1, yrs = Math.log(1 / (1 - l / 100)) / Math.log(1.08);
+   return `<div class="lc-big">+${(need * 100).toFixed(0)}%</div><div class="lc-sub">gain needed just to get back to even</div>
+   <div class="lc-bars">
+    <div class="lc-barrow"><span class="lc-bt">Loss</span><span class="lc-bw"><i class="neg" style="width:${Math.min(100, l / (need * 100) * 100).toFixed(1)}%"></i></span><b>−${l}%</b></div>
+    <div class="lc-barrow"><span class="lc-bt">Gain needed</span><span class="lc-bw"><i style="width:100%"></i></span><b>+${(need * 100).toFixed(0)}%</b></div>
+   </div>
+   <p class="lc-res">At 8% a year, that recovery takes about <b>${yrs.toFixed(1)} years</b>.</p>`;
+  },
+ },
+ diversify: {
+  inputs: [['n', 'Stocks you own', 1, 50, 1, 1, '']],
+  out: ({ n }) => {
+   const [lo, hi] = lcDiversify(n), sx = v => (Math.max(0, Math.min(1, (v + 0.8) / 1.6)) * 100).toFixed(1);
+   return `<div class="lc-sub">Range of yearly returns in 9 out of 10 simulated years</div>
+   <div class="lc-range"><span class="lc-zero" style="left:${sx(0)}%"></span><i style="left:${sx(lo)}%;width:${(sx(hi) - sx(lo)).toFixed(1)}%"></i></div>
+   <div class="lc-range-l"><span>−80%</span><span>0%</span><span>+80%</span></div>
+   <p class="lc-res">With ${n} stock${n > 1 ? 's' : ''}: from <b>${fmtSigned(lo, 0)}</b> to <b>${fmtSigned(hi, 0)}</b>. ${n === 1 ? 'One company can have a terrible year.' : n < 10 ? 'Already narrower.' : 'Most single-company risk is gone. What\'s left is the whole market\'s ups and downs.'}</p>`;
+  },
+ },
+};
+// Each simulated year: the market moves (16% swings) and each stock adds its own (30% swings)
+let _divSim = null;
+const _divCache = {};
+function lcDiversify(n) {
+ if (_divCache[n]) return _divCache[n];
+ if (!_divSim) {
+  const rnd = seededRand('diversify'), g = () => { let u = 0; while (!u) u = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); };
+  _divSim = Array.from({ length: 1000 }, () => ({ m: g() * 0.16, s: Array.from({ length: 50 }, () => g() * 0.30) }));
+ }
+ const rets = _divSim.map(y => 0.08 + y.m + y.s.slice(0, n).reduce((a, b) => a + b, 0) / n).sort((a, b) => a - b);
+ return (_divCache[n] = [rets[100], rets[899]]);
+}
+function lcCalcHTML(name) {
+ const C = LC_CALCS[name]; if (!C) return '';
+ return `<div class="lc-sliders">${C.inputs.map(([k, label, min, max, step, val]) => `<label class="lc-sl"><span>${label}</span><b data-v="${k}"></b><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${val}" oninput="lcCalcRun()"></label>`).join('')}</div><div class="lc-out"></div>`;
+}
+function lcCalcRun() {
+ const box = document.querySelector('#lcWrap .lc-calc'); if (!box) return;
+ const C = LC_CALCS[box.dataset.calc]; if (!C) return;
+ const v = {};
+ C.inputs.forEach(([k, , , , , , unit]) => {
+  const inp = box.querySelector(`input[data-k="${k}"]`);
+  v[k] = +inp.value;
+  const shown = unit === '$' ? $r(v[k]) : `${v[k]}${unit}`;
+  box.querySelector(`[data-v="${k}"]`).textContent = shown;
+  inp.style.setProperty('--fill', `${((v[k] - inp.min) / (inp.max - inp.min) * 100).toFixed(1)}%`);
+ });
+ box.querySelector('.lc-out').innerHTML = C.out(v);
+}
+
+/* Live cards: real prices and company numbers */
+const LC_METRICS = {
+ pe: { name: 'P/E ratio', get: f => f?.trailingPE > 0 ? f.trailingPE : null, fmt: v => v.toFixed(1) },
+ marketCap: { name: 'Market cap', get: f => f?.marketCap || null, fmt: fmtBig },
+ profitMargin: { name: 'Profit margin', get: f => f?.profitMargin ?? null, fmt: v => pctTxt(v, 1) },
+ revenueGrowth: { name: 'Revenue growth vs. a year ago', get: f => f?.revenueGrowth ?? null, fmt: v => fmtSigned(v, 1) },
+ dividendYield: { name: 'Dividend yield', get: f => f?.price ? (f.dividendYield || 0) : null, fmt: v => pctTxt(v, 2) },
+ upside: { name: 'Average analyst target vs. price', get: f => f?.targetMean > 0 && f?.price > 0 ? f.targetMean / f.price - 1 : null, fmt: v => fmtSigned(v, 1) },
+ vol: { name: 'Yearly volatility', stats: true, get: (f, s) => s?.vol ?? null, fmt: v => pctTxt(v) },
+ beta: { name: 'Beta', stats: true, get: (f, s) => s?.beta ?? null, fmt: v => v.toFixed(2) },
+};
+async function lcLive(card, i) {
+ const el = () => (lcCurrent(i) ? document.getElementById('lcLive-' + i) : null);
+ if (card.live === 'compare') {
+  const M = LC_METRICS[card.metric], st = lcState(i, () => ({ guess: null }));
+  const items = card.tickers.map(t => [t, tickerKind(t)]);
+  const data = M.stats ? fetchStats(items) : fetchFacts(items);
+  if (st.guess == null) {
+   const e = el(); if (!e) return;
+   e.innerHTML = `<div class="lc-chips lc-guess">${card.tickers.map(t => `<button type="button" class="lc-chip" onclick="lcGuess(${i},'${t}')"><b>${t}</b><small>${escapeHTML(tName(t))}</small></button>`).join('')}</div>`;
+   return;
+  }
+  await data;
+  const e = el(); if (!e) return;
+  const vals = card.tickers.map(t => [t, M.get(factsFor(t), liveStats(t))]).filter(([, v]) => v != null && Number.isFinite(v)).sort((a, b) => b[1] - a[1]);
+  if (vals.length < 2) return lcLiveFail(i);
+  const top = vals[0][0], scale = Math.max(...vals.map(([, v]) => Math.abs(v))) || 1;
+  e.innerHTML = `<div class="lc-bars">${vals.map(([t, v]) => `<div class="lc-barrow${t === st.guess ? ' mine' : ''}"><span class="lc-bt">${t}${t === st.guess ? ' <small>your pick</small>' : ''}</span><span class="lc-bw"><i class="${v < 0 ? 'neg' : ''}${t === top ? ' top' : ''}" style="width:${Math.max(2, Math.abs(v) / scale * 100).toFixed(1)}%"></i></span><b>${M.fmt(v)}</b></div>`).join('')}</div>
+  <p class="quiz-why ${st.guess === top ? 'ok' : 'no'}"><b>${st.guess === top ? 'You got it.' : `It's ${escapeHTML(tName(top))}.`}</b> ${M.name}, live from Yahoo Finance.</p>`;
+  return;
+ }
+ const t = card.ticker || 'SPY';
+ const d = await getHistory(ySym(t, tickerKind(t)));
+ const e = el(); if (!e) return;
+ if (card.live === 'zoom') {
+  const st = lcState(i, () => ({ r: '1M' })), N = { '1M': 21, '6M': 126, '1Y': 252, '5Y': d.c.length };
+  const words = { '1M': 'the past month', '6M': 'the past 6 months', '1Y': 'the past year', '5Y': `the past ${Math.max(1, Math.round((d.t[d.t.length - 1] - d.t[0]) / 31557600))} years` };
+  const c = d.c.slice(-Math.min(N[st.r], d.c.length)), ch = c[c.length - 1] / c[0] - 1;
+  e.innerHTML = `<div class="lc-zoom-h"><b>${escapeHTML(tName(t))}</b><span class="${ch >= 0 ? 'up' : 'dn'}">${fmtSigned(ch, 1)}</span><small>over ${words[st.r]}</small></div>
+  ${lcSpark(c, ch >= 0)}
+  <div class="lc-seg" role="group" aria-label="Time range">${Object.keys(N).map(r => `<button type="button" class="${r === st.r ? 'on' : ''}" aria-pressed="${r === st.r}" onclick="lcZoomSet(${i},'${r}')">${r}</button>`).join('')}</div>`;
+  return;
+ }
+ if (card.live === 'drawdown') {
+  const c = d.c, ts = d.t; let pk = 0, best = { dd: 0, p: 0, tr: 0 };
+  for (let k = 0; k < c.length; k++) { if (c[k] > c[pk]) pk = k; const dd = c[k] / c[pk] - 1; if (dd < best.dd) best = { dd, p: pk, tr: k }; }
+  let rec = -1; for (let k = best.tr; k < c.length; k++) if (c[k] >= c[best.p]) { rec = k; break; }
+  const dt = k => new Date(ts[k] * 1000).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  const months = rec >= 0 ? Math.max(1, Math.round((ts[rec] - ts[best.tr]) / 2629800)) : 0;
+  e.innerHTML = `${lcSpark(c, c[c.length - 1] >= c[0], (x, y) => `<rect x="${x(best.p)}" y="0" width="${Math.max(1, x(best.tr) - x(best.p))}" height="110" class="lc-dd-zone"/><circle cx="${x(best.p)}" cy="${y(c[best.p])}" r="4" class="lc-dd-pk"/><circle cx="${x(best.tr)}" cy="${y(c[best.tr])}" r="4" class="lc-dd-tr"/>`)}
+  <p class="lc-res">Biggest fall: <b>${pctTxt(-best.dd)}</b>, from ${dt(best.p)} to ${dt(best.tr)}. ${rec >= 0 ? `It was back at that old high by ${dt(rec)}, about ${months} month${months > 1 ? 's' : ''} after the low.` : 'It hasn\'t gotten back to that high yet.'}</p>`;
+  return;
+ }
+ if (card.live === 'bestdays') {
+  const c = d.c, r = c.slice(1).map((v, k) => v / c[k] - 1), total = c[c.length - 1] / c[0] - 1;
+  const best = r.map((_, k) => k).sort((a, b) => r[b] - r[a]), worst = r.map((_, k) => k).sort((a, b) => r[a] - r[b]).slice(0, 10);
+  const without = n => { const skip = new Set(best.slice(0, n)); let g = 1; r.forEach((v, k) => { if (!skip.has(k)) g *= 1 + v; }); return g - 1; };
+  const near = best.slice(0, 10).filter(k => worst.some(w => Math.abs(w - k) <= 10)).length;
+  const yrs = Math.max(1, Math.round((d.t[d.t.length - 1] - d.t[0]) / 31557600));
+  const st = lcState(i, () => ({ n: 10 }));
+  st.bd = { total, without };
+  e.innerHTML = `<label class="lc-sl"><span>Best days you missed</span><b data-bd></b><input type="range" min="0" max="30" step="1" value="${st.n}" oninput="lcBestSet(${i},this.value)"></label>
+  <div class="lc-bars lc-bd-out"></div>
+  <p class="lc-res">S&amp;P 500 (SPY) over the past ${yrs} years. ${near} of its 10 best days came within two weeks of one of its 10 worst days.</p>`;
+  lcBestDraw(i);
+ }
+}
+// Only the results redraw while the slider moves, so dragging it keeps working
+function lcBestDraw(i) {
+ const st = lcState(i, () => ({})), box = document.getElementById('lcLive-' + i);
+ if (!st.bd || !box) return;
+ const { total, without } = st.bd, miss = without(st.n), scale = Math.max(Math.abs(total), Math.abs(miss)) || 1;
+ box.querySelector('[data-bd]').textContent = st.n;
+ box.querySelector('input[type=range]').style.setProperty('--fill', `${(st.n / 30 * 100).toFixed(1)}%`);
+ box.querySelector('.lc-bd-out').innerHTML = `
+   <div class="lc-barrow"><span class="lc-bt">Stayed in</span><span class="lc-bw"><i class="${total < 0 ? 'neg' : ''}" style="width:${(Math.abs(total) / scale * 100).toFixed(1)}%"></i></span><b>${fmtSigned(total, 0)}</b></div>
+   <div class="lc-barrow"><span class="lc-bt">Missed ${st.n}</span><span class="lc-bw"><i class="${miss < 0 ? 'neg' : ''}" style="width:${Math.max(1, Math.abs(miss) / scale * 100).toFixed(1)}%"></i></span><b>${fmtSigned(miss, 0)}</b></div>`;
+}
+function lcGuess(i, t) { const st = lcState(i, () => ({})); if (st.guess == null) { st.guess = t; const c = _lesson?.L.cards[i]; if (c) lcLive(c, i).catch(() => lcLiveFail(i)); } }
+function lcZoomSet(i, r) { lcState(i, () => ({})).r = r; const c = _lesson?.L.cards[i]; if (c) lcLive(c, i).catch(() => lcLiveFail(i)); }
+function lcBestSet(i, n) { lcState(i, () => ({})).n = +n; lcBestDraw(i); }
+function lcSpark(c, up, extra) {
+ const W = 300, H = 110, n = c.length, lo = Math.min(...c), hi = Math.max(...c);
+ const x = k => +(k / Math.max(1, n - 1) * W).toFixed(1), y = v => +(H - 6 - (v - lo) / (hi - lo || 1) * (H - 12)).toFixed(1);
+ const step = Math.max(1, Math.floor(n / 240)), pts = [];
+ for (let k = 0; k < n; k += step) pts.push(`${x(k)},${y(c[k])}`);
+ pts.push(`${x(n - 1)},${y(c[n - 1])}`);
+ return `<svg class="lc-spark ${up ? 'up' : 'dn'}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Price chart">${extra ? extra(x, y) : ''}<polyline points="${pts.join(' ')}" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
+}
+
 
 function dashLineColors() {
  return theme === 'dark'
@@ -9615,7 +10342,12 @@ const BADGES = [
  { id:'lesson_first', icon:'📘', name:'Student', desc:'Finished your first lesson', check: () => Object.values(getLearn().lessons).some(l => l.read) },
  { id:'quiz_ace', icon:'🎯', name:'Sharp Shooter', desc:'Got every answer right on a lesson quiz', check: () => Object.values(getLearn().lessons).some(l => l.best === 3) },
  { id:'level_3', icon:'⭐', name:'Rising Analyst', desc:'Reached learning Level 3', check: () => learnLevel(getLearn().xp).n >= 3 },
- { id:'lessons_all', icon:'🏅', name:'Scholar', desc:'Finished every lesson and quiz', check: () => DASH_LESSONS.every((_, i) => lessonDone(i)) },
+ { id:'lessons_all', icon:'🏅', name:'Scholar', desc:'Finished every lesson and quiz', check: () => LEARN_LIB.full && allLessonIds().every(lessonDone) },
+ { id:'lessons_10', icon:'📚', name:'Bookworm', desc:'Finished 10 lessons and their quizzes', check: () => Object.values(getLearn().lessons).filter(l => l.read && l.best != null).length >= 10 },
+ { id:'track_done', icon:'🧭', name:'Track Star', desc:'Finished every lesson in a track', check: () => LEARN_LIB.tracks.some(t => t.lessons.length && t.lessons.every(lessonDone)) },
+ { id:'daily_first', icon:'⚡', name:'Daily Brain', desc:'Finished a daily challenge', check: () => !!getLearn().dlast },
+ { id:'learn_streak_7', icon:'🔥', name:'On a Roll', desc:'Did the daily challenge 7 days in a row', check: () => getLearn().dstreak >= 7 },
+ { id:'stock_study', icon:'🔍', name:'Stock Detective', desc:'Finished a real-stock lesson', check: () => Object.values(getLearn().stocks).some(v => v.best != null) },
  { id:'checklist_done', icon:'✅', name:'Ready to Go', desc:'Completed the getting started checklist', check: () => isChecklistComplete() },
  // ── SECRET ──
  { id:'secret_1', icon:'🎰', name:'Lucky Dip', desc:'You found it! Searched for a stock that doesn\'t exist — curiosity rewarded.',
@@ -9657,7 +10389,7 @@ function checkAndAwardBadges(silent=false) {
 
 const BADGE_GROUPS = [
  ['Getting started', ['first_login','first_search','first_watch','first_holding','first_paper','first_vote','onboarded','tutorial_done','broker_set','checklist_done']],
- ['Learning', ['lesson_first','quiz_ace','level_3','lessons_all']],
+ ['Learning', ['lesson_first','quiz_ace','level_3','lessons_10','track_done','lessons_all','daily_first','learn_streak_7','stock_study']],
  ['Streaks', ['streak_3','streak_7','streak_14','streak_30','streak_100']],
  ['Research', ['five_searches','twenty_searches','fifty_searches','crypto_search','index_search','screener_used','compare_used','prediction_used']],
  ['Portfolio and trading', ['five_watchlist','ten_watchlist','five_holdings','ten_holdings','paper_profit','paper_big','paper_five_pos','custom_home']],

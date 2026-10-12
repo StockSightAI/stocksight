@@ -81,6 +81,18 @@ await fetch(B + '/__yahoo?down=0');
 p = await fetch(B + '/stock/BTC');
 ok(p.status === 200 && /\(BTC\)/.test(await p.text()), 'crypto stock page');
 
+// Learning progress is saved on the account, and only through the signed-in user's own row
+{
+  const learn = { xp: 140, lessons: { 'stock-market': { read: true, best: 3 }, compounding: { read: true, best: 2 } }, dstreak: 2, dlast: '2026-10-10', review: { 'fees#1': { due: '2026-10-12', n: 0 } }, at: 1 };
+  const r = await save(alice, { learn });
+  ok(r.status === 200, 'learning progress saves', r.status);
+  const back = (await (await fetch(B + '/api/user', { headers: { Authorization: 'Bearer ' + alice } })).json()).user?.learn;
+  ok(back?.xp === 140 && back.lessons?.compounding?.best === 2 && back.review?.['fees#1'], 'learning progress comes back on the account', back);
+  ok((await json('/api/user', { patch: { learn } })).status === 401, 'saving progress needs a sign-in');
+}
+const lib = await (await fetch(B + '/lessons.json')).json();
+ok(lib.lessons?.length >= 30 && lib.tracks?.length >= 5, 'lesson library is served', lib.lessons?.length);
+
 // Installable app
 const man = await (await fetch(B + '/manifest.webmanifest')).json();
 ok(man.display === 'standalone' && man.icons.some(i => i.sizes === '512x512') && man.icons.some(i => i.purpose === 'maskable'), 'manifest has standalone display and icons', man);

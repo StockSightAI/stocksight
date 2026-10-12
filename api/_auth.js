@@ -20,7 +20,7 @@ const SECRET_COLUMNS = ['phash', 'ph', 'reset_token', 'reset_token_expiry', 'res
 export const WRITABLE_COLUMNS = new Set([
   'name', 'mode', 'watchlist', 'portfolio', 'alerts', 'notes', 'streak_count', 'streak_last_date', 'settings', 'avatar',
   'broker', 'tutorial_done', 'onboarding_done', 'pending_orders', 'investor_profile', 'risk_tolerance', 'invest_style',
-  'investment_goals', 'preferred_sectors', 'digest', 'alert_emails',
+  'investment_goals', 'preferred_sectors', 'digest', 'alert_emails', 'learn',
 ]);
 
 export function configured() { return !!SERVICE_KEY(); }
