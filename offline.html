@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>You're offline · StockSight</title>
+<meta name="robots" content="noindex">
+<script>try { if (localStorage.getItem('ss_theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}</script>
+<style>
+:root{--bg:#0f0f13;--card:#18181e;--text:#eeeef8;--text2:rgba(238,238,248,.68);--border:rgba(255,255,255,.1);--accent:#6c5ce7;color-scheme:dark}
+:root[data-theme="light"]{--bg:#f4f3f8;--card:#fff;--text:#14131c;--text2:rgba(20,19,28,.7);--border:rgba(0,0,0,.1);--accent:#4c3dd4;color-scheme:light}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;display:grid;place-items:center;padding:24px 16px}
+.box{max-width:380px;text-align:center}
+img{width:64px;height:64px;border-radius:16px}
+h1{font-size:1.5rem;margin:18px 0 6px;letter-spacing:-.02em}
+p{color:var(--text2);margin:0 0 22px}
+button{border:0;border-radius:12px;background:var(--accent);color:#fff;font:600 1rem inherit;font-family:inherit;padding:12px 22px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--text);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="box">
+ <img src="/icon-192.png" alt="StockSight">
+ <h1>You're offline</h1>
+ <p>StockSight needs an internet connection for live market data. Check your connection and try again.</p>
+ <button type="button" onclick="location.reload()">Try again</button>
+</div>
+<script>addEventListener('online', () => location.reload());</script>
+</body>
+</html>

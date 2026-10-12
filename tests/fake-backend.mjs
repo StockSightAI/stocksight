@@ -237,7 +237,8 @@ http.createServer(async (req, res) => {
   // ... and /join/:code -> /api/page?league=:code, /leagues -> the app
   const joinPage = url.pathname.match(/^\/join\/([^/]+)\/?$/);
   if (joinPage) url.searchParams.set('league', decodeURIComponent(joinPage[1]));
-  if (url.pathname === '/leagues') url.pathname = '/';
+  if (url.pathname === '/leagues' || url.pathname === '/learn') url.pathname = '/';
+  if (url.pathname === '/privacy' || url.pathname === '/terms') url.pathname += '.html';
   const api = stockPage || joinPage ? [null, 'page'] : url.pathname.match(/^\/api\/([a-z-]+)$/);
   if (api && fs.existsSync(path.join(root, 'api', api[1] + '.js'))) {
     const { default: handler } = await import(pathToFileURL(path.join(root, 'api', api[1] + '.js')).href);

@@ -7606,11 +7606,24 @@ function openModal(which){
  document.body.style.overflow = 'hidden';
  switchModal(which);
 }
-function openPrivacyPolicy(){ const m=document.getElementById('privacyModal'); if(m){m.classList.remove('off');document.body.style.overflow='hidden';} }
+function openPrivacyPolicy(){ const m=document.getElementById('privacyModal'); if(m){m.classList.remove('off');document.body.style.overflow='hidden';loadLegal('privacy');} }
 function closePrivacyPolicy(){ const m=document.getElementById('privacyModal'); if(m){m.classList.add('off');document.body.style.overflow='';} }
 function openAboutCreator(){ const m=document.getElementById('aboutCreatorModal'); if(m){m.classList.remove('off');document.body.style.overflow='hidden';} }
 function closeAboutCreator(){ const m=document.getElementById('aboutCreatorModal'); if(m){m.classList.add('off');document.body.style.overflow='';} }
-function openTerms(){ const m=document.getElementById('termsModal'); if(m){m.classList.remove('off');document.body.style.overflow='hidden';} }
+function openTerms(){ const m=document.getElementById('termsModal'); if(m){m.classList.remove('off');document.body.style.overflow='hidden';loadLegal('terms');} }
+// The pop-ups show the same text as stocksightai.com/privacy and /terms, so there's one copy to keep current
+async function loadLegal(kind) {
+ const box = document.getElementById(kind + 'Doc'), date = document.getElementById(kind + 'Updated');
+ if (!box || box.dataset.loaded) return;
+ try {
+  const r = await fetch('/' + kind + '.html');
+  if (!r.ok) throw new Error('legal');
+  const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+  box.innerHTML = doc.getElementById('doc').innerHTML;
+  if (date) date.textContent = doc.querySelector('.updated')?.textContent || '';
+  box.dataset.loaded = '1';
+ } catch { box.innerHTML = `<p>Read it at <a href="/${kind}" target="_blank" rel="noopener">stocksightai.com/${kind}</a>.</p>`; }
+}
 function closeTerms(){ const m=document.getElementById('termsModal'); if(m){m.classList.add('off');document.body.style.overflow='';} }
 let _fbType='general';
 function openFeedback(){
@@ -14238,6 +14251,7 @@ async function lgDo(kind, code, member) {
 
 // Invite links: stocksightai.com/join/ABC123 (or ?league=ABC123); /leagues opens the leagues page
 function leagueDeepLink() {
+ if (/^\/learn\/?$/.test(location.pathname)) return { learn: true };   // the app's Learn shortcut
  const m = location.pathname.match(/^\/join\/([A-Za-z0-9]{6})\/?$/);
  const code = (m?.[1] || new URLSearchParams(location.search).get('league') || '').toUpperCase();
  if (/^[A-Z2-9]{6}$/.test(code)) return { join: code };
@@ -14248,6 +14262,7 @@ function openLeagueDeepLink() {
  const dl = leagueDeepLink();
  if (!dl) return false;
  try { history.replaceState(null, '', dl.view ? '/leagues' : '/'); } catch {}
+ if (dl.learn) { setTimeout(() => (user ? switchTab('learn') : requireAuth('Learn')), user ? 450 : 600); return true; }
  if (dl.view) { if (user) setTimeout(() => switchTab('leagues'), 450); else setTimeout(() => requireAuth('Leagues'), 600); return true; }
  setTimeout(() => openJoinInvite(dl.join), 700);
  return true;
@@ -14472,3 +14487,6 @@ function hubLeagueHTML() {
   ${DASH_ICON('<polyline points="9 18 15 12 9 6"/>')}
  </button>`;
 }
+
+// The offline screen (sw.js). Having one is also part of what lets app stores and browsers install StockSight.
+if ('serviceWorker' in navigator) addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });

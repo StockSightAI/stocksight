@@ -1943,6 +1943,10 @@ body.accent-ruby{--accent:#be123c;--accent2:#fda4af;--accent3:#e11d48;--glow:rgb
 .lg-dash-ico{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--glow2);color:var(--accent2)}
 .lg-dash-txt{flex:1;min-width:0;display:flex;flex-direction:column}
 .lg-dash-txt b{font-size:.9rem}.lg-dash-txt span{font-size:.76rem;color:var(--text3)}
+.legal-doc{font-size:.84rem;line-height:1.7;color:var(--text2)}
+.legal-doc h2{font-size:.9rem;font-weight:700;color:var(--text);margin:16px 0 4px}
+.legal-doc p{margin:0 0 8px}.legal-doc ul{margin:4px 0 8px;padding-left:1.2em}.legal-doc li{margin:3px 0}
+.legal-doc strong{color:var(--text)}.legal-doc a{color:var(--accent2)}
 /* Phone: More sheet, native lists */
 .m-title{display:none}
 .more-ov{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;opacity:0;transition:opacity .2s}
@@ -4160,46 +4164,9 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
 <div id="termsModal" class="modal-overlay off" onclick="if(event.target===this)closeTerms()">
  <div class="modal-box" style="max-width:560px">
  <button class="modal-close" onclick="closeTerms()">&#x2715;</button>
- <div class="modal-heading">Terms & Conditions</div>
- <div class="modal-sub">Last updated: June 2026</div>
- <div style="font-size:.78rem;color:var(--text2);line-height:1.8;display:flex;flex-direction:column;gap:1rem">
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">1. Acceptance of Terms</div>
- <p style="margin:0">By accessing or using StockSight, you agree to be bound by these Terms & Conditions. If you do not agree, please do not use the platform.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">2. Use of the Platform</div>
- <p style="margin:0">StockSight is provided for personal, non-commercial use only. You may not reproduce, distribute, or commercially exploit any part of the platform without written permission. You agree not to misuse the platform, attempt to gain unauthorized access, or interfere with its operation.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">3. Not Financial Advice</div>
- <p style="margin:0">All content on StockSight — including stock data, AI analysis, price predictions, and community sentiment — is for <strong style="color:var(--text)">informational purposes only</strong> and does not constitute financial, investment, or legal advice. StockSight is not a registered investment advisor. Always consult a qualified financial professional before making investment decisions.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">4. Accuracy of Data</div>
- <p style="margin:0">We strive to provide accurate and up-to-date market data, but we make no guarantees about the accuracy, completeness, or timeliness of any information on the platform. You use the data at your own risk.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">5. User Accounts</div>
- <p style="margin:0">You are responsible for maintaining the confidentiality of your account credentials. You agree to notify us immediately of any unauthorized use of your account. We reserve the right to terminate accounts that violate these terms.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">6. Paper Trading</div>
- <p style="margin:0">The paper trading feature uses simulated funds and does not involve real money. Past performance in paper trading does not guarantee results in real markets.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">7. Limitation of Liability</div>
- <p style="margin:0">StockSight and its creator shall not be liable for any financial losses, damages, or decisions made based on information provided by the platform.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">8. Changes to Terms</div>
- <p style="margin:0">We may update these terms at any time. Continued use of the platform after changes constitutes acceptance of the updated terms.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">9. Contact</div>
- <p style="margin:0">Questions? Reach us at <a href="https://mail.google.com/mail/?view=cm&to=stocksightai@gmail.com&su=StockSight%20Terms" target="_blank" rel="noopener noreferrer" style="color:var(--accent2);text-decoration:none">stocksightai@gmail.com</a>.</p>
- </div>
- </div>
+ <div class="modal-heading">Terms of Use</div>
+ <div class="modal-sub" id="termsUpdated"></div>
+  <div class="legal-doc" id="termsDoc"><p>Loading...</p></div>
  </div>
 </div>
 
@@ -4292,45 +4259,8 @@ button.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 18px var(--shad
  <div class="modal-box" style="max-width:560px">
  <button class="modal-close" onclick="closePrivacyPolicy()">&#x2715;</button>
  <div class="modal-heading">Privacy Policy</div>
- <div class="modal-sub">Last updated: June 2026</div>
- <div style="font-size:.78rem;color:var(--text2);line-height:1.8;display:flex;flex-direction:column;gap:1rem">
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">1. Information We Collect</div>
- <p style="margin:0">When you create an account, we collect your <strong style="color:var(--text)">name and email address</strong>. We also store your app preferences (dark/light mode, portfolio data, watchlists) locally in your browser and synced to our secure database.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">2. How We Use Your Information</div>
- <p style="margin:0">Your information is used solely to operate StockSight — to authenticate your account, sync your data across sessions, and send password reset emails when requested. We do not use your data for advertising.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">3. We Do Not Sell Your Data</div>
- <p style="margin:0">We will never sell, rent, or share your personal information with third parties for marketing or commercial purposes.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">4. Data Storage & Security</div>
- <p style="margin:0">Your data is stored securely using <strong style="color:var(--text)">Supabase</strong> (hosted on AWS). Passwords are hashed using SHA-256 and never stored in plain text. We use industry-standard security practices to protect your information.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">5. Local Storage & Cookies</div>
- <p style="margin:0">StockSight uses your browser's local storage to save your session and preferences. We do not use tracking cookies or third-party analytics.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">6. Third-Party Services</div>
- <p style="margin:0">We use <strong style="color:var(--text)">TradingView</strong> for chart data and <strong style="color:var(--text)">Resend</strong> for transactional emails (password resets only). These services have their own privacy policies.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">7. Account Deletion</div>
- <p style="margin:0">You can permanently delete your account at any time from your profile settings. This removes all your data from our servers.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">8. Financial Disclaimer</div>
- <p style="margin:0">StockSight provides stock data and research tools for <strong style="color:var(--text)">informational purposes only</strong>. Nothing on this platform constitutes financial, investment, or legal advice. Always consult a qualified professional before making investment decisions.</p>
- </div>
- <div>
- <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:4px">9. Contact Us</div>
- <p style="margin:0">Questions about this policy? Email us at <a href="https://mail.google.com/mail/?view=cm&to=stocksightai@gmail.com&su=StockSight%20Privacy%20Inquiry" target="_blank" rel="noopener noreferrer" style="color:var(--accent2);text-decoration:none">stocksightai@gmail.com</a>.</p>
- </div>
- </div>
+ <div class="modal-sub" id="privacyUpdated"></div>
+  <div class="legal-doc" id="privacyDoc"><p>Loading...</p></div>
  </div>
 </div>
 

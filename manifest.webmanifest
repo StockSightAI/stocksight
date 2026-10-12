@@ -1,28 +1,36 @@
 {
+  "id": "/",
   "name": "StockSight",
   "short_name": "StockSight",
-  "description": "Stock research for people who aren't stock people. Real market data, explained at your level.",
+  "description": "Stock research for people who aren't stock people. Real market data explained at your level, bite-size lessons, a daily challenge and leagues with friends.",
+  "lang": "en-US",
+  "dir": "ltr",
   "start_url": "/?source=app",
   "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#0f0f13",
   "theme_color": "#0f0f13",
+  "categories": ["finance", "education"],
+  "prefer_related_applications": false,
   "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Markets", "short_name": "Markets", "description": "Today's market and your watchlist", "url": "/?source=shortcut", "icons": [{ "src": "/images/icons/markets-96.png", "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Learn", "short_name": "Learn", "description": "Lessons and today's challenge", "url": "/learn", "icons": [{ "src": "/images/icons/learn-96.png", "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Leagues", "short_name": "Leagues", "description": "Your leagues with friends", "url": "/leagues", "icons": [{ "src": "/images/icons/leagues-96.png", "sizes": "96x96", "type": "image/png" }] }
+  ],
+  "screenshots": [
+    { "src": "/images/store/wide-1-markets.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide", "label": "Live markets, your watchlist and today's lessons" },
+    { "src": "/images/store/wide-2-stock.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide", "label": "Any stock, explained in plain English" },
+    { "src": "/images/store/wide-3-learn.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide", "label": "Learn: lessons, a daily challenge and rewards" },
+    { "src": "/images/store/wide-4-lesson.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide", "label": "Hands-on lessons with real numbers" },
+    { "src": "/images/store/wide-5-league.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide", "label": "Weekly leagues with your friends" },
+    { "src": "/images/store/narrow-1-markets.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Markets on your phone" },
+    { "src": "/images/store/narrow-2-learn.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Learn on the go" },
+    { "src": "/images/store/narrow-3-league.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Your league board" }
   ]
 }

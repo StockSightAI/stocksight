@@ -103,6 +103,25 @@ ok(!fdup.length, 'no duplicate function names', fdup);
   ok(appRing && appRing === srvRing, 'ring rules match between app and leagues', { appRing, srvRing });
 }
 
+// Installable app: the manifest, its images, the offline service worker and the policy pages app stores link to
+{
+  const man = JSON.parse(fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8'));
+  ok(man.id && man.name && man.short_name && man.description && man.start_url && man.display === 'standalone' && man.categories?.length, 'manifest has the fields stores check', man);
+  const pngSize = p => { const b = fs.readFileSync(path.join(root, p)); return b.readUInt32BE(16) + 'x' + b.readUInt32BE(20); };
+  const imgs = [...man.icons.map(i => [i.src, i.sizes]), ...(man.screenshots || []).map(s => [s.src, s.sizes]), ...(man.shortcuts || []).flatMap(s => (s.icons || []).map(i => [i.src, i.sizes]))];
+  const wrong = imgs.filter(([src, sizes]) => !fs.existsSync(path.join(root, src)) || pngSize(src) !== sizes);
+  ok(!wrong.length, 'every manifest image exists at its stated size', wrong);
+  ok(man.icons.some(i => i.purpose === 'maskable') && man.icons.some(i => i.sizes === '512x512' && i.purpose !== 'maskable'), 'manifest has a 512 icon and a maskable icon');
+  ok(man.screenshots?.some(s => s.form_factor === 'wide') && man.screenshots.some(s => s.form_factor === 'narrow'), 'manifest has wide and narrow screenshots');
+  const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+  ok(/mode !== 'navigate'/.test(sw) && !/cache\.put|cache\.add\(e\.request/.test(sw) && /offline\.html/.test(sw), 'service worker only adds an offline page (nothing else cached)');
+  ok(/serviceWorker\.register\('\/sw\.js'\)/.test(fs.readFileSync(path.join(root, 'app.js'), 'utf8')), 'the app registers the service worker');
+  for (const p of ['privacy.html', 'terms.html', 'offline.html']) ok(fs.existsSync(path.join(root, p)), p + ' exists');
+  const priv = fs.readFileSync(path.join(root, 'privacy.html'), 'utf8'), terms = fs.readFileSync(path.join(root, 'terms.html'), 'utf8');
+  ok(/id="doc"/.test(priv) && /class="updated"/.test(priv) && /id="doc"/.test(terms) && /class="updated"/.test(terms), 'policy pages have the parts the in-app pop-ups load');
+  ok(/Google Analytics/.test(priv) && /scrypt/.test(priv) && /under 13/.test(priv) && /profile photo/i.test(priv) && /leagues/.test(priv), 'privacy policy covers analytics, passwords, children, photos and leagues');
+}
+
 // Every API file loads (a syntax error here would break that endpoint on Vercel)
 for (const f of fs.readdirSync(path.join(root, 'api')).filter(f => f.endsWith('.js'))) {
   try { await import(pathToFileURL(path.join(root, 'api', f)).href); pass++; }

@@ -60,6 +60,18 @@
     {
       "source": "/leagues",
       "destination": "/"
+    },
+    {
+      "source": "/learn",
+      "destination": "/"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms.html"
     }
   ]
 }
