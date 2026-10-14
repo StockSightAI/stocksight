@@ -146,6 +146,20 @@ export function readSession(req) {
     return { email: s.e, version: s.v || 0 };
   } catch { return null; }
 }
+/* ── Action links in the owner's emails (for example "remove this photo"): signed data that expires ── */
+export function signLink(data, ttlMs) {
+  const payload = b64u(JSON.stringify({ ...data, exp: Date.now() + ttlMs }));
+  return `${payload}.${b64u(crypto.createHmac('sha256', SESSION_SECRET()).update('link:' + payload).digest())}`;
+}
+export function readLink(token) {
+  const [payload, sig] = String(token || '').split('.');
+  if (!payload || !sig || !SESSION_SECRET()) return null;
+  if (!same(b64u(crypto.createHmac('sha256', SESSION_SECRET()).update('link:' + payload).digest()), sig)) return null;
+  try {
+    const d = JSON.parse(Buffer.from(payload, 'base64url').toString());
+    return d.exp > Date.now() ? d : null;
+  } catch { return null; }
+}
 /* ── Unsubscribe links in emails: the email plus a signature only the server can make ──
  list 'digest' (the weekly email), 'alerts' (price-alert emails) or 'leagues' (weekly league results);
  each link only works for its own list */

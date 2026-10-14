@@ -10,6 +10,10 @@
 //   GET  ?invite=CODE                        what an invite shows before joining (no sign-in needed)
 //   POST { action: 'league-create', name } | 'league-join' { code } | 'league-leave' { code }
 //        'league-rename' { code, name } | 'league-remove' { code, member } | 'league-delete' { code }
+//        'league-report' { code, what: 'photo' | 'name' | 'league', member, note }  emails the owner one-click fixes
+// Fix links in those emails:
+//   GET  ?mod=TOKEN                          a page that says what the fix does and asks to confirm
+//   POST { action: 'mod-fix', token }        does it (the token is the permission; it expires in 30 days)
 import crypto from 'node:crypto';
 import { configured, fail, readBody, limited, ipOf, db, sessionRow, readSession } from './_auth.js';
 import * as L from './_leagues.js';
@@ -27,6 +31,22 @@ async function voteCounts(ticker) {
   return { ...c, total: c.buy + c.hold + c.sell };
 }
 
+// The page an owner's fix link opens: says what will happen, and does it only after a click
+function fixPage(token, d) {
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const body = !d ? '<h1>This link has expired</h1><p>Fix links work for 30 days. If it still needs fixing, ask the person to report it again.</p>'
+    : `<h1>${esc(L.FIXES[d.k])}?</h1>${d.e ? `<p>Member: <b>${esc(d.e)}</b></p>` : ''}<p id="msg">This can't be undone.</p>
+      <button id="go" type="button">Yes, do it</button>
+      <script>document.getElementById('go').onclick=async function(){this.disabled=true;var m=document.getElementById('msg');
+      try{var r=await fetch('/api/community',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'mod-fix',token:${JSON.stringify(token).replace(/</g, '\\u003c')}})});
+      var j=await r.json();m.textContent=j.done||j.error||'Done.';this.remove();}catch(e){m.textContent='That did not work. Try again.';this.disabled=false;}};</script>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>StockSight moderation</title>
+    <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0912;color:#f6f1ff;font:16px/1.5 -apple-system,'Segoe UI',Roboto,Arial,sans-serif}
+    main{max-width:440px;padding:28px 24px}h1{font-size:22px;margin:0 0 10px}p{color:#c9c2dc;margin:0 0 14px}
+    button{background:#7c5cf0;color:#fff;border:0;border-radius:10px;padding:11px 18px;font:inherit;font-weight:700;cursor:pointer}button:disabled{opacity:.6}</style></head>
+    <body><main>${body}</main></body></html>`;
+}
+
 export default async function handler(req, res) {
   if (!configured()) return fail(res, 503, 'Unavailable');
   try {
@@ -42,6 +62,12 @@ export default async function handler(req, res) {
         return res.status(204).end();
       }
 
+      if (b.action === 'mod-fix') {
+        if (limited('mod:' + ipOf(req), 30, 600e3)) return fail(res, 429, 'Too many requests');
+        const out = await L.applyFix(b.token);
+        return out.error ? fail(res, out.error, out.message) : res.status(200).json(out);
+      }
+
       if (String(b.action || '').startsWith('league-')) {
         const row = await sessionRow(req);
         if (!row) return fail(res, 401, 'Sign in to use leagues');
@@ -53,6 +79,8 @@ export default async function handler(req, res) {
           : b.action === 'league-rename' ? await L.manage(row.email, code, { rename: b.name })
           : b.action === 'league-remove' ? await L.manage(row.email, code, { remove: String(b.member || '') })
           : b.action === 'league-delete' ? await L.manage(row.email, code, { del: true })
+          : b.action === 'league-report' ? (limited('report:' + row.email, 10, 864e5) ? { error: 429, message: 'Too many reports today. Email stocksightai@gmail.com instead.' }
+            : await L.report(row.email, code, { member: b.member, what: b.what, note: b.note }, process.env.RESEND_API_KEY))
           : { error: 400, message: 'Unknown league action' };
         if (out.error) return fail(res, out.error, out.message || 'Could not do that');
         return res.status(200).json({ ok: true, ...out });
@@ -81,6 +109,12 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
+      if (req.query?.mod) {
+        res.setHeader('Cache-Control', 'no-store');
+        res.setHeader('X-Robots-Tag', 'noindex');
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        return res.status(200).send(fixPage(String(req.query.mod), L.readFix(String(req.query.mod))));
+      }
       if (req.query?.invite) {
         if (limited('invite:' + ipOf(req), 60, 600e3)) return fail(res, 429, 'Too many requests');
         const p = await L.invitePreview(String(req.query.invite).toUpperCase().trim());

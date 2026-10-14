@@ -1918,7 +1918,14 @@ body.accent-ruby{--accent:#be123c;--accent2:#fda4af;--accent3:#e11d48;--glow:rgb
 .lg-xp{font-weight:750;font-size:1rem;font-variant-numeric:tabular-nums;white-space:nowrap}
 .lg-xp small{font-size:.66rem;color:var(--text3);margin-left:3px;font-weight:600}
 .lg-kick{flex:none;background:none;border:0;color:var(--text3);cursor:pointer;padding:4px;display:grid;place-items:center}
-.lg-kick:hover{color:var(--red)}.lg-kick svg{width:15px;height:15px}
+.lg-kick:hover{color:var(--text)}.lg-kick svg{width:17px;height:17px}
+.lg-menu{display:flex;flex-direction:column;gap:6px;margin:6px 0 4px}
+.lg-menu-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;padding:11px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card2);color:var(--text);cursor:pointer;font:inherit}
+.lg-menu-item:hover{border-color:var(--border2)}
+.lg-menu-item b{font-size:.9rem}.lg-menu-item span{font-size:.76rem;color:var(--text3)}
+.lg-menu-item.lg-danger b{color:var(--red)}
+.lg-note{resize:vertical;min-height:72px;font:inherit}
+.lg-quiet{color:var(--text3)}
 .lg-podium{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:12px;background:var(--card2);font-size:.84rem;color:var(--text2)}
 .lg-podium b{color:var(--text)}.lg-podium i{font-style:normal;font-weight:700;color:var(--accent2);margin-right:8px}
 .lg-code{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px dashed var(--border3);border-radius:12px}
@@ -1995,6 +2002,9 @@ body.accent-ruby{--accent:#be123c;--accent2:#fda4af;--accent3:#e11d48;--glow:rgb
 .dcf-src b{color:var(--text)}
 @media (max-width:600px){.dcf-head b{font-size:1rem}.in-pane{padding:14px}}
 @media (max-width:380px){.in-grid{grid-template-columns:1fr}}
+.in-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.in-share{display:inline-flex;align-items:center;gap:7px}
+.in-sec > .in-share{margin-top:12px}
 /* Phone: More sheet, native lists */
 .m-title{display:none}
 .more-ov{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;opacity:0;transition:opacity .2s}

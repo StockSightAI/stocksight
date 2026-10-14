@@ -9497,22 +9497,7 @@ async function drawStockCard({ ticker, name, R, closes }) {
  const text = (t, X, Y, w, px, color, align = 'left') => { x.font = font(w, px); x.fillStyle = color; x.textAlign = align; x.fillText(t, X, Y); };
  const box = (X, Y, w, h, r) => { x.beginPath(); if (x.roundRect) x.roundRect(X, Y, w, h, r); else x.rect(X, Y, w, h); };
 
- // Background: near-black with violet light, and a planet rising at the bottom
- x.fillStyle = '#07050b'; x.fillRect(0, 0, W, H);
- const glow = (cx, cy, r, a) => { const g = x.createRadialGradient(cx, cy, 0, cx, cy, r); g.addColorStop(0, `rgba(124,74,230,${a})`); g.addColorStop(1, 'rgba(124,74,230,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H); };
- glow(W * 0.85, 120, 620, 0.32); glow(W * 0.1, H, 760, 0.38);
- let seed = ticker.split('').reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 233280, 7);
- const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
- for (let i = 0; i < 90; i++) { x.fillStyle = `rgba(255,255,255,${0.12 + rnd() * 0.4})`; x.fillRect(rnd() * W, rnd() * H, 1.6, 1.6); }
- x.save(); x.beginPath(); x.arc(W / 2, H + 1160, 1250, 0, Math.PI * 2);
- x.shadowColor = 'rgba(170,125,255,0.7)'; x.shadowBlur = 70; x.fillStyle = '#06040a'; x.fill(); x.restore();
- x.save(); x.beginPath(); x.arc(W / 2, H + 1160, 1250, Math.PI * 1.05, Math.PI * 1.95); x.lineWidth = 3; x.strokeStyle = 'rgba(225,210,255,0.85)'; x.stroke(); x.restore();
-
- // Brand
- try { const logo = await loadImg('/stocksight-logo-96.png'); x.save(); box(P, 64, 52, 52, 13); x.clip(); x.drawImage(logo, P, 64, 52, 52); x.restore(); } catch {}
- x.font = font(600, 34); x.textAlign = 'left'; x.fillStyle = '#f6f1ff'; x.fillText('Stock', P + 66, 101);
- const sw = x.measureText('Stock').width; x.fillStyle = '#b49cfc'; x.fillText('Sight', P + 66 + sw, 101);
- text(new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), W - P, 101, 500, 26, 'rgba(246,241,255,0.45)', 'right');
+ await drawCardChrome(x, W, H, P, ticker);
 
  // Ticker, name, price
  text(ticker, P, 262, 800, 128, '#f6f1ff');
@@ -9568,6 +9553,52 @@ async function drawStockCard({ ticker, name, R, closes }) {
  text('Real market data. Not financial advice.', W - P, 1214, 400, 22, 'rgba(246,241,255,0.4)', 'right');
  return c;
 }
+// Text, font and rounded-box helpers for drawing share images on a canvas
+function cardKit(x) {
+ const font = (w, px) => `${w} ${px}px Geist, system-ui, sans-serif`;
+ return {
+  font,
+  text: (t, X, Y, w, px, color, align = 'left') => { x.font = font(w, px); x.fillStyle = color; x.textAlign = align; x.fillText(t, X, Y); },
+  box: (X, Y, w, h, r) => { x.beginPath(); if (x.roundRect) x.roundRect(X, Y, w, h, r); else x.rect(X, Y, w, h); },
+ };
+}
+// The shared look of every share image: near-black with violet light, a planet at the bottom, the logo and today's date
+async function drawCardChrome(x, W, H, P, seedStr) {
+ await Promise.all(['400 30px Geist', '600 30px Geist', '700 30px Geist', '800 30px Geist'].map(ft => document.fonts.load(ft).catch(() => {})));
+ const { font, text, box } = cardKit(x);
+ // Background: near-black with violet light, and a planet rising at the bottom
+ x.fillStyle = '#07050b'; x.fillRect(0, 0, W, H);
+ const glow = (cx, cy, r, a) => { const g = x.createRadialGradient(cx, cy, 0, cx, cy, r); g.addColorStop(0, `rgba(124,74,230,${a})`); g.addColorStop(1, 'rgba(124,74,230,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H); };
+ glow(W * 0.85, 120, 620, 0.32); glow(W * 0.1, H, 760, 0.38);
+ let seed = String(seedStr).split('').reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 233280, 7);
+ const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+ for (let i = 0; i < 90; i++) { x.fillStyle = `rgba(255,255,255,${0.12 + rnd() * 0.4})`; x.fillRect(rnd() * W, rnd() * H, 1.6, 1.6); }
+ x.save(); x.beginPath(); x.arc(W / 2, H + 1160, 1250, 0, Math.PI * 2);
+ x.shadowColor = 'rgba(170,125,255,0.7)'; x.shadowBlur = 70; x.fillStyle = '#06040a'; x.fill(); x.restore();
+ x.save(); x.beginPath(); x.arc(W / 2, H + 1160, 1250, Math.PI * 1.05, Math.PI * 1.95); x.lineWidth = 3; x.strokeStyle = 'rgba(225,210,255,0.85)'; x.stroke(); x.restore();
+
+ // Brand
+ try { const logo = await loadImg('/stocksight-logo-96.png'); x.save(); box(P, 64, 52, 52, 13); x.clip(); x.drawImage(logo, P, 64, 52, 52); x.restore(); } catch {}
+ x.font = font(600, 34); x.textAlign = 'left'; x.fillStyle = '#f6f1ff'; x.fillText('Stock', P + 66, 101);
+ const sw = x.measureText('Stock').width; x.fillStyle = '#b49cfc'; x.fillText('Sight', P + 66 + sw, 101);
+ text(new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), W - P, 101, 500, 26, 'rgba(246,241,255,0.45)', 'right');
+}
+// Share an image: the share sheet on phones (Instagram, Messages, ...); on computers, save it and copy the link
+async function shareImage(canvas, { file: fileName, text: shareText, url, type, id }) {
+ const blob = await new Promise(ok => canvas.toBlob(ok, 'image/png'));
+ const file = new File([blob], fileName, { type: 'image/png' });
+ const sheet = !!navigator.canShare?.({ files: [file] });
+ track('share', { method: sheet ? 'share_sheet' : 'download', content_type: type, item_id: id });
+ if (sheet) {
+  try { await navigator.share({ files: [file], text: `${shareText} ${url}` }); return; }
+  catch (e) { if (e?.name === 'AbortError') return; }
+ }
+ const a = document.createElement('a');
+ a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
+ setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+ try { await navigator.clipboard.writeText(url); toast('Image saved and link copied. Paste the link with your post.', 'success', 4500); }
+ catch { toast(`Image saved. Link: ${url}`, 'success', 5000); }
+}
 
 async function shareStockCard(ticker, type) {
  const rs = window._rs;
@@ -9578,20 +9609,7 @@ async function shareStockCard(ticker, type) {
   let closes = [];
   try { closes = (await getHistory(ySym(ticker, type))).c.slice(-252); } catch {}
   const canvas = await drawStockCard({ ticker, name: rsName(ticker, rs.R.facts), R: rs.R, closes });
-  const blob = await new Promise(ok => canvas.toBlob(ok, 'image/png'));
-  const file = new File([blob], `stocksight-${ticker}.png`, { type: 'image/png' });
-  const url = `https://stocksightai.com/?stock=${encodeURIComponent(ticker)}`;
-  // Phones: the share sheet (Instagram, Messages, ...). Computers: save the image and copy the link.
-  track('share', { method: navigator.canShare?.({ files: [file] }) ? 'share_sheet' : 'download', content_type: 'stock_card', item_id: ticker });
-  if (navigator.canShare?.({ files: [file] })) {
-   try { await navigator.share({ files: [file], text: `${ticker} on StockSight: ${rs.R.verdict}, ${rs.R.score}/100 ${url}` }); return; }
-   catch (e) { if (e?.name === 'AbortError') return; }
-  }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-  try { await navigator.clipboard.writeText(url); toast('Image saved and link copied. Paste the link with your post.', 'success', 4500); }
-  catch { toast(`Image saved. Link: ${url}`, 'success', 5000); }
+  await shareImage(canvas, { file: `stocksight-${ticker}.png`, text: `${ticker} on StockSight: ${rs.R.verdict}, ${rs.R.score}/100`, url: `https://stocksightai.com/?stock=${encodeURIComponent(ticker)}`, type: 'stock_card', id: ticker });
  } catch (e) {
   console.warn('share card:', e);
   toast('Could not make the image. Please try again.', 'error');
@@ -14118,7 +14136,7 @@ function lgNotices(d) {
 function lgCardHTML(l) {
  return `<button type="button" class="lg-card" onclick="openLeague('${l.code}')">
   <div class="lg-card-h"><b>${escapeHTML(l.name)}</b><span>${l.members} ${l.members === 1 ? 'member' : 'members'}</span></div>
-  <div class="lg-card-m"><span class="lg-rank">#${l.rank || '-'}</span><span>${l.weekXp} XP this week</span><span class="lg-faces">${l.top.map(r => avatarHTML(r.avatar, r.name, 26, r.ring)).join('')}</span></div>
+  <div class="lg-card-m"><span class="lg-rank">#${l.rank || '-'}</span><span>${l.weekXp} XP this week</span><span class="lg-faces">${l.top.map(r => avatarHTML(lgAvatar(r), r.name, 26, r.ring)).join('')}</span></div>
   ${l.lastWinner ? `<div class="lg-last">${learnIcon('check')}Last week: ${l.lastWinner.me ? 'you won' : `${escapeHTML(l.lastWinner.name)} won`} with ${l.lastWinner.weekXp} XP</div>` : ''}
  </button>`;
 }
@@ -14168,16 +14186,17 @@ async function openLeague(code) {
   ${status ? `<div class="lg-status"><span>${status}</span><button type="button" class="dash-btn" onclick="${dailyDone ? 'startPractice()' : 'startDaily()'}">${dailyDone ? 'Practice for XP' : "Today's challenge"}</button></div>` : ''}
   <ol class="lg-board">${d.members.map(m => `<li class="lg-row${m.me ? ' me' : ''}">
    <span class="lg-pos${m.rank <= 3 ? ' p' + m.rank : ''}">${m.rank}</span>
-   ${avatarHTML(m.avatar, m.name, 38, m.ring)}
+   ${avatarHTML(lgAvatar(m), m.name, 38, m.ring)}
    <span class="lg-who"><b>${escapeHTML(m.name)}${m.me ? ' <em>you</em>' : ''}${m.owner ? ' <em>runs it</em>' : ''}</b><span>Level ${m.level} · ${escapeHTML(m.title)}${m.streak ? ` · ${m.streak}-day streak` : ''}</span></span>
    <span class="lg-xp">${m.weekXp}<small>XP</small></span>
-   ${d.owner && !m.me ? `<button type="button" class="lg-kick" aria-label="Remove ${escapeHTML(m.name)}" onclick="lgConfirm('remove','${d.code}','${m.id}','${jsq(m.name)}')">${DASH_ICON('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')}</button>` : ''}
+   ${!m.me ? `<button type="button" class="lg-kick" aria-label="More for ${escapeHTML(m.name)}" onclick="lgMemberMenu('${d.code}','${m.id}','${jsq(m.name)}',${m.avatar ? 1 : 0},${d.owner ? 1 : 0})">${DASH_ICON('<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>')}</button>` : ''}
   </li>`).join('')}</ol>
   ${d.lastWeek.length ? `<div class="lg-podium"><b>Last week</b>${d.lastWeek.map((r, i) => `<span><i>${i + 1}</i>${escapeHTML(r.name)}${r.me ? ' (you)' : ''} · ${r.weekXp} XP</span>`).join('')}</div>` : ''}
   <div class="lg-code"><div><span>Invite code</span><b>${d.code}</b></div><button type="button" class="dash-btn" onclick="lgInvite('${d.code}')">Share link</button></div>
   <div class="lg-foot">
    ${d.owner ? `<button type="button" class="dash-btn" onclick="lgRename('${d.code}','${jsq(d.name)}')">Rename</button>` : ''}
    <button type="button" class="dash-btn" onclick="lgConfirm('leave','${d.code}','','${jsq(d.name)}')">Leave league</button>
+   ${!d.owner ? `<button type="button" class="dash-btn lg-quiet" onclick="lgReport('${d.code}','','league','${jsq(d.name)}')">Report league name</button>` : ''}
    ${d.owner ? `<button type="button" class="dash-btn lg-danger" onclick="lgConfirm('delete','${d.code}','','${jsq(d.name)}')">Delete league</button>` : ''}
   </div>
  </div>`;
@@ -14261,6 +14280,55 @@ function lgConfirm(kind, code, member, name) {
  lessonOverlay('lgmTitle', `<div class="lg-modal"><h2 id="lgmTitle" class="lesson-title">${t[0]}</h2><p class="ph-hint">${t[1]}</p>
   <div class="lesson-nav"><button type="button" class="dash-btn" onclick="closeLesson()">Cancel</button><button type="button" class="lesson-cta lg-danger-btn" onclick="lgDo('${kind}','${code}','${member}')">${t[2]}</button></div></div>`, 'lg-box');
 }
+// Photos you've hidden in leagues (by member id), on this device only
+const lgHiddenKey = () => 'ss_hidden_av_' + (user?.email || '');
+const lgHidden = () => new Set(safeParse(lgHiddenKey(), []));
+const lgAvatar = r => (r.id && lgHidden().has(r.id) ? null : r.avatar);
+function lgMemberMenu(code, member, name, hasPhoto, owner) {
+ const hidden = lgHidden().has(member), n = escapeHTML(name);
+ const item = (label, sub, act, danger) => `<button type="button" class="lg-menu-item${danger ? ' lg-danger' : ''}" onclick="${act}"><b>${label}</b><span>${sub}</span></button>`;
+ lessonOverlay('lgmTitle', `<div class="lg-modal"><h2 id="lgmTitle" class="lesson-title">${n}</h2>
+  <div class="lg-menu">
+   ${hasPhoto || hidden ? item(hidden ? 'Show their photo' : 'Hide their photo', hidden ? 'See their profile photo again' : 'Only on your screen. They won\'t know.', `lgToggleHide('${code}','${member}')`) : ''}
+   ${hasPhoto ? item('Report their photo', "If it's offensive or not okay for a stock app", `lgReport('${code}','${member}','photo','${jsq(name)}')`) : ''}
+   ${item('Report their name', "If it's offensive or pretends to be someone", `lgReport('${code}','${member}','name','${jsq(name)}')`)}
+   ${owner ? item('Remove from league', 'They can rejoin only with a new invite', `lgConfirm('remove','${code}','${member}','${jsq(name)}')`, true) : ''}
+  </div>
+  <div class="lesson-nav"><button type="button" class="dash-btn" onclick="closeLesson()">Close</button></div></div>`, 'lg-box');
+}
+function lgSetHidden(member, on) {
+ const set = lgHidden();
+ if (on) set.add(member); else set.delete(member);
+ try { localStorage.setItem(lgHiddenKey(), JSON.stringify([...set].slice(-500))); } catch {}
+}
+function lgToggleHide(code, member) {
+ const on = !lgHidden().has(member);
+ lgSetHidden(member, on);
+ closeLesson();
+ toast(on ? 'Photo hidden. Only you see the change.' : 'Photo shown again.', 'info', 2500);
+ openLeague(code);
+}
+function lgReport(code, member, what, name) {
+ const t = { photo: ['Report this photo?', `We'll review ${escapeHTML(name)}'s profile photo and remove it if it breaks the rules.`],
+  name: ['Report this name?', `We'll review the name "${escapeHTML(name)}" and reset it if it breaks the rules.`],
+  league: ['Report the league name?', `We'll review "${escapeHTML(name)}" and rename the league if it breaks the rules.`] }[what];
+ lgFormModal(t[0], t[1] + ' The person you report won\'t know who reported them.',
+  '<textarea class="lg-input lg-note" id="lgNote" maxlength="300" rows="3" placeholder="What\'s wrong? (optional)"></textarea>',
+  `lgSendReport('${code}','${member}','${what}')`, 'Send report');
+}
+async function lgSendReport(code, member, what) {
+ const btn = document.getElementById('lgGo'), err = document.getElementById('lgErr');
+ if (btn) btn.disabled = true;
+ const d = await lgApi(null, { action: 'league-report', code, member, what, note: document.getElementById('lgNote')?.value || '' });
+ if (btn) btn.disabled = false;
+ if (d.error) { if (err) err.textContent = d.error; return; }
+ closeLesson();
+ track('league_report', { what });
+ // A reported photo is hidden for the reporter straight away
+ const hide = what === 'photo' && !lgHidden().has(member);
+ if (hide) { lgSetHidden(member, true); openLeague(code); }
+ toast(hide ? "Thanks. We'll take a look, and their photo is hidden for you." : "Thanks. We'll take a look.", 'success', 4000);
+}
 async function lgDo(kind, code, member) {
  const d = await lgApi(null, kind === 'remove' ? { action: 'league-remove', code, member } : { action: kind === 'delete' ? 'league-delete' : 'league-leave', code });
  closeLesson();
@@ -14331,7 +14399,7 @@ async function renderDashLeague() {
  el.innerHTML = `<button type="button" class="lg-dash" onclick="openLeague('${l.code}')">
   <span class="lg-dash-ico">${DASH_ICON(LG_ICON)}</span>
   <span class="lg-dash-txt"><b>${escapeHTML(l.name)}: you're #${l.rank} of ${l.members}</b><span>${above ? `${above.weekXp - l.weekXp + 1} XP to pass ${escapeHTML(above.name)}` : l.members > 1 ? 'You lead this week. Keep it up.' : 'Invite friends to compete'} · resets in ${timeLeft(d.endsAt)}</span></span>
-  <span class="lg-faces">${l.top.map(r => avatarHTML(r.avatar, r.name, 26, r.ring)).join('')}</span>
+  <span class="lg-faces">${l.top.map(r => avatarHTML(lgAvatar(r), r.name, 26, r.ring)).join('')}</span>
  </button>`;
 }
 
@@ -14521,7 +14589,7 @@ if ('serviceWorker' in navigator) addEventListener('load', () => { navigator.ser
 ════════════════════════════════ */
 const pct1 = v => v == null || !Number.isFinite(v) ? '—' : `${(v * 100).toFixed(1)}%`;
 const pct0 = v => v == null || !Number.isFinite(v) ? '—' : `${(v * 100).toFixed(0)}%`;
-const sgn0 = v => v == null || !Number.isFinite(v) ? '—' : `${v >= 0 ? '+' : '−'}${Math.abs(v * 100).toFixed(0)}%`;
+const sgn0 = v => v == null || !Number.isFinite(v) ? '—' : Math.round(Math.abs(v) * 100) === 0 ? '0%' : `${v > 0 ? '+' : '−'}${Math.abs(v * 100).toFixed(0)}%`;
 const usd = v => v == null || !Number.isFinite(v) ? '—' : v < 0 ? '−' + usd(-v) : (v >= 1e9 ? fmtBig(v) : fmtPx(v));
 const insightNote = t => `<p class="in-note">${t}</p>`;
 const inLoading = t => `<div class="lc-load"><i></i><i></i><i></i></div><p class="in-note" style="text-align:center">${t}</p>`;
@@ -14548,13 +14616,13 @@ function idxAt(h, ts) {
 }
 // S&P 500 peak-to-bottom dates
 const CRISES = [
- { name: 'Dot-com crash', start: '2000-03-24', end: '2002-10-09' },
- { name: '2008 financial crisis', start: '2007-10-09', end: '2009-03-09' },
- { name: '2011 debt-ceiling scare', start: '2011-04-29', end: '2011-10-03' },
- { name: 'Late-2018 selloff', start: '2018-09-20', end: '2018-12-24' },
- { name: 'COVID crash', start: '2020-02-19', end: '2020-03-23' },
- { name: '2022 rate-hike bear market', start: '2022-01-03', end: '2022-10-12' },
- { name: '2025 tariff shock', start: '2025-02-19', end: '2025-04-08' },
+ { name: 'Dot-com crash', short: 'Dot-com crash, 2000', start: '2000-03-24', end: '2002-10-09' },
+ { name: '2008 financial crisis', short: '2008 financial crisis', start: '2007-10-09', end: '2009-03-09' },
+ { name: '2011 debt-ceiling scare', short: '2011 debt scare', start: '2011-04-29', end: '2011-10-03' },
+ { name: 'Late-2018 selloff', short: 'Late-2018 selloff', start: '2018-09-20', end: '2018-12-24' },
+ { name: 'COVID crash', short: 'COVID crash, 2020', start: '2020-02-19', end: '2020-03-23' },
+ { name: '2022 rate-hike bear market', short: '2022 rate hikes', start: '2022-01-03', end: '2022-10-12' },
+ { name: '2025 tariff shock', short: '2025 tariff shock', start: '2025-02-19', end: '2025-04-08' },
 ];
 // Return over a crisis, and how many months until the start level came back
 function crisisMove(h, c) {
@@ -14704,13 +14772,15 @@ function crashesHTML(t, h, spx) {
   return { c, s, move, est, rec: m?.recovered };
  }).filter(Boolean);
  if (!rows.length) return '';
+ _crashShare.stock = { t, rows: rows.map(x => ({ c: x.c, spx: x.s.move, you: x.move, est: x.est })) };
  return inSection('Past crashes', `
   <div class="in-table-wrap"><table class="in-table">
    <thead><tr><th>Crash</th><th>S&amp;P 500</th><th>${t}</th><th>Back to its old price</th></tr></thead>
    <tbody>${rows.map(x => `<tr><td>${x.c.name}<small>${x.c.start.slice(0, 7)} to ${x.c.end.slice(0, 7)}</small></td><td class="dn">${sgn0(x.s.move)}</td><td class="${x.move < 0 ? 'dn' : 'up'}">${sgn0(x.move)}${x.est ? '<sup>est</sup>' : ''}</td><td>${x.est ? '—' : x.rec == null ? 'not yet' : x.rec < 12 ? `${x.rec} mo` : `${(x.rec / 12).toFixed(1)} yr`}</td></tr>`).join('')}</tbody>
   </table></div>
   ${rows.some(x => x.est) ? insightNote(`<sup>est</sup> ${t} wasn't trading yet, so this is its beta (${beta.toFixed(2)}) times the S&amp;P 500's move: a rough guess.`) : ''}
-  ${insightNote('From the start of each crash to the S&amp;P 500\'s bottom, using weekly closing prices (dividends included). Approximate.')}`,
+  ${insightNote('From the start of each crash to the S&amp;P 500\'s bottom, using weekly closing prices (dividends included). Approximate.')}
+  ${crashShareBtn('stock', `Share ${t}'s crash test`)}`,
   'How it held up when the whole market fell.');
 }
 
@@ -14922,13 +14992,13 @@ async function runPortfolioStress(kind) {
  const rows = CRISES.map(c => {
   const s = crisisMove(spx, c);
   if (!s) return null;
-  let change = 0;
+  let change = 0, est = false;
   pos.forEach((p, i) => {
    const m = hists[i] ? crisisMove(hists[i], c) : null;
-   if (!m) estNames.add(p.t);
+   if (!m) { estNames.add(p.t); est = true; }
    change += p.value * (m ? m.move : Math.max(-0.95, betaOf(p.t) * s.move));
   });
-  return { c, s, port: total ? change / total : 0, dollars: change };
+  return { c, s, port: total ? change / total : 0, dollars: change, est };
  }).filter(Boolean);
  const worst = rows.reduce((a, b) => (b.port < a.port ? b : a), rows[0]);
  const html = `
@@ -14939,11 +15009,111 @@ async function runPortfolioStress(kind) {
   </table></div>
   ${estNames.size ? insightNote(`Some holdings weren't trading during every crash (${[...estNames].slice(0, 6).join(', ')}${estNames.size > 6 ? ' and more' : ''}). For those, it uses each one's beta times the S&amp;P 500's move: a rough guess.`) : ''}
   ${insightNote("Today's holdings, replayed from the start of each crash to the market's bottom using weekly closing prices. Past crashes won't repeat exactly. Not financial advice.")}
-  <button type="button" class="dash-btn" onclick="runPortfolioStress('${kind}')">Run again</button>`;
+  <div class="in-actions">${crashShareBtn(kind, 'Share my crash test')}<button type="button" class="dash-btn" onclick="runPortfolioStress('${kind}')">Run again</button></div>`;
+ _crashShare[kind] = { tickers: [...pos].sort((a, b) => b.value - a.value).map(p => p.t), rows: rows.map(x => ({ c: x.c, spx: x.s.move, you: x.port, est: x.est })) };
  _stressLast[kind] = { sig: stressSig(pos), html };
  if (out()) out().innerHTML = html;
  track('stress_test', { kind });
 }
+/* ── Crash test share card ── */
+// Rows behind the last crash table on each page: { stock: { t, rows }, port: { tickers, rows }, pt: { tickers, rows } }
+const _crashShare = {};
+const crashShareBtn = (kind, label) => `<button type="button" class="dash-btn dash-btn-main in-share" onclick="shareCrashTest('${kind}', this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13"/></svg>${label}</button>`;
+// Percentages only, never dollars, so people can share it without showing what they own in money
+async function drawCrashCard({ who, title, sub, rows }) {
+ const W = 1080, H = 1350, P = 72;
+ const c = document.createElement('canvas'); c.width = W; c.height = H;
+ const x = c.getContext('2d');
+ await drawCardChrome(x, W, H, P, title);
+ const { font, text, box } = cardKit(x);
+ const pc = v => { const n = Math.round(Math.abs(v) * 100); return `${n && v > 0 ? '+' : n && v < 0 ? '\u2212' : ''}${n}%`; };
+ const dim = 'rgba(246,241,255,0.55)', faint = 'rgba(246,241,255,0.4)', ink = '#f6f1ff', violet = '#a78bfa', red = '#fca5a5', green = '#86efac';
+
+ text('CRASH TEST', P, 186, 700, 24, '#b49cfc');
+ // One line if it fits at 50px or more; otherwise two lines at 56px
+ let tpx = 60;
+ for (; tpx >= 50; tpx -= 2) { x.font = font(800, tpx); if (x.measureText(title).width <= W - P * 2) break; }
+ const lines = [];
+ if (tpx < 50) {
+  tpx = 56; x.font = font(800, tpx);
+  const at = title.indexOf(' vs. ');
+  if (at > 0 && x.measureText(title.slice(0, at)).width <= W - P * 2 && x.measureText(title.slice(at + 1)).width <= W - P * 2) lines.push(title.slice(0, at), title.slice(at + 1));
+  else for (const w of title.split(' ')) { const l = lines.length ? `${lines[lines.length - 1]} ${w}` : w; if (lines.length && x.measureText(l).width <= W - P * 2) lines[lines.length - 1] = l; else lines.push(w); }
+ } else lines.push(title);
+ lines.slice(0, 2).forEach((l, i) => text(l, P, 254 + i * 66, 800, tpx, ink));
+ const subY = 254 + (Math.min(lines.length, 2) - 1) * 66 + 54;   // everything below follows the title's height
+ if (sub) text(sub, P, subY, 400, 28, dim);
+
+ // Headline numbers: the worst drop, and how often it fell less than the market
+ const worst = rows.reduce((a, b) => (b.you < a.you ? b : a), rows[0]);
+ const beat = rows.filter(r => r.you > r.spx).length;
+ const hy = subY + 64, hh = 186;
+ x.fillStyle = 'rgba(255,255,255,0.045)'; x.strokeStyle = 'rgba(255,255,255,0.10)'; x.lineWidth = 2;
+ box(P, hy, W - P * 2, hh, 28); x.fill(); x.stroke();
+ x.fillStyle = 'rgba(255,255,255,0.10)'; x.fillRect(W / 2, hy + 30, 2, hh - 60);
+ text('WORST DROP', P + 40, hy + 52, 700, 21, faint);
+ text(pc(worst.you), P + 40, hy + 128, 800, 76, worst.you < 0 ? red : green);
+ text(`${worst.c.short || worst.c.name} (S&P 500 ${pc(worst.spx)})`, P + 40, hy + 164, 400, 22, dim);
+ text('BEAT THE S&P 500', W / 2 + 40, hy + 52, 700, 21, faint);
+ text(`${beat} of ${rows.length}`, W / 2 + 40, hy + 128, 800, 76, '#c4b5fd');
+ text('crashes where it fell less', W / 2 + 40, hy + 164, 400, 22, dim);
+
+ // One row per crash: the S&P 500 (grey) over `who` (violet), on one scale
+ const ly = hy + hh + 56;
+ x.fillStyle = 'rgba(246,241,255,0.35)'; box(P, ly - 15, 18, 18, 4); x.fill();
+ text('S&P 500', P + 30, ly, 600, 22, dim);
+ x.font = font(600, 22); const lw = x.measureText('S&P 500').width;
+ x.fillStyle = violet; box(P + 30 + lw + 36, ly - 15, 18, 18, 4); x.fill();
+ text(who, P + 30 + lw + 66, ly, 600, 22, dim);
+ const est = rows.some(r => r.est);
+ const bx = 430, bw = 470, top = ly + 30, rh = Math.min(58, ((est ? 1080 : 1110) - top) / rows.length);
+ const max = Math.max(0.2, ...rows.flatMap(r => [Math.abs(r.spx), Math.abs(r.you)]));
+ const bar = (v, y, h, col) => { const w = Math.max(4, Math.min(1, Math.abs(v) / max) * bw); x.fillStyle = col; box(bx, y, w, h, h / 2); x.fill(); return w; };
+ rows.forEach((r, i) => {
+  const y = top + i * rh;
+  if (i) { x.fillStyle = 'rgba(255,255,255,0.06)'; x.fillRect(P, y - 4, W - P * 2, 1); }
+  text(`${r.c.short || r.c.name}${r.est ? '*' : ''}`, P, y + 33, 600, 25, ink);
+  const w1 = bar(r.spx, y + 8, 15, 'rgba(246,241,255,0.35)');
+  text(pc(r.spx), bx + w1 + 12, y + 22, 600, 19, dim);
+  const w2 = bar(r.you, y + 29, 17, r.you < 0 ? violet : green);
+  text(pc(r.you), bx + w2 + 12, y + 45, 800, 22, r.you < 0 ? ink : green);
+ });
+ const after = top + rows.length * rh;
+ if (est) text("* Estimated: not everything was trading yet, so it uses each one's beta times the S&P 500's move.", P, after + 26, 400, 19, faint);
+
+ text('Run your own crash test at', P, 1170, 400, 28, dim);
+ text('stocksightai.com', P, 1214, 700, 34, ink);
+ text("Past crashes won't repeat exactly. Not financial advice.", W - P, 1214, 400, 20, faint, 'right');
+ return c;
+}
+async function shareCrashTest(kind, btn) {
+ const d = _crashShare[kind];
+ if (!d?.rows?.length) { toast('Run the crash test first.', 'info'); return; }
+ if (btn) btn.disabled = true;
+ try {
+  let card;
+  if (kind === 'stock') {
+   const name = rsName(d.t, window._rs?.ticker === d.t ? window._rs.R?.facts : null);
+   card = { who: d.t, title: `${name} vs. ${d.rows.length} market crashes`, sub: name === d.t ? 'Crash by crash, against the S&P 500' : `${d.t}, crash by crash, against the S&P 500`, rows: d.rows };
+  } else {
+   const shown = d.tickers.slice(0, 6).join(' \u00b7 ') + (d.tickers.length > 6 ? ` +${d.tickers.length - 6} more` : '');
+   card = { who: kind === 'pt' ? 'My practice portfolio' : 'My portfolio', title: `${kind === 'pt' ? 'My practice portfolio' : 'My portfolio'} vs. ${d.rows.length} market crashes`, sub: shown, rows: d.rows };
+  }
+  const canvas = await drawCrashCard(card);
+  const worst = d.rows.reduce((a, b) => (b.you < a.you ? b : a), d.rows[0]);
+  const url = kind === 'stock' ? `https://stocksightai.com/stock/${encodeURIComponent(d.t)}` : 'https://stocksightai.com';
+  const line = kind === 'stock'
+   ? `${d.t} vs. ${d.rows.length} market crashes on StockSight. Worst: ${sgn0(worst.you)} in the ${worst.c.name}.`
+   : `My portfolio vs. ${d.rows.length} market crashes. Worst: ${sgn0(worst.you)} in the ${worst.c.name}. Run yours on StockSight:`;
+  await shareImage(canvas, { file: `stocksight-crash-test${kind === 'stock' ? '-' + d.t : ''}.png`, text: line, url, type: 'crash_card', id: kind === 'stock' ? d.t : kind });
+ } catch (e) {
+  console.warn('crash card:', e);
+  toast('Could not make the image. Please try again.', 'error');
+ } finally {
+  if (btn) btn.disabled = false;
+ }
+}
+
 // Add the Stress test tab to Portfolio and Paper Trade whenever they draw
 {
  const wrap = name => { const orig = window[name]; if (typeof orig !== 'function') return; window[name] = function (...a) { const r = orig.apply(this, a); try { mountPortfolioStress(name === 'renderPortfolio' ? 'port' : 'pt'); } catch (e) { console.warn('stress tab', e); } return r; }; };

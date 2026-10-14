@@ -109,6 +109,54 @@ ok(d.members.find(m => m.name === 'Ana L.')?.avatar === r.avatar && d.members.fi
 r = await (await post('/api/user', { avatar: null }, ana)).json();
 ok(r.ok && r.avatar === null && !Object.keys((await dump()).storage).length, 'photo removed from storage');
 
+// Reports: members flag a photo, a name or the league's name; the owner gets one-click fixes that need a second click
+const code3 = (await (await league(ana, { action: 'league-create', name: 'Report test' })).json()).code;
+await league(ben, { action: 'league-join', code: code3 });
+await league(cy, { action: 'league-join', code: code3 });
+const photo = (await (await post('/api/user', { avatar: jpeg }, ana)).json()).avatar;
+d = await (await get('/api/community?league=' + code3, ben)).json();
+const anaId = d.members.find(m => m.name === 'Ana L.').id, cyId3 = d.members.find(m => m.name === 'Cy').id, benId = d.members.find(m => m.me).id;
+const report = (tok, body) => league(tok, { action: 'league-report', code: code3, ...body });
+ok((await report(null, { what: 'photo', member: anaId })).status === 401, 'reports need a sign-in');
+ok((await report(dee, { what: 'photo', member: anaId })).status === 403, 'only members can report');
+ok((await report(ben, { what: 'photo', member: benId })).status === 400, "can't report yourself");
+ok((await report(ben, { what: 'shoes', member: anaId })).status === 400, 'unknown report type rejected');
+ok((await report(ben, { what: 'photo', member: 'ffffffffffffffff' })).status === 404, 'unknown member rejected');
+const mailBefore = (await dump()).mail.length;
+ok((await report(ben, { what: 'photo', member: anaId, note: 'Not a real photo <script>' })).status === 200, 'photo reported');
+let mails = (await dump()).mail;
+const rep1 = mails[mailBefore];
+ok(mails.length === mailBefore + 1 && rep1.to.includes('owner@test.dev') && /Reported profile photo in Report test/.test(rep1.subject), 'owner emailed about the report', rep1 && { to: rep1.to, subject: rep1.subject });
+ok(rep1.html.includes(photo) && rep1.html.includes('ben@test.dev') && rep1.html.includes('ana@test.dev') && !rep1.html.includes('<script>'), 'email shows the photo, who and who reported, escaped');
+const link = (m, label) => (m.text.split('\n').find(l => l.startsWith(label + ': ')) || '').slice(label.length + 2);
+const fixPhoto = link(rep1, 'Remove this photo'), fixRemove = link(rep1, 'Remove them from this league');
+ok(fixPhoto.startsWith(B + '/api/community?mod=') && fixRemove.startsWith(B + '/api/community?mod='), 'fix links in the email', { fixPhoto, fixRemove });
+const tokenOf = u => new URL(u).searchParams.get('mod');
+const pg = await fetch(fixPhoto), pgHtml = await pg.text();
+ok(pg.status === 200 && pgHtml.includes('Remove this photo?') && pgHtml.includes('Yes, do it'), 'fix link opens a confirm page');
+ok((await dump()).tables.users.find(u => u.email === 'ana@test.dev').avatar === photo, 'opening the link alone changes nothing');
+const fix = token => post('/api/community', { action: 'mod-fix', token });
+ok((await fix(tokenOf(fixPhoto).slice(0, -2) + 'xx')).status === 400, 'a tampered fix link does nothing');
+ok((await (await fetch(B + '/api/community?mod=bad.token')).text()).includes('expired'), 'a bad link says so');
+r = await (await fix(tokenOf(fixPhoto))).json();
+const anaRow = (await dump()).tables.users.find(u => u.email === 'ana@test.dev');
+ok(r.ok && /photo was removed/.test(r.done) && anaRow.avatar === null && !Object.keys((await dump()).storage).length, 'confirmed fix removes the photo', r);
+ok((await report(ben, { what: 'name', member: cyId3 })).status === 200, 'name reported');
+mails = (await dump()).mail;
+r = await (await fix(tokenOf(link(mails[mails.length - 1], 'Reset their name to "Member"')))).json();
+ok(r.ok && (await dump()).tables.users.find(u => u.email === 'cy@test.dev').name === 'Member', 'name reset to Member', r);
+ok((await report(ana, { what: 'league' })).status === 200, 'league name reported');
+mails = (await dump()).mail;
+const leagueMail = mails[mails.length - 1];
+ok(!link(leagueMail, 'Remove them from this league') && link(leagueMail, 'Rename the league to "Friends league"'), 'a league-name report only offers a rename');
+await fix(tokenOf(link(leagueMail, 'Rename the league to "Friends league"')));
+ok((await (await get('/api/community?league=' + code3, ben)).json()).name === 'Friends league', 'league renamed');
+r = await (await fix(tokenOf(fixRemove))).json();
+d = await (await get('/api/community?league=' + code3, ben)).json();
+ok(r.ok && !d.members.some(m => m.id === anaId) && d.owner === true, 'removing the owner hands the league to the next member', { r, owner: d.owner, members: d.members.map(m => m.name) });
+for (let i = 0; i < 12; i++) await report(cy, { what: 'league' });
+ok((await report(cy, { what: 'league' })).status === 429, 'reports are rate limited');
+
 // Deleting an account leaves its leagues
 const del = await post('/api/auth', { action: 'delete', confirm: 'DELETE', password: 'secret99' }, ben);
 ok(del.status === 200, 'account deleted', del.status);

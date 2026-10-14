@@ -6,7 +6,7 @@
 // xp_weeks holds everyone's total XP at the start of each week; /api/user records it the first time
 // a user's XP changes in a new week, so weekly XP = XP now (or at next week's start) minus that.
 import crypto from 'node:crypto';
-import { db, unsubscribeUrl, SUPABASE_URL } from './_auth.js';
+import { db, unsubscribeUrl, SUPABASE_URL, signLink, readLink, avatarPath, storageDelete, patchUser } from './_auth.js';
 
 export const MAX_MEMBERS = 50, MAX_LEAGUES = 10;
 export const WEEKLY_CAP = 3000;   // more than this in one week can't come from playing, so it doesn't count
@@ -224,6 +224,76 @@ export async function manage(email, code, { rename, remove, del }) {
     return { ok: true };
   }
   return { error: 400, message: 'Nothing to change.' };
+}
+
+/* ── Reports: a member flags someone's photo or name, or the league's name. StockSight's owner
+ (DIGEST_REPORT_TO) gets an email with one-click fixes. Each fix link opens a page that asks for one more
+ click, because email scanners open links on their own. ── */
+const REPORTABLE = { photo: 'profile photo', name: 'name', league: 'league name' };
+export const FIXES = {
+  photo: 'Remove this photo', name: 'Reset their name to "Member"',
+  league: 'Rename the league to "Friends league"', remove: 'Remove them from this league',
+};
+export async function report(email, code, { member, what, note } = {}, resendKey) {
+  if (!REPORTABLE[what]) return { error: 400, message: 'Choose what you are reporting.' };
+  const l = await leagueByCode(code);
+  if (!l) return { error: 404, message: 'League not found.' };
+  const mem = list(await db(`league_members?league_id=eq.${l.id}&select=email&limit=${MAX_MEMBERS + 1}`));
+  if (!mem.some(m => m.email === email)) return { error: 403, message: "You're not in this league." };
+  const target = what === 'league' ? null : mem.find(m => memberId(m.email) === String(member || ''));
+  if (what !== 'league' && !target) return { error: 404, message: 'That person is not in this league.' };
+  if (target?.email === email) return { error: 400, message: "You can't report yourself." };
+  const to = String(process.env.DIGEST_REPORT_TO || '').split(',').map(x => x.trim()).filter(Boolean);
+  if (!to.length || !resendKey) {
+    console.error('league report: DIGEST_REPORT_TO or RESEND_API_KEY is not set');
+    return { error: 503, message: 'Reports are not working right now. Please email stocksightai@gmail.com.' };
+  }
+  const u = target ? list(await db(`users?email=eq.${enc(target.email)}&select=name,avatar&limit=1`))[0] || {} : null;
+  const photo = what === 'photo' ? avatarUrl(u?.avatar) : null;
+  const why = String(note || '').trim().slice(0, 300);
+  const fixes = (what === 'league' ? ['league'] : [what, 'remove'])
+    .map(k => [FIXES[k], `${SITE}/api/community?mod=${signLink({ k, e: target?.email || null, l: l.id }, 30 * 864e5)}`]);
+  const who = target ? `${displayName(u.name, target.email)} (${target.email})` : null;
+  const html = `<div style="font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:14px;color:#17152b;max-width:560px">
+    <p style="font-size:18px;font-weight:800;margin:0 0 6px">A ${REPORTABLE[what]} was reported</p>
+    <p style="margin:0 0 4px">League: <b>${esc(l.name)}</b> (${l.code})</p>
+    ${who ? `<p style="margin:0 0 4px">Reported member: <b>${esc(who)}</b></p>` : ''}
+    <p style="margin:0 0 4px">Reported by: ${esc(email)}</p>
+    ${why ? `<p style="margin:10px 0;padding:10px 12px;background:#f4f2fb;border-radius:8px">"${esc(why)}"</p>` : ''}
+    ${photo ? `<p style="margin:12px 0"><img src="${esc(photo)}" alt="The reported photo" width="160" height="160" style="border-radius:12px;object-fit:cover"></p>` : ''}
+    <p style="margin:14px 0 6px;color:#666">Each button opens a page that asks you to confirm. Links work for 30 days.</p>
+    ${fixes.map(([label, url]) => `<p style="margin:0 0 8px"><a href="${esc(url)}" style="display:inline-block;background:#6c5ce7;color:#fff;text-decoration:none;font-weight:700;padding:9px 14px;border-radius:8px">${esc(label)}</a></p>`).join('')}
+    <p style="margin:12px 0 0;color:#666">If it's fine, ignore this email.</p>
+  </div>`;
+  const text = [`A ${REPORTABLE[what]} was reported in ${l.name} (${l.code}).`, who ? `Reported member: ${who}` : '', `Reported by: ${email}`,
+    why ? `Note: "${why}"` : '', '', ...fixes.map(([label, url]) => `${label}: ${url}`), '', "If it's fine, ignore this email."].filter(x => x !== null).join('\n');
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST', headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: FROM, to, subject: `[StockSight] Reported ${REPORTABLE[what]} in ${l.name}`, html, text }),
+    });
+    if (!r.ok) throw new Error(`Resend ${r.status}`);
+  } catch (e) {
+    console.error('league report not sent:', e.message);
+    return { error: 503, message: 'Reports are not working right now. Please email stocksightai@gmail.com.' };
+  }
+  return { ok: true };
+}
+// What a fix link will do, for the confirm page (null if the link is bad or expired)
+export function readFix(token) {
+  const d = readLink(token);
+  return d && FIXES[d.k] && d.l ? d : null;
+}
+export async function applyFix(token) {
+  const d = readFix(token);
+  if (!d) return { error: 400, message: 'This link is invalid or has expired.' };
+  if (d.k === 'photo') { await storageDelete(avatarPath(d.e)).catch(() => {}); await patchUser(d.e, { avatar: null }); return { ok: true, done: 'The photo was removed.' }; }
+  if (d.k === 'name') { await patchUser(d.e, { name: 'Member' }); return { ok: true, done: 'Their name now shows as "Member".' }; }
+  if (d.k === 'league') { await db(`leagues?id=eq.${enc(d.l)}`, { method: 'PATCH', body: { name: 'Friends league' } }); return { ok: true, done: 'The league is now called "Friends league".' }; }
+  // Same as them leaving: if they ran it, the next member takes over (or an empty league is deleted)
+  const l = list(await db(`leagues?id=eq.${enc(d.l)}&select=code&limit=1`))[0];
+  if (l) await leave(d.e, l.code);
+  return { ok: true, done: 'They were removed from the league.' };
 }
 
 /* ── Monday: save last week's standings and email every member how their leagues ended ── */
