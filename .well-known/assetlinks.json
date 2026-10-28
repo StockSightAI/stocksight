@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.stocksightai.twa",
+        "sha256_cert_fingerprints": ["3C:AE:BF:A6:BE:38:E7:D4:BE:43:FF:04:B3:BD:A4:EE:17:06:C6:A4:E6:6A:83:21:11:40:E4:4F:9E:0D:13:9F"]
+      }
+    }]
