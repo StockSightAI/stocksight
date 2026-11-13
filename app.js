@@ -986,6 +986,7 @@ function openDeepLink() {
  if (!t) return;
  const local = TICKERS.find(e => e.t === t);
  setTimeout(() => {
+  if (location.hash === '#shakeup' && shakeFor(t)) return openShakeup();
   if (local && ['s','i','c'].includes(local.k) && local.k !== tab) switchTab(local.k, true);
   verifyTicker(t, local?.n || t, local?.k);
  }, 400);
@@ -4006,6 +4007,7 @@ function renderHome(t) {
  <h1>${greet}</h1>
  <p>${sub}</p>
  </div>
+ ${shakeOn() ? shakeBannerHTML() : ""}
 
  <div class="dash-tiles">
  ${tiles.map(([s, n, tk, ty], i) => `
@@ -4143,6 +4145,7 @@ function renderAsset(ticker, name, type, overrideSym) {
   mcEl.dataset.view = 'asset';
   mcEl.innerHTML = assetHeadHTML(c) + `<div class="asset-work xp-${xp}">${assetStageHTML(c)}${assetSideHTML(c)}</div>`;
   mcEl.querySelectorAll('.asset-work > .ss-tabs').forEach(ssBindTabs);
+  renderShakeup();
 
   window.switchAssetTab = function(which) {
    const stage = document.querySelector('.asset-stage');
@@ -4281,7 +4284,9 @@ function assetStageHTML(c) {
   ? [['Chart', 'price'], ['Forecast', 'predict'], ['Valuation', 'dcf'], ['Stress test', 'stress'], ['Analysts', 'analysts'], ['Earnings', 'earnings'], ['Options', 'opts'], ['News', 'news']]
   : [['Chart', 'price'], ['Forecast', 'predict'], ['Valuation', 'dcf'], ['Stress test', 'stress'], ['Fundamentals', 'fund'], ['Analysts', 'analysts'], ['Earnings', 'earnings'], ['Options', 'opts'], ['News', 'news'], ['Technicals', 'tech']])
    .filter(([, k]) => !(['c', 'i'].includes(c.type) && (k === 'dcf' || k === 'opts')));
+ if (shakeFor(c.ticker)) tabs.splice(1, 0, [xp === 'beginner' ? 'What happened' : 'CEO shake-up', 'shake']);
  const panel = k => ({
+  shake: '<div id="rsShake" class="rs-pane"></div>',
   price: '<div id="tv-chart" class="ss-fill"></div>',
   predict: '<div class="asset-forecast"><div id="predContent"></div></div>',
   analysts: `<div id="rsAnalysts" class="rs-pane">${rsLoading('Loading analyst ratings')}</div>`,
@@ -4295,7 +4300,7 @@ function assetStageHTML(c) {
  }[k]);
  return `
   <section class="card ss-tabs asset-stage" data-ss-group="asset-main-${xp}" data-ss-nosave="1">
-   <div class="ss-tabs-bar" role="tablist">${tabs.map(([l, k], i) => `<button type="button" class="ss-tab${i ? '' : ' on'}" role="tab"${k === 'predict' ? ' id="atab-predict"' : ''}>${l}</button>`).join('')}</div>
+   <div class="ss-tabs-bar" role="tablist">${tabs.map(([l, k], i) => `<button type="button" class="ss-tab${i ? '' : ' on'}" role="tab"${k === 'predict' ? ' id="atab-predict"' : k === 'shake' ? ' id="atab-shake"' : ''}>${l}</button>`).join('')}</div>
    <div class="ss-tabs-body">${tabs.map(([, k], i) => `<div class="ss-panel${i ? '' : ' on'}" role="tabpanel">${panel(k)}</div>`).join('')}</div>
   </section>`;
 }
@@ -14540,6 +14545,7 @@ function renderPhoneHome(t) {
  }[t] || [];
  const skeleton = n => Array.from({ length: n }, () => '<div class="ph-row ph-skel"><span></span><span></span><span></span></div>').join('');
  mc.innerHTML = `<div class="ph-home">
+  ${shakeOn() ? shakeBannerHTML() : ""}
   ${L.map(([title, items, edit], i) => `<section class="ph-sec"><div class="ph-sec-h"><h2>${title}</h2>${edit ? `<button type="button" onclick="${edit}">See all</button>` : ''}</div><div class="ph-list" id="phList${i}">${skeleton(items.length)}</div></section>`).join('')}
   ${PH_MOVER_POOL[t] ? '<section class="ph-sec" id="phMoversSec"><div class="ph-sec-h"><h2>Biggest moves today</h2></div><div class="ph-movers" id="phMovers"></div></section>' : ''}
   <section class="dash-learn">${learnRowHTML()}</section>
@@ -15125,4 +15131,172 @@ async function shareCrashTest(kind, btn) {
 function bearChatExtra(R) {
  const sc = R ? bearScenarios(R) : [];
  return sc.length ? '<br><br><strong>What the downside could look like</strong><br>' + sc.map(([l, v]) => `• ${l}: ${sgn0(v)}`).join('<br>') : '';
+}
+
+/* ════════════════════════════════
+ NVIDIA SHAKE-UP (Nov 2026)
+ A tab on Nvidia's page while the CEO change is news: what happened, and how much of your money
+ is really in Nvidia once index funds are counted. Market facts only; no gossip.
+ stocksightai.com/nvidia opens it (vercel.json redirects to /stock/NVDA#shakeup).
+════════════════════════════════ */
+const SHAKEUP = {
+ t: 'NVDA',
+ ends: '2027-01-31',          // the tab goes away after this
+ before: '2026-11-06',        // last close before the news (the board's statement came Sunday, Nov 8)
+};
+const shakeOn = () => Date.now() < Date.parse(SHAKEUP.ends + 'T00:00:00Z');
+const shakeFor = t => shakeOn() && t === SHAKEUP.t;
+const usd0 = v => (v < 0 ? "−" : "") + "$" + Math.round(Math.abs(v)).toLocaleString("en-US");
+
+// Nvidia's price at the last close before the news, and now
+async function shakeMove() {
+ const [h] = await Promise.all([getHistory(SHAKEUP.t).catch(() => null), fetchQuotes([[SHAKEUP.t, 's']])]);
+ const i = h ? idxAt(h, toTs(SHAKEUP.before) + 43200) : null;   // daily bars are stamped at the open, so look to the end of the day
+ const then = i != null ? h.c[i] : null;
+ const now = livePrice(SHAKEUP.t) ?? (h ? h.c[h.c.length - 1] : null);
+ return then && now ? { then, now, move: now / then - 1 } : null;
+}
+
+/* ── How much of a holding is Nvidia ──
+ Stocks: all or nothing. Funds: Yahoo's top-10 holdings list. Funds made of other funds (target-date
+ funds) are looked through one level. Outside the top 10 we only know it's less than the 10th weight. */
+async function shakeWeight(t) {
+ if (t === SHAKEUP.t) return { w: 1, how: 'direct' };
+ const F = await getFundamentals(t, tickerKind(t));
+ if (!F) return { w: null, how: 'missing' };
+ const top = (F.fund?.holdings || []).filter(x => x.symbol && x.pct > 0);
+ if (!top.length) return { w: 0, how: F.facts?.quoteType === 'EQUITY' ? 'stock' : 'unknown' };
+ const hit = top.find(x => x.symbol === SHAKEUP.t);
+ if (hit) return { w: hit.pct, how: 'top' };
+ const subs = await Promise.all(top.filter(x => x.pct >= 0.05).slice(0, 4).map(async x => {
+  const G = await getFundamentals(x.symbol, 's');
+  const inner = G?.fund?.holdings || [];
+  if (!inner.length) return null;
+  const y = inner.find(z => z.symbol === SHAKEUP.t);
+  return { name: x.symbol, w: y ? x.pct * y.pct : 0 };
+ }));
+ const funds = subs.filter(Boolean);
+ if (funds.length) return { w: funds.reduce((s, x) => s + x.w, 0), how: 'nested', via: funds.filter(x => x.w > 0).map(x => x.name) };
+ return { w: 0, how: 'outside', under: Math.min(...top.map(x => x.pct)) };
+}
+
+// What you own, as [ticker, dollars]: your portfolio when you have one, otherwise an example
+let _skRows = null;
+function shakeDefaultRows() {
+ const mine = (holdings || []).map(h => [String(h.ticker || '').toUpperCase(), Math.round((Number(h.shares) || 0) * (livePrice(h.ticker) ?? Number(h.buyPrice) ?? 0))]).filter(([t, v]) => t && v > 0);
+ return mine.length ? mine.slice(0, 12) : [['VOO', 1000], ['QQQ', 500]];
+}
+const SK_CHIPS = [['VOO', 'S&P 500'], ['QQQ', 'Nasdaq 100'], ['VTI', 'Total market'], ['SMH', 'Chip stocks'], ['VFIFX', 'Target date 2050'], ['NVDA', 'Nvidia itself']];
+
+function shakeExposureHTML() {
+ if (!_skRows) _skRows = shakeDefaultRows();
+ const fromPortfolio = (holdings || []).length > 0;
+ return inSection('Do you own Nvidia without knowing it?', `
+  <div class="sk-rows">${_skRows.map(([t, v], i) => `
+   <div class="sk-row">
+    <input class="alert-inp sk-t" aria-label="Fund or stock ticker" value="${escapeHTML(t)}" maxlength="10" placeholder="Ticker" oninput="skEdit(${i},0,this.value)">
+    <label class="sk-amt"><span>$</span><input class="alert-inp" aria-label="Dollars in this holding" type="number" min="0" step="50" value="${v || ''}" placeholder="Amount" oninput="skEdit(${i},1,this.value)"></label>
+    <button type="button" class="sk-x" aria-label="Remove" onclick="skRemove(${i})">✕</button>
+   </div>`).join('')}
+  </div>
+  <div class="sk-chips">${SK_CHIPS.map(([t, l]) => `<button type="button" class="chat-chip" onclick="skAdd('${t}')">+ ${t} <small>${l}</small></button>`).join('')}</div>
+  <div class="in-actions"><button type="button" class="dash-btn dash-btn-main" onclick="skRun()">Check my Nvidia exposure</button></div>
+  <div id="skOut"></div>`,
+  fromPortfolio ? 'Filled in from your portfolio. Index funds hold Nvidia too, so your real share is often bigger than you think.'
+   : 'Index funds hold Nvidia too. Put in what you own (or try an example) to see your real Nvidia slice.');
+}
+function skRedraw() { const el = document.getElementById('skRowsWrap'); if (el) el.innerHTML = shakeExposureHTML(); }
+function skEdit(i, col, v) { if (!_skRows[i]) return; _skRows[i][col] = col ? Math.max(0, Number(v) || 0) : String(v).toUpperCase().trim(); }
+function skRemove(i) { _skRows.splice(i, 1); skRedraw(); skRun(); }
+function skAdd(t) {
+ if (_skRows.some(r => r[0] === t)) { toast(`${t} is already in the list`, 'info', 1800); return; }
+ if (_skRows.length >= 12) { toast('That\'s the most this can check at once', 'info', 2200); return; }
+ _skRows.push([t, 1000]);
+ skRedraw(); skRun();
+}
+
+let _skSeq = 0;
+async function skRun() {
+ const out = document.getElementById('skOut');
+ if (!out) return;
+ const rows = _skRows.filter(([t, v]) => /^[A-Z0-9.\-^=]{1,10}$/.test(t) && v > 0);
+ if (!rows.length) { out.innerHTML = insightNote('Add a fund or stock and a dollar amount.'); return; }
+ const seq = ++_skSeq;
+ out.innerHTML = inLoading('Looking inside your funds');
+ const [res, mv] = await Promise.all([Promise.all(rows.map(([t]) => shakeWeight(t).catch(() => ({ w: null, how: 'missing' })))), shakeMove().catch(() => null)]);
+ if (seq !== _skSeq || !document.getElementById('skOut')) return;
+ const lines = rows.map(([t, v], i) => ({ t, v, ...res[i], nv: res[i].w != null ? v * res[i].w : null }));
+ const total = lines.reduce((s, x) => s + (x.nv != null ? x.v : 0), 0);   // holdings that didn't load are left out
+ if (!total) { document.getElementById('skOut').innerHTML = insightNote("Couldn't load those holdings. Check the tickers, or try again in a minute."); return; }
+ const nv = lines.reduce((s, x) => s + (x.nv || 0), 0);
+ const share = total ? nv / total : 0;
+ const lost = mv ? nv * mv.move / (1 + mv.move) : null;   // the dollars entered are today's values, which already include the move
+ const cell = x => x.how === 'direct' ? '100%' : x.how === 'stock' ? '0%' : x.how === 'outside' ? `under ${pct1(x.under)}` : x.w == null ? '—' : pct1(x.w);
+ const why = x => ({
+  direct: 'It is Nvidia', stock: 'A single company, not Nvidia', top: 'One of its top 10 holdings',
+  nested: x.via?.length ? `Through the fund${x.via.length > 1 ? 's' : ''} it holds (${x.via.slice(0, 2).map(escapeHTML).join(', ')})` : 'Its funds hold no Nvidia in their top 10',
+  outside: 'Not in its top 10, so a small slice at most', unknown: 'No holdings list available', missing: "Couldn't load this one",
+ }[x.how]);
+ const hasOutside = lines.some(x => x.how === 'outside');
+ const tone = share >= 0.15 ? 'warn' : share >= 0.05 ? 'mid' : 'ok';
+ document.getElementById('skOut').innerHTML = `
+  <div class="in-hype ${tone} sk-total">
+   <b>About ${usd0(nv)} of your ${usd0(total)} is Nvidia (${pct1(share)})</b>
+   <span>${mv ? `Nvidia is ${sgn0(mv.move)} since the news broke (${fmtPx(mv.then)} on Nov 6, ${fmtPx(mv.now)} now).${lost != null && Math.abs(lost) >= 1 ? ` That has ${lost < 0 ? 'cost' : 'added'} your Nvidia slice about <b>${usd0(Math.abs(lost))}</b>, or ${pct1(Math.abs(lost) / total)} of everything you entered.` : ''}` : "Nvidia's price didn't load, so the dollar change is missing."}</span>
+  </div>
+  <div class="in-table-wrap"><table class="in-table">
+   <thead><tr><th>Holding</th><th>You have</th><th>Nvidia share</th><th>Your Nvidia</th></tr></thead>
+   <tbody>${lines.map(x => `<tr><td>${escapeHTML(x.t)}<small>${why(x)}</small></td><td>${usd0(x.v)}</td><td>${cell(x)}</td><td>${x.nv != null ? usd0(x.nv) : '—'}</td></tr>`).join('')}</tbody>
+  </table></div>
+  <p class="in-p">${share >= 0.15
+   ? 'That is a big bet on one company. Big index funds already hold a lot of Nvidia, so owning the stock on top of them stacks the risk.'
+   : share >= 0.05
+   ? `A real slice, but spread out. If Nvidia fell another 10%, your total would move about ${pct1(share * 0.1)}.`
+   : `A small slice. Another 10% Nvidia fall would move your total about ${pct1(share * 0.1)}.`}</p>
+  ${insightNote(`Fund weights are each fund's top 10 holdings from Yahoo Finance, as of the fund's latest report.${hasOutside ? ' "Under X%" means Nvidia isn\'t in the top 10, so it\'s counted as zero.' : ''} Not financial advice.`)}`;
+}
+
+/* ── The tab ── */
+function shakeHeadHTML() {
+ return inSection('What happened', `
+  <ul class="in-list sk-timeline">
+   <li><b>Nov 8</b> Nvidia's board said it opened an independent investigation involving CEO Jensen Huang.</li>
+   <li><b>Nov 12</b> Huang resigned as CEO and left the board. CFO Colette Kress is interim CEO, and Nvidia named its first-ever board chair.</li>
+   <li><b>Nov 17</b> Nvidia reports quarterly earnings, still without a permanent CEO.</li>
+  </ul>
+  <div id="skMove"></div>`, 'The market side of the story.');
+}
+function renderShakeup() {
+ const el = document.getElementById('rsShake');
+ if (!el) return;
+ el.innerHTML = `<div class="in-pane">${shakeHeadHTML()}<div id="skRowsWrap">${shakeExposureHTML()}</div></div>`;
+ shakeMove().then(mv => {
+  const m = document.getElementById('skMove');
+  if (m && mv) m.innerHTML = `<div class="in-grid">
+   <div><span>Before the news (Nov 6 close)</span><b>${fmtPx(mv.then)}</b></div>
+   <div><span>Now</span><b class="${mv.move < 0 ? 'sk-dn' : 'sk-up'}">${fmtPx(mv.now)}</b><small>${sgn0(mv.move)} since the news</small></div>
+  </div>`;
+ }).catch(() => {});
+ skRun();
+}
+// Open Nvidia's page on this tab (home banner, stocksightai.com/nvidia)
+function openShakeup() {
+ goAsset(SHAKEUP.t, 's');
+ let n = 0;
+ const pick = () => {
+  const btn = document.getElementById('atab-shake');
+  if (!btn) { if (++n < 40) setTimeout(pick, 150); return; }
+  const stage = btn.closest('.ss-tabs');
+  ssTabSelect(stage, [...stage.querySelectorAll(':scope > .ss-tabs-bar > .ss-tab')].indexOf(btn), false);
+  if (location.hash === '#shakeup') history.replaceState(history.state, '', location.pathname);
+ };
+ setTimeout(pick, 300);
+}
+// Home banner while it's news
+function shakeBannerHTML() {
+ return `<button type="button" class="sk-banner" onclick="openShakeup()">
+  <span class="sk-banner-tag">Market news</span>
+  <span class="sk-banner-main"><b>Nvidia's CEO resigned.</b> How much of your money is in Nvidia? Check your index funds.</span>
+  <span class="sk-banner-go" aria-hidden="true">→</span>
+ </button>`;
 }

@@ -86,5 +86,12 @@
       "source": "/terms",
       "destination": "/terms.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/nvidia",
+      "destination": "/stock/NVDA#shakeup",
+      "permanent": false
+    }
   ]
 }

@@ -2003,6 +2003,31 @@ body.accent-ruby{--accent:#be123c;--accent2:#fda4af;--accent3:#e11d48;--glow:rgb
 @media (max-width:600px){.dcf-head b{font-size:1rem}.in-pane{padding:14px}}
 @media (max-width:380px){.in-grid{grid-template-columns:1fr}}
 .in-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+/* Nvidia shake-up tab and home banner */
+.sk-rows{display:flex;flex-direction:column;gap:8px}
+.sk-row{display:flex;gap:8px;align-items:center;min-width:0}
+.sk-row .sk-t{width:96px;text-transform:uppercase;height:36px}
+.sk-amt{display:flex;align-items:center;gap:4px;color:var(--text3);font-size:.85rem;flex:1;min-width:0}
+.sk-amt input{width:100%;max-width:160px;height:36px}
+.sk-x{width:32px;height:32px;flex:none;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-size:.8rem}
+.sk-x:hover{color:var(--red);border-color:var(--red)}
+.sk-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.sk-chips small{color:var(--text3);font-size:.68rem;margin-left:2px}
+#skOut{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+#skOut:empty{display:none}
+.sk-total{margin:0}
+.sk-total span b{color:var(--text)}
+.sk-timeline li b{color:var(--text);margin-right:6px}
+.sk-dn{color:var(--red)!important}.sk-up{color:var(--green)!important}
+.sk-banner{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 16px;margin:0 0 14px;border-radius:14px;border:1px solid var(--border2);background:linear-gradient(90deg,rgba(118,185,0,.13),var(--card) 60%);color:var(--text2);font-family:inherit;font-size:.86rem;line-height:1.45;cursor:pointer;transition:border-color .15s,transform .15s}
+.sk-banner:hover{border-color:#76b900}
+.sk-banner:active{transform:scale(.995)}
+.sk-banner-tag{flex:none;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#76b900;border:1px solid rgba(118,185,0,.45);border-radius:999px;padding:3px 8px}
+.sk-banner-main{flex:1;min-width:0}
+.sk-banner-main b{color:var(--text)}
+.sk-banner-go{flex:none;font-size:1.1rem;color:var(--text3)}
+.ph-home .sk-banner{margin:4px 0 12px}
+@media (max-width:600px){.sk-banner{flex-wrap:wrap;gap:6px 10px}.sk-banner-go{display:none}}
 .in-share{display:inline-flex;align-items:center;gap:7px}
 .in-sec > .in-share{margin-top:12px}
 /* Phone: More sheet, native lists */
@@ -2257,6 +2282,8 @@ body.accent-ruby{--accent:#be123c;--accent2:#fda4af;--accent3:#e11d48;--glow:rgb
 
  /* Markets */
  #mainContent[data-view="home"]{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(170px,1fr) auto auto;gap:14px}
+ #mainContent[data-view="home"]:has(> .sk-banner){grid-template-rows:auto auto auto minmax(170px,1fr) auto auto}
+ #mainContent[data-view="home"] > .sk-banner{margin:0}
  #mainContent[data-view="home"] > .dash-head{margin:0;padding-right:300px}
  #mainContent[data-view="home"] > .dash-head h1{font-size:1.5rem}
  #mainContent[data-view="home"] > .dash-head p{font-size:.88rem;margin-top:2px}

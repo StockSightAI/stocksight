@@ -15,6 +15,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 
 const PORT = Number(process.env.PORT) || 5053;
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const vercelConfig = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
 const FAKE = `http://localhost:${PORT}/fakesb`;
 process.env.SUPABASE_URL = FAKE;
 process.env.SUPABASE_SERVICE_KEY = 'test-service-key';
@@ -231,6 +232,9 @@ http.createServer(async (req, res) => {
   if (url.pathname === '/__seed' && req.method === 'POST') { (tables[body.table] ||= []).push(...body.rows); res.statusCode = 204; return res.end(); }
   if (url.pathname === '/__db') { res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify({ tables, codes, mail, storage: Object.fromEntries(Object.entries(storage).map(([k, o]) => [k, { type: o.type, bytes: o.buf.length }])) })); }
   if (url.pathname.startsWith('/fakesb/rest/v1/')) return fakeRest(req, res, url, body);
+  // vercel.json redirects
+  const vRedirect = (vercelConfig.redirects || []).find(r => r.source === url.pathname);
+  if (vRedirect) { res.statusCode = 307; res.setHeader('Location', vRedirect.destination); return res.end(); }
   // vercel.json rewrite: /stock/:ticker -> /api/page?t=:ticker
   const stockPage = url.pathname.match(/^\/stock\/([^/]+)\/?$/);
   if (stockPage) url.searchParams.set('t', decodeURIComponent(stockPage[1]));
