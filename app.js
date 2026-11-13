@@ -15154,7 +15154,8 @@ async function shakeMove() {
  const i = h ? idxAt(h, toTs(SHAKEUP.before) + 43200) : null;   // daily bars are stamped at the open, so look to the end of the day
  const then = i != null ? h.c[i] : null;
  const now = livePrice(SHAKEUP.t) ?? (h ? h.c[h.c.length - 1] : null);
- return then && now ? { then, now, move: now / then - 1 } : null;
+ const next = i != null && h.c[i + 1] ? h.c[i + 1] / then - 1 : null;   // the first trading day after the news
+ return then && now ? { then, now, move: now / then - 1, d1: next } : null;
 }
 
 /* ── How much of a holding is Nvidia ──
@@ -15269,16 +15270,67 @@ function shakeHeadHTML() {
 function renderShakeup() {
  const el = document.getElementById('rsShake');
  if (!el) return;
- el.innerHTML = `<div class="in-pane">${shakeHeadHTML()}<div id="skRowsWrap">${shakeExposureHTML()}</div></div>`;
+ el.innerHTML = `<div class="in-pane">${shakeHeadHTML()}<div id="skRowsWrap">${shakeExposureHTML()}</div><div id="skCeo"></div></div>`;
  shakeMove().then(mv => {
   const m = document.getElementById('skMove');
+  const c = document.getElementById('skCeo');
+  if (c) c.innerHTML = ceoExitsHTML(mv);
   if (m && mv) m.innerHTML = `<div class="in-grid">
    <div><span>Before the news (Nov 6 close)</span><b>${fmtPx(mv.then)}</b></div>
    <div><span>Now</span><b class="${mv.move < 0 ? 'sk-dn' : 'sk-up'}">${fmtPx(mv.now)}</b><small>${sgn0(mv.move)} since the news</small></div>
   </div>`;
- }).catch(() => {});
+ }).catch(() => { const c = document.getElementById('skCeo'); if (c) c.innerHTML = ceoExitsHTML(null); });
  skRun();
 }
+/* ── When CEOs left suddenly: how the stock reacted ──
+ Measured once from Yahoo Finance daily closes (dividend-adjusted), from the last close before the news
+ reached the market: next day, 21 trading days (1 month) and 252 (1 year), with the S&P 500 over that year. */
+const CEO_EXITS = [
+ { t: 'SBUX', co: 'Starbucks', y: 2024, why: 'perf', d1: 0.245, m1: 0.2825, y1: 0.2382, spxY: 0.2103 },
+ { t: 'KSS', co: "Kohl's", y: 2025, why: 'conduct', d1: 0.0761, m1: 0.2134, y1: 1.2687, spxY: 0.2983 },
+ { t: 'NKE', co: 'Nike', y: 2024, why: 'perf', d1: 0.0684, m1: 0.024, y1: -0.1047, spxY: 0.1651 },
+ { t: 'DIS', co: 'Disney', y: 2022, why: 'perf', d1: 0.063, m1: -0.0521, y1: 0.0289, spxY: 0.1445 },
+ { t: 'BA', co: 'Boeing', y: 2019, why: 'crisis', d1: 0.0291, m1: -0.0311, y1: -0.3274, spxY: 0.1471 },
+ { t: 'BP', co: 'BP', y: 2023, why: 'conduct', d1: 0.0042, m1: 0.0144, y1: -0.1279, spxY: 0.2541 },
+ { t: 'INTC', co: 'Intel', y: 2024, why: 'perf', d1: -0.005, m1: -0.1663, y1: 0.8195, spxY: 0.1355 },
+ { t: 'AAPL', co: 'Apple', y: 2011, why: 'health', d1: -0.0065, m1: 0.0748, y1: 0.769, spxY: 0.1906 },
+ { t: 'INTC', co: 'Intel', y: 2018, why: 'conduct', d1: -0.0238, m1: -0.029, y1: -0.09, spxY: 0.0662 },
+ { t: 'MCD', co: "McDonald's", y: 2019, why: 'conduct', d1: -0.0272, m1: 0.0022, y1: 0.1239, spxY: 0.0793 },
+ { t: 'HPQ', co: 'HP', y: 2010, why: 'conduct', d1: -0.0799, m1: -0.1378, y1: -0.2887, spxY: 0.0693 },
+ { t: 'UNH', co: 'UnitedHealth', y: 2025, why: 'crisis', d1: -0.1779, m1: -0.18, y1: 0.089, spxY: 0.2738 },
+];
+const CEO_WHY = { conduct: 'Conduct investigation', perf: 'Board wanted a change', crisis: 'Company in trouble', health: 'Health' };
+const median = a => { const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+let _ceoFilter = 'all';
+
+function ceoExitsHTML(mv) {
+ const rows = CEO_EXITS.filter(x => _ceoFilter === 'all' || x.why === _ceoFilter);
+ const down = rows.filter(x => x.d1 < 0).length;
+ const beat = rows.filter(x => x.y1 > x.spxY).length;
+ const nv = mv ? `<tr class="sk-now"><td>Nvidia<small>2026 · ${CEO_WHY.conduct}</small></td><td class="${mv.d1 < 0 ? 'dn' : 'up'}">${sgn0(mv.d1)}</td><td class="${mv.move < 0 ? 'dn' : 'up'}">${sgn0(mv.move)}<sup>so far</sup></td><td>?</td><td>?</td></tr>` : '';
+ return inSection('When CEOs left suddenly', `
+  <div class="sk-chips sk-filter" role="group" aria-label="Which exits">
+   ${[['all', 'All 12'], ['conduct', 'Conduct investigations']].map(([k, l]) => `<button type="button" class="chat-chip${_ceoFilter === k ? ' on' : ''}" aria-pressed="${_ceoFilter === k}" onclick="ceoFilter('${k}')">${l}</button>`).join('')}
+  </div>
+  <div class="in-table-wrap"><table class="in-table">
+   <thead><tr><th>Company</th><th>Next day</th><th>1 month</th><th>1 year</th><th>S&amp;P 500, same year</th></tr></thead>
+   <tbody>${nv}${rows.map(x => `<tr><td>${x.co}<small>${x.y} · ${CEO_WHY[x.why]}</small></td>${[x.d1, x.m1, x.y1].map(v => `<td class="${v < 0 ? 'dn' : 'up'}">${sgn0(v)}</td>`).join('')}<td>${sgn0(x.spxY)}</td></tr>`).join('')}</tbody>
+  </table></div>
+  <div class="in-grid">
+   <div><span>Fell the next day</span><b>${down} of ${rows.length}</b><small>typical move ${sgn0(median(rows.map(x => x.d1)))}</small></div>
+   <div><span>Beat the S&amp;P 500 over the next year</span><b>${beat} of ${rows.length}</b><small>the rest lagged it</small></div>
+  </div>
+  <p class="in-p">${_ceoFilter === 'conduct'
+   ? 'When a CEO left over a conduct investigation, the first-day move was usually small, because the business itself hadn\'t changed. The year after depended on how the company was doing anyway: HP and Intel kept struggling, McDonald\'s kept growing.'
+   : 'There\'s no single pattern. Stocks jumped when investors had wanted a new leader (Starbucks, Disney, Nike), and fell hard when the exit came with bad business news (UnitedHealth also pulled its profit forecast that day). A year later, what mattered most was how the business did, not the exit itself.'}</p>
+  ${insightNote('Measured from Yahoo Finance daily closes (dividends included), starting at the last close before each announcement. 1 month = 21 trading days, 1 year = 252. Nvidia\'s "next day" is Nov 9, the first trading day after the board\'s statement. Past reactions don\'t predict this one. Not financial advice.')}`,
+  'How 12 big companies\' stocks reacted when their CEO left suddenly.');
+}
+function ceoFilter(k) {
+ _ceoFilter = k;
+ shakeMove().then(mv => { const el = document.getElementById('skCeo'); if (el) el.innerHTML = ceoExitsHTML(mv); }).catch(() => {});
+}
+
 // Open Nvidia's page on this tab (home banner, stocksightai.com/nvidia)
 function openShakeup() {
  goAsset(SHAKEUP.t, 's');
