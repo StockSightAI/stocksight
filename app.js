@@ -15270,7 +15270,7 @@ function shakeHeadHTML() {
 function renderShakeup() {
  const el = document.getElementById('rsShake');
  if (!el) return;
- el.innerHTML = `<div class="in-pane">${shakeHeadHTML()}<div id="skRowsWrap">${shakeExposureHTML()}</div><div id="skCeo"></div></div>`;
+ el.innerHTML = `<div class="in-pane">${shakeHeadHTML()}<div id="skEarn"></div><div id="skRowsWrap">${shakeExposureHTML()}</div><div id="skCeo"></div></div>`;
  shakeMove().then(mv => {
   const m = document.getElementById('skMove');
   const c = document.getElementById('skCeo');
@@ -15281,6 +15281,7 @@ function renderShakeup() {
   </div>`;
  }).catch(() => { const c = document.getElementById('skCeo'); if (c) c.innerHTML = ceoExitsHTML(null); });
  skRun();
+ renderShakeEarnings().catch(() => {});
 }
 /* ── When CEOs left suddenly: how the stock reacted ──
  Measured once from Yahoo Finance daily closes (dividend-adjusted), from the last close before the news
@@ -15329,6 +15330,88 @@ function ceoExitsHTML(mv) {
 function ceoFilter(k) {
  _ceoFilter = k;
  shakeMove().then(mv => { const el = document.getElementById('skCeo'); if (el) el.innerHTML = ceoExitsHTML(mv); }).catch(() => {});
+}
+
+/* ── Earnings preview: the next report, what options expect, and how past reports went ──
+ Nvidia reports after the close, so a report's reaction is that day's close to the next day's. */
+const _skEvMove = {};
+function shakeEventMove(after) {
+ const key = SHAKEUP.t + after;
+ if (!_skEvMove[key]) _skEvMove[key] = fetch(`/api/fundamentals?options=1&after=${after}&symbol=${SHAKEUP.t}`)
+  .then(r => (r.ok ? r.json() : null)).catch(() => null)
+  .then(d => { if (!d) setTimeout(() => delete _skEvMove[key], 60000); return d; });
+ return _skEvMove[key];
+}
+function earnReactions(F, h) {
+ return (F?.earnings?.reported || []).map(q => {
+  const day = new Date(q.date * 1000).toISOString().slice(0, 10);
+  const i = h ? idxAt(h, toTs(day) + 43200) : null;
+  const move = i != null && h.c[i + 1] ? h.c[i + 1] / h.c[i] - 1 : null;
+  return { ...q, day, move };
+ }).filter(x => x.move != null).slice(-4);
+}
+const skDay = (ts, opts = { month: 'short', day: 'numeric', year: 'numeric' }) => new Date(ts * 1000).toLocaleDateString('en-US', opts);
+function skCountdown(ts) {
+ const ms = ts * 1000 - Date.now();
+ if (ms <= 0) return null;
+ const d = Math.floor(ms / 864e5), h = Math.floor(ms / 36e5) % 24;
+ return d ? `${d} day${d > 1 ? 's' : ''}${h ? `, ${h} hour${h > 1 ? 's' : ''}` : ''}` : `${h || 'under 1'} hour${h === 1 ? '' : 's'}`;
+}
+
+async function renderShakeEarnings() {
+ const el = document.getElementById('skEarn');
+ if (!el) return;
+ const [F, h] = await Promise.all([getFundamentals(SHAKEUP.t, 's'), getHistory(SHAKEUP.t).catch(() => null)]);
+ const next = F?.facts?.nextEarnings;
+ const past = earnReactions(F, h);
+ const avgAbs = past.length ? past.reduce((s, x) => s + Math.abs(x.move), 0) / past.length : null;
+ const pastHTML = past.length ? `
+  <div class="in-table-wrap"><table class="in-table">
+   <thead><tr><th>Report</th><th>Profit vs. forecast</th><th>Stock next day</th></tr></thead>
+   <tbody>${past.slice().reverse().map(x => `<tr><td>${skDay(x.date)}</td><td class="${x.surprisePct >= 0 ? 'up' : 'dn'}">${x.surprisePct >= 0 ? 'Beat' : 'Missed'} by ${Math.abs(x.surprisePct).toFixed(1)}%</td><td class="${x.move < 0 ? 'dn' : 'up'}">${sgn0(x.move)}</td></tr>`).join('')}</tbody>
+  </table></div>
+  <p class="in-p">${past.every(x => x.surprisePct >= 0) && past.some(x => x.move < 0)
+   ? `Nvidia beat forecasts every time, yet the stock still fell after ${past.filter(x => x.move < 0).length} of these ${past.length}. With a company this closely watched, "beating" is expected; the stock moves on how big the beat is and on the forecast for next quarter.`
+   : `On average the stock moved ${pct1(avgAbs)} the day after these reports, up or down.`}</p>` : '';
+
+ const last = past[past.length - 1];
+ const recent = last && last.date * 1000 > Date.now() - 14 * 864e5;
+ // Before the report: countdown, forecasts and the options market's expected move
+ if (!recent && next && next * 1000 > Date.now() - 6 * 3600e3) {
+  const est = (F.earnings?.estimates || []).find(e => e.period === '0q');
+  const ev = await shakeEventMove(next);
+  if (!document.getElementById('skEarn')) return;
+  const left = skCountdown(next);
+  el.innerHTML = inSection(`Earnings: ${skDay(next, { weekday: 'long', month: 'short', day: 'numeric' })}, after the market closes`, `
+   <div class="in-grid">
+    <div><span>Countdown</span><b>${left || 'Today'}</b><small>results come out around 4:20pm ET</small></div>
+    <div><span>Options expect a move of</span><b>${ev ? `±${pct1(ev.movePct)}` : '—'}</b><small>${ev ? `about ±${fmtPx(ev.move)} by ${skDay(Date.parse(ev.expiry + 'T12:00:00Z') / 1000, { month: 'short', day: 'numeric' })}: ${fmtPx(ev.price - ev.move)} to ${fmtPx(ev.price + ev.move)}` : "options data didn't load"}</small></div>
+    ${est?.eps ? `<div><span>Profit forecast (per share)</span><b>${fmtPx(est.eps)}</b><small>${est.analysts} analysts${est.growth != null ? `, ${sgn0(est.growth)} from a year ago` : ''}</small></div>` : ''}
+    ${est?.revenue ? `<div><span>Sales forecast</span><b>${fmtBig(est.revenue)}</b><small>for the quarter that ended ${est.endDate ? new Date(est.endDate + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'last month'}</small></div>` : ''}
+   </div>
+   ${ev && avgAbs ? `<p class="in-p">${ev.movePct > avgAbs * 1.15
+    ? `Options traders are pricing a bigger swing than usual: <b>±${pct1(ev.movePct)}</b>, versus an average move of ${pct1(avgAbs)} after the last ${past.length} reports. The CEO change is likely part of that extra uncertainty.`
+    : `Options traders are pricing a swing of <b>±${pct1(ev.movePct)}</b>, close to the average move of ${pct1(avgAbs)} after the last ${past.length} reports.`}</p>` : ''}
+   <div class="in-scen"><b>What to watch</b>
+    <div><span><b>Data center sales.</b> The chips that power AI are most of Nvidia's business. Growth here matters most.</span></div>
+    <div><span><b>The forecast for next quarter.</b> Often moves the stock more than the results themselves.</span></div>
+    <div><span><b>Leadership.</b> Anything on the CEO search, and whether big customers and plans are staying put.</span></div>
+    ${F.facts?.grossMargin ? `<div><span><b>Profit margins.</b> Whether Nvidia still keeps about ${Math.round(F.facts.grossMargin * 100)} cents of every sales dollar after the cost of making its chips.</span></div>` : ''}
+   </div>
+   ${pastHTML ? `<h4 class="sk-h5">How the last ${past.length} reports went</h4>${pastHTML}` : ''}
+   ${insightNote('Expected move = the cost of an at-the-money call plus put that expire just after the report, the market\'s own estimate of the swing. It covers a day or two of normal moves too. Forecasts are analyst averages from Yahoo Finance. Not financial advice.')}`,
+   'The first report since the CEO left.');
+  return;
+ }
+ // Reported, but the next day's close (or Yahoo's update) isn't in yet
+ if (!recent) {
+  el.innerHTML = next && next * 1000 < Date.now() ? inSection('Earnings are out', `<p class="in-p">Nvidia reported on ${skDay(next, { month: 'short', day: 'numeric' })}. How the stock reacted shows up here after the next trading day closes.</p>`) : '';
+  return;
+ }
+ // After the report: how it went
+ el.innerHTML = last ? inSection('Earnings: how it went', `
+  <div class="in-hype ${last.move < 0 ? 'bad' : 'ok'}"><b>${sgn0(last.move)} the day after</b><span>Profit ${last.surprisePct >= 0 ? 'beat' : 'missed'} the forecast by ${Math.abs(last.surprisePct).toFixed(1)}% (${fmtPx(last.actual)} per share vs. ${fmtPx(last.estimate)} expected).</span></div>
+  ${pastHTML}${insightNote('From Yahoo Finance. Not financial advice.')}`) : '';
 }
 
 // Open Nvidia's page on this tab (home banner, stocksightai.com/nvidia)

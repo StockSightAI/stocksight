@@ -5,6 +5,8 @@
 // GET /api/fundamentals?symbols=AAPL,MSFT,...   the scoring facts for up to 20 symbols
 // GET /api/fundamentals?symbol=AAPL&options=1   options pulse: implied volatility, expected move, put/call
 //                                                ratios, unusual activity and what a protective put costs
+// GET /api/fundamentals?symbol=AAPL&options=1&after=UNIX   the move options price in through the first expiry
+//                                                after a moment (an earnings report), from the at-the-money straddle
 import { SYMBOL_RE, quoteSummary, optionChain, trailingCashFlow } from './_yahoo.js';
 
 const FULL = ['price', 'assetProfile', 'summaryDetail', 'financialData', 'defaultKeyStatistics', 'recommendationTrend',
@@ -111,6 +113,9 @@ function full(r, symbol, cf) {
     revenue: num(t.revenueEstimate?.avg), analysts: num(t.earningsEstimate?.numberOfAnalysts),
   }));
   const fc = r.earnings?.financialsChart || {};
+  const reported = (r.earnings?.earningsChart?.quarterly || []).filter(q => num(q.reportedDate)).map(q => ({
+    date: num(q.reportedDate), actual: num(q.actual), estimate: num(q.estimate), surprisePct: num(Number(q.surprisePct)),
+  }));
   const series = arr => (arr || []).map(x => ({ date: String(x.date), revenue: num(x.revenue), earnings: num(x.earnings) }));
   const officers = (ap.companyOfficers || []).slice(0, 6).map(o => ({ name: str(o.name), title: str(o.title), age: num(o.age), pay: num(o.totalPay) }));
   const holdings = (th.holdings || []).slice(0, 10).map(h => ({ symbol: str(h.symbol), name: str(h.holdingName), pct: num(h.holdingPercent) }));
@@ -130,7 +135,7 @@ function full(r, symbol, cf) {
     },
     analysts: { trend, actions },
     earnings: {
-      history, estimates,
+      history, estimates, reported,
       quarterly: series(fc.quarterly), yearly: series(fc.yearly),
     },
     fund: holdings.length || sectors.length ? { holdings, sectors } : null,
@@ -186,10 +191,32 @@ export async function optionsSummary(sym, now = Date.now() / 1000) {
   };
 }
 
+// The move priced in through one event: the at-the-money straddle on the first expiry after it, which costs
+// about what traders expect the stock to move by then (earnings day plus a day or two of normal swings)
+export async function eventMove(sym, after, now = Date.now() / 1000) {
+  const first = await optionChain(sym);
+  const exp = (first?.expirationDates || []).find(d => d > after && d > now);
+  if (!exp) return null;
+  const ch = first.options?.[0]?.expirationDate === exp ? first : await optionChain(sym, exp);
+  const o = ch?.options?.[0], price = ch?.quote?.regularMarketPrice ?? first.quote?.regularMarketPrice;
+  if (!o || !(price > 0)) return null;
+  const c = nearest(o.calls || [], price), p = nearest(o.puts || [], price);
+  const straddle = mid(c) != null && mid(p) != null ? mid(c) + mid(p) : null;
+  if (!straddle) return null;
+  return { symbol: sym, price, expiry: isoDay(exp), strike: c.strike, move: +straddle.toFixed(2), movePct: +(straddle / price).toFixed(4), asOf: Date.now() };
+}
+
 export default async function handler(req, res) {
   const one = String(req.query?.symbol || '').toUpperCase().trim();
   if (one && req.query?.options) {
     if (!SYMBOL_RE.test(one)) return res.status(400).json({ error: 'Invalid symbol' });
+    if (req.query.after) {
+      const after = Number(req.query.after);
+      if (!Number.isFinite(after)) return res.status(400).json({ error: 'Invalid time' });
+      const m = await eventMove(one, after).catch(() => null);
+      res.setHeader('Cache-Control', m ? 'public, max-age=300, s-maxage=900, stale-while-revalidate=3600' : 's-maxage=300');
+      return m ? res.status(200).json(m) : res.status(404).json({ error: 'No options data for that date' });
+    }
     const o = await optionsSummary(one).catch(() => null);
     if (!o) { res.setHeader('Cache-Control', 's-maxage=300'); return res.status(404).json({ error: 'No options data for this symbol' }); }
     res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=900, stale-while-revalidate=3600');
